@@ -26,7 +26,12 @@ SECRET_KEY = 'django-insecure-q=++kk4$-w%48$_pbtr^v0_b8i4f*8)-!1gz##im&s16fdx0pe
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['editor-jhayescs4300-5.devedu.io', 'app-jhayescs4300-5.devedu.io']
+ALLOWED_HOSTS = [
+    'editor-jhayescs4300-5.devedu.io', 
+    'app-jhayescs4300-5.devedu.io', 
+    'editor-samallenonline-5.devedu.io', 
+    'app-samallenonline-5.devedu.io',
+    ]
 
 
 # Application definition
@@ -118,6 +123,14 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+
+# Make sure this line is included for app-specific static folders
+STATICFILES_DIRS = [
+    BASE_DIR / "todoapp/static",
+]
+
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
