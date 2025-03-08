@@ -17,15 +17,22 @@
         {% load static %}
         {% block extra_css %}{% endblock %}
     </head>
-    <body>
+    <body class="m-3">
 
-        <div class="collapse" id="navbarToggleExternalContent">
-            <div class="bg-dark p-4">
-                <h5 class="text-white h4">Collapsed content</h5>
-                <span class="text-muted">Toggleable via the navbar brand.</span>
+        <div class="collapse" id="navbarToggleExternalContent" style="background-color: #1f4e45;">
+            <div class="p-4 container-fluid">
+                <h5 class="text-white h4">Navigation Menu</h5>
+                <span class="text-muted"></span>
                 <ul class="nav flex-column mt-3">
                     <li class="nav-item">
+                        <a class="nav-link text-white" href="{% url 'index' %}">Welcome</a>
+
+                        {% if user.is_authenticated %}
                         <a class="nav-link text-white" href="#">Home</a>
+                        <a class="nav-link text-white" href="#">Tasks</a>
+                        <a class="nav-link text-white" href="#">Task Archive</a>
+                        <a class="nav-link text-white" href="#">Profile Settings</a>
+                        {% endif %}
                     </li>
                 </ul>
             </div>
