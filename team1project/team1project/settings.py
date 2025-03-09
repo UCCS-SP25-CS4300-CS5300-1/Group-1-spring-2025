@@ -33,6 +33,10 @@ ALLOWED_HOSTS = [
     'app-samallenonline-5.devedu.io',
     ]
 
+# Add your domain here if you are getting csrf verification error
+CSRF_TRUSTED_ORIGINS = [
+    'https://app-jhayescs4300-5.devedu.io'
+]
 
 # Application definition
 

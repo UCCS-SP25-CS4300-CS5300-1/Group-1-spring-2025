@@ -11,6 +11,13 @@
     <h1>Welcome to To-Do List!</h1>
 </header>
 <main>
+    {% if not user.is_authenticated %}
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Login</button>
+    </form>
+    {% endif %}
     <p>Welcome! This is the start of development of the To-Do List App</p>
     <p>Customers need an app to help organize and track their tasks. Many people struggle today with handling busy schedules and responsibilities. Tracking tasks can also be stressful enough, especially for those who have many responsibilities. The To-Do List would be able to provide an environment to store, track, and suggest tasks. </p>
 </main>
