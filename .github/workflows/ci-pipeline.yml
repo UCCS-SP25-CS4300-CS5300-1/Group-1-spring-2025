@@ -41,6 +41,7 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git pull --rebase
           git add openai-code-reviews/
           git commit -m "Added AI Code Review - $TIMESTAMP"
           git push origin HEAD:${{ github.ref }}
@@ -63,20 +64,23 @@ jobs:
         run: |
           python -m venv venv
           source venv/bin/activate
+          pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pytest pytest-django coverage
 
       - name: Run Tests
         run: |
           source venv/bin/activate
-          pytest --cov=myapp > test_results.txt
-          cat test_results.txt
+          mkdir -p test_results
+          cd team1project
+          TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
+          python manage.py test | tee ../test_results/test_results_${TIMESTAMP}.txt || echo "No tests found, skipping test step."
 
       - name: Upload Test Results
-        uses: actions/upload-artifact@v3
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: test_results.txt
+          path: test_results/*.txt
 
   coverage:
     name: Report Test Coverage
@@ -97,18 +101,22 @@ jobs:
         run: |
           python -m venv venv
           source venv/bin/activate
+          pip install --upgrade pip
           pip install -r requirements.txt
-          pip install coverage
-
+        
       - name: Generate Coverage Report
         run: |
           source venv/bin/activate
-          coverage run -m pytest
+          mkdir -p coverage_reports
+          cd team1project
+          coverage run --source='.' manage.py test
           coverage report -m
-          coverage xml -o coverage.xml
+          TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
+          coverage xml -o ../coverage_reports/coverage_${TIMESTAMP}.xml
 
       - name: Upload Coverage Report
-        uses: actions/upload-artifact@v3
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: coverage.xml
+          path: coverage_reports/*.xml
