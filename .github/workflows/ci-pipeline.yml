@@ -35,7 +35,7 @@ jobs:
         run: |
           mkdir -p openai-code-reviews
           TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
-          openai api completions.create -m "gpt-4" -p "Review the code changes in this pull request for quality, security, and best practices." --json > openai-code-reviews/review_${TIMESTAMP}.json
+          openai api completions.create -m "gpt-4" -p "Review the code changes in this pull request for quality, security, and best practices." | jq '.' > openai-code-reviews/review_${TIMESTAMP}.json
 
       - name: Commit and Push AI Code Review Results
         run: |
