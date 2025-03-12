@@ -17,8 +17,14 @@
                 <p>Welcome! This is the start of development of the To-Do List App.</p>
                 <p>Customers need an app to help organize and track their tasks. Many people struggle today with handling busy schedules and responsibilities. Tracking tasks can also be stressful enough, especially for those who have many responsibilities. The To-Do List would be able to provide an environment to store, track, and suggest tasks.</p>
                 
-                <!-- login form -->
                 {% if not user.is_authenticated %}
+                <!-- register button -->
+                <div>
+                    <p>If you have no account, sign up here:</p>
+                    <a type='submit' class="btn btn-secondary" href="{% url 'register' %}">Register</a>
+                </div>
+
+                <!-- login form -->
                 <form method="post" class="login-form" style= "margin-top: 30px;">
                     {% csrf_token %}
                     {{ form.as_p }}
