@@ -1,0 +1,114 @@
+name: To-Do App CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - dev-branch
+  pull_request:
+    branches:
+      - main
+      - dev-branch
+
+jobs:
+  open_ai_code_review:
+    name: OpenAI Code Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12.3'
+
+      - name: Install OpenAI CLI
+        run: pip install openai
+
+      - name: Run OpenAI Code Review
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          mkdir -p openai-code-reviews
+          TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
+          openai api completions.create -m "gpt-4" -p "Review the code changes in this pull request for quality, security, and best practices." --json > openai-code-reviews/review_${TIMESTAMP}.json
+
+      - name: Commit and Push AI Code Review Results
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add openai-code-reviews/
+          git commit -m "Added AI Code Review - $TIMESTAMP"
+          git push origin HEAD:${{ github.ref }}
+
+  tests:
+    name: Run Django Tests
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12.3'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt
+          pip install pytest pytest-django coverage
+
+      - name: Run Tests
+        run: |
+          source venv/bin/activate
+          pytest --cov=myapp > test_results.txt
+          cat test_results.txt
+
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: test_results.txt
+
+  coverage:
+    name: Report Test Coverage
+    runs-on: ubuntu-latest
+    needs: tests
+    if: github.event_name == 'push'
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12.3'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt
+          pip install coverage
+
+      - name: Generate Coverage Report
+        run: |
+          source venv/bin/activate
+          coverage run -m pytest
+          coverage report -m
+          coverage xml -o coverage.xml
+
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: coverage.xml
