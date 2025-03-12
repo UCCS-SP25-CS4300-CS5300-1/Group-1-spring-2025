@@ -31,7 +31,7 @@
                         <a class="nav-link text-white" href="#">Home</a>
                         <a class="nav-link text-white" href="#">Tasks</a>
                         <a class="nav-link text-white" href="#">Task Archive</a>
-                        <a class="nav-link text-white" href="#">Profile Settings</a>
+                        <a class="nav-link text-white" href="{% url 'profile_settings' %}">Profile Settings</a>
                         {% endif %}
                     </li>
                 </ul>
@@ -55,16 +55,8 @@
                         <!-- left column: text content -->
                         <div class="col-md-6">
                             {% block content %}
-                            <h2 class="card-title">Welcome to To-Do List</h2>
-                            <p class="card-text">
-                                Content
-                            </p>
+                           
                             {% endblock content %}
-                        </div>
-
-                        <!-- right column: image -->
-                        <div class="col-md-6 d-flex justify-content-end align-items-center">
-                            <img src="{% static 'To-Do.jpeg' %}" alt="Description" class="img-fluid rounded" style="max-width: 75%; height: auto;">
                         </div>
                     </div>
                 </div>

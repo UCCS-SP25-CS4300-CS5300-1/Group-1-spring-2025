@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+<main>
+    <div>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button href="{% url 'index' %}" name="logout" class="btn btn-danger">Logout</button>
+    </form>
+    </div>
+</main> 
+{% endblock %}
