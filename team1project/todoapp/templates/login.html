@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        
+        <!-- include bootstrap CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+        <!-- include bootstrap JS -->
+        <title>Base To-Do List</title>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" 
+            integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" 
+            crossorigin="anonymous">
+    </script>
+
+        {% load static %}
+        {% block extra_css %}{% endblock %}
+    </head>
+    <body>
+
+        <div class="collapse" id="navbarToggleExternalContent">
+            <div class="bg-dark p-4">
+                <h5 class="text-white h4">Collapsed content</h5>
+                <span class="text-muted">Toggleable via the navbar brand.</span>
+                <ul class="nav flex-column mt-3">
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="#">Home</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+          
+        <nav class="navbar navbar-dark" style="height: 80px; background-color: #5b8e85;">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#" style="margin-left: 110px; font-size: 2rem;">To-Do List</a>
+                <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#navbarToggleExternalContent" aria-controls="navbarToggleExternalContent" aria-expanded="false" aria-label="Toggle navigation" style="margin-right: 110px;">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- centered main content box -->
+        <div class="container mt-4">
+            <div class="card p-4 shadow" style="max-width: 1200px; height: 500px; margin: 0 auto;">
+                <div class="card-body">
+                    <div class="row">
+                        <!-- left column: text content -->
+                        <div class="col-md-6">
+                            {% block content %}
+                            <h2 class="card-title">Login Page...</h2>
+                            <lable>Username</lable>
+                            <input >
+                            <lable>Password</lable>
+                            <input>
+                            <button>Login</button>
+                            {% endblock content %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
