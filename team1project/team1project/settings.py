@@ -31,6 +31,8 @@ ALLOWED_HOSTS = [
     'app-jhayescs4300-5.devedu.io', 
     'editor-samallenonline-5.devedu.io', 
     'app-samallenonline-5.devedu.io',
+    'localhost',
+    'todolist.mooo.com',
     ]
 
 # Add your domain here if you are getting csrf verification error
