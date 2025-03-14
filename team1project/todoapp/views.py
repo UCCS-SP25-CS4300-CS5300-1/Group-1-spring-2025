@@ -1,9 +1,9 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.views import View
 from django.contrib import messages
-from .forms import CustomUserCreationForm
+from .forms import CustomUserCreationForm, TaskForm
 from .models import Task
 
 
@@ -47,3 +47,22 @@ class ProfileSettings(View):
 def task_view(request):
     tasks = Task.objects.all()  # Get all tasks (no filtering for now)
     return render(request, 'task_view.html', {'tasks': tasks})
+
+def add_task(request):
+    if request.method == "POST":
+        form = TaskForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('task_view')
+    else:
+        form = TaskForm()
+
+    return render(request, 'add_task.html', {'form': form})
+
+
+def delete_task(request, task_id):
+    task = get_object_or_404(Task, id=task_id)
+
+    task.delete()
+
+    return redirect('task_view')  # Redirect back to task list
