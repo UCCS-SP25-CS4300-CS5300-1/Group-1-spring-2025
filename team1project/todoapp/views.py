@@ -4,6 +4,8 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.views import View
 from django.contrib import messages
 from .forms import CustomUserCreationForm
+from .models import Task
+
 
 # Create your views here.
 def index(request):
@@ -41,3 +43,7 @@ class ProfileSettings(View):
 				logout(request)
 				messages.success(request, "You have been logged out.")
 				return redirect("index")
+
+def task_view(request):
+    tasks = Task.objects.all()  # Get all tasks (no filtering for now)
+    return render(request, 'task_view.html', {'tasks': tasks})
