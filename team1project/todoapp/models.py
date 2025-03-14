@@ -10,6 +10,7 @@ class Category(models.Model):
 
 class Task(models.Model):
     name = models.CharField(max_length=255)
+    creator = models.ForeignKey(User, on_delete=models.PROTECT)
     description = models.TextField()
     due_date = models.DateTimeField()
     progress = models.IntegerField(default=0)
