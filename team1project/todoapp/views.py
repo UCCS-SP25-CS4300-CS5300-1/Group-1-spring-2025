@@ -45,14 +45,17 @@ class ProfileSettings(View):
 				return redirect("index")
 
 def task_view(request):
-    tasks = Task.objects.all()  # Get all tasks (no filtering for now)
+    tasks = Task.objects.filter(creator=request.user) 
     return render(request, 'task_view.html', {'tasks': tasks})
 
 def add_task(request):
     if request.method == "POST":
         form = TaskForm(request.POST)
         if form.is_valid():
-            form.save()
+            task = form.save(commit=False)
+            task.creator = request.user
+            task.save()
+            form.save_m2m()
             return redirect('task_view')
     else:
         form = TaskForm()
