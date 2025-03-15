@@ -33,6 +33,8 @@ jobs:
       
       # Currently debugging with the help of ChatGPT
       - name: Verify OpenAI API Key
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           if [ -z "$OPENAI_API_KEY" ]; then
             echo "ERROR: OpenAI API Key is missing!"
