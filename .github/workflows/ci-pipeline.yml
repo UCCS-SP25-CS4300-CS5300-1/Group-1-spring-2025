@@ -49,15 +49,12 @@ jobs:
             -H "Content-Type: application/json" \
             -d @request.json | jq -r '.choices[0].message.content' > openai-code-reviews/review_${TIMESTAMP}.txt
 
-      - name: Commit and Push AI Code Review Results
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout ${{github.head_ref}}
-          git pull --rebase
-          git add openai-code-reviews/
-          git commit -m "Added AI Code Review - $TIMESTAMP"
-          git push origin HEAD:${{ github.ref }}
+      - name: Upload AI Code Review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-code-review
+          path: openai-code-reviews/*.txt
 
   tests:
     name: Run Django Tests
