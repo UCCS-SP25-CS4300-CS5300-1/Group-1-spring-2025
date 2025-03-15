@@ -37,11 +37,20 @@ jobs:
         run: |
           mkdir -p openai-code-reviews
           TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
-        
+
+          PR_TITLE=$(jq -r '.pull_request.title' $GITHUB_EVENT_PATH)
+          PR_AUTHOR=$(jq -r '.pull_request.user.login' $GITHUB_EVENT_PATH)
+          PR_URL=$(jq -r '.pull_request.html_url' $GITHUB_EVENT_PATH)
+          
+          git fetch origin ${{ github.base_ref }} ${{ github.head_ref }}
+          git diff origin/${{ github.base_ref }}...origin/${{ github.head_ref }} > pr_diff.txt
+
           echo '{
             "model": "gpt-4",
             "messages": [{"role": "system", "content": "You are reviewing code changes. Please be professional and informative."},
-                        {"role": "user", "content": "Review the code changes in this pull request for quality, security, and best practices. Please include general information about the pull request such as date, time, and messages. The review will be saved as a text file"}]
+                        {"role": "user", "content": "Review the code changes in this pull request for quality, security, and best practices. Please include general information about the pull request such as date, time, and messages. The review will be saved as a text file"},
+                        {"role": "user", "content": "## Pull Request Details\nTitle: '"$PR_TITLE"'\nAuthor: '"$PR_AUTHOR"'\nURL: '"$PR_URL"'"},
+                        {"role": "user", "content": "## Code Changes\n\n'"$(cat pr_diff.txt)"'"}]
             }' > request.json
 
           curl -s https://api.openai.com/v1/chat/completions \
