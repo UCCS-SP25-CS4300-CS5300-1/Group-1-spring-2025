@@ -32,39 +32,57 @@ jobs:
           sudo apt-get install -y jq
       
       # Currently debugging with the help of ChatGPT
-      - name: Run OpenAI Code Review
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      - name: Verify OpenAI API Key
         run: |
-          mkdir -p openai-code-reviews
-          TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
+          if [ -z "$OPENAI_API_KEY" ]; then
+            echo "ERROR: OpenAI API Key is missing!"
+            exit 1
+          fi
 
-          PR_TITLE=$(jq -r '.pull_request.title' $GITHUB_EVENT_PATH)
-          PR_AUTHOR=$(jq -r '.pull_request.user.login' $GITHUB_EVENT_PATH)
-          PR_URL=$(jq -r '.pull_request.html_url' $GITHUB_EVENT_PATH)
-
-          git fetch origin ${{ github.base_ref }} ${{ github.head_ref }}
+      - name: Generate PR Diff
+        run: |
+          git fetch --no-tags --prune --depth=2 origin
           git diff origin/${{ github.base_ref }}..origin/${{ github.head_ref }} > pr_diff.txt
 
           if [ ! -s pr_diff.txt ]; then
-            echo "Error: No changes detected. Skipping AI review." > openai-code-reviews/review_${TIMESTAMP}.txt
+            echo "Error: No changes detected. Skipping AI review." > openai-code-reviews/review.txt
             exit 0
           fi
 
+      - name: Debug PR Diff Content
+        run: |
+          echo "PR Diff Content:"
+          cat pr_diff.txt
+
+      - name: Generate OpenAI Request JSON
+        run: |
+          PR_TITLE=$(jq -r '.pull_request.title' $GITHUB_EVENT_PATH)
+          PR_AUTHOR=$(jq -r '.pull_request.user.login' $GITHUB_EVENT_PATH)
+          PR_URL=$(jq -r '.pull_request.html_url' $GITHUB_EVENT_PATH)
           PR_DIFF=$(head -c 4000 pr_diff.txt)
 
-          cat <<EOF > request.json
-          {
-            "model": "gpt-4",
-            "messages": [
-              {"role": "system", "content": "You are an expert software reviewer. Provide detailed, constructive feedback."},
-              {"role": "user", "content": "## PR Details\n**Title:** $PR_TITLE\n**Author:** $PR_AUTHOR\n**URL:** $PR_URL"},
-              {"role": "user", "content": "## Code Changes\n\n\`\`\`diff\n$PR_DIFF\n\`\`\`"},
-              {"role": "user", "content": "### Evaluate:\n1. **Code Quality**\n2. **Security Risks**\n3. **Best Practices**\n4. **Performance**\n5. **General Comments**"}
-            ]
-          }
-          EOF
+          jq -n --arg model "gpt-4" \
+                --arg pr_title "$PR_TITLE" \
+                --arg pr_author "$PR_AUTHOR" \
+                --arg pr_url "$PR_URL" \
+                --arg pr_diff "$PR_DIFF" \
+                '{
+                  model: $model,
+                  messages: [
+                    {role: "system", content: "You are an expert software reviewer. Provide detailed, constructive feedback."},
+                    {role: "user", content: ("## PR Details\n**Title:** " + $pr_title + "\n**Author:** " + $pr_author + "\n**URL:** " + $pr_url)},
+                    {role: "user", content: ("## Code Changes\n\n```diff\n" + $pr_diff + "\n```")},
+                    {role: "user", content: "### Evaluate:\n1. **Code Quality**\n2. **Security Risks**\n3. **Best Practices**\n4. **Performance**\n5. **General Comments**"}
+                  ]
+                }' > request.json
 
+      - name: Debug OpenAI Request JSON
+        run: cat request.json
+
+      - name: Send Request to OpenAI API
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
           RESPONSE=$(curl -s https://api.openai.com/v1/chat/completions \
             -H "Authorization: Bearer $OPENAI_API_KEY" \
             -H "Content-Type: application/json" \
@@ -72,7 +90,7 @@ jobs:
 
           echo "$RESPONSE" > openai-api-response.json
 
-          jq -r '.choices[0].message.content // "Error: OpenAI response is empty or malformed."' openai-api-response.json > openai-code-reviews/review_${TIMESTAMP}.txt
+          jq -r '.choices[0].message.content // "Error: OpenAI response is empty or malformed."' openai-api-response.json > openai-code-reviews/review.txt
 
       - name: Debug OpenAI API Response
         run: cat openai-api-response.json
