@@ -76,7 +76,7 @@ jobs:
                     {role: "system", content: "You are an expert software reviewer. Please provide detailed, constructive feedback. Your feedback will be stored as a txt file, so please do not use markdown formatting in your response."},
                     {role: "user", content: ("PR Details\nTitle: " + $pr_title + "\nAuthor: " + $pr_author + "\nDate: " + $pr_date + "\nURL: " + $pr_url)},
                     {role: "user", content: ("Code Changes\n\n" + $pr_diff)},
-                    {role: "user", content: "At the beginning of each code review, please list the PR details including title, author, date, and URL. Then, evaluate:\n1. **Code Quality**\n2. **Security Risks**\n3. **Best Practices**\n4. **Performance**\n5. **General Comments**. For each area, start with a brief summary, then provide a more detailed analysis below."}
+                    {role: "user", content: "At the beginning of each code review, please list the PR details including title, author, date, and URL. Then, evaluate:\n1. Code Quality\n2. Security Risks\n3. Best Practices\n4. Performance\n5. General Comments. For each area, start with a brief summary, then provide a more detailed analysis below."}
                   ]
                 }' > request.json
 
