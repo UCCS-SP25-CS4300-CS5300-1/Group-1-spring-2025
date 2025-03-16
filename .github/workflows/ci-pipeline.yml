@@ -61,20 +61,22 @@ jobs:
           PR_TITLE=$(jq -r '.pull_request.title' $GITHUB_EVENT_PATH)
           PR_AUTHOR=$(jq -r '.pull_request.user.login' $GITHUB_EVENT_PATH)
           PR_URL=$(jq -r '.pull_request.html_url' $GITHUB_EVENT_PATH)
+          PR_DATE=$(jq -r '.pull_request.created_at' $GITHUB_EVENT_PATH)
           PR_DIFF=$(head -c 4000 pr_diff.txt)
 
           jq -n --arg model "gpt-4" \
                 --arg pr_title "$PR_TITLE" \
                 --arg pr_author "$PR_AUTHOR" \
                 --arg pr_url "$PR_URL" \
+                --arg pr_date "$PR_DATE" \
                 --arg pr_diff "$PR_DIFF" \
                 '{
                   model: $model,
                   messages: [
-                    {role: "system", content: "You are an expert software reviewer. Please provide detailed, constructive feedback. Your feedback will be stored as a txt file."},
-                    {role: "user", content: ("## PR Details\n**Title:** " + $pr_title + "\n**Author:** " + $pr_author + "\n**URL:** " + $pr_url)},
-                    {role: "user", content: ("## Code Changes\n\n```diff\n" + $pr_diff + "\n```")},
-                    {role: "user", content: "### At the beginning of each code review, please list the PR details including title, author, date, and URL. Then, evaluate:\n1. **Code Quality**\n2. **Security Risks**\n3. **Best Practices**\n4. **Performance**\n5. **General Comments**. First provide a concise evaulation for each of these areas, and then feel free to elaborate after a newline. "}
+                    {role: "system", content: "You are an expert software reviewer. Please provide detailed, constructive feedback. Your feedback will be stored as a txt file, so please do not use markdown formatting in your response."},
+                    {role: "user", content: ("PR Details\nTitle: " + $pr_title + "\nAuthor: " + $pr_author + "\nDate: " + $pr_date + "\nURL: " + $pr_url)},
+                    {role: "user", content: ("Code Changes\n\n" + $pr_diff)},
+                    {role: "user", content: "At the beginning of each code review, please list the PR details including title, author, date, and URL. Then, evaluate:\n1. **Code Quality**\n2. **Security Risks**\n3. **Best Practices**\n4. **Performance**\n5. **General Comments**. For each area, start with a brief summary, then provide a more detailed analysis below."}
                   ]
                 }' > request.json
 
