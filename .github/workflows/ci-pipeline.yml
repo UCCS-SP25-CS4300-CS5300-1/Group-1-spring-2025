@@ -31,7 +31,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y jq
       
-      # Currently debugging with the help of ChatGPT
+      # Debugged this section with the help of ChatGPT
       - name: Verify OpenAI API Key
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -71,10 +71,10 @@ jobs:
                 '{
                   model: $model,
                   messages: [
-                    {role: "system", content: "You are an expert software reviewer. Provide detailed, constructive feedback."},
+                    {role: "system", content: "You are an expert software reviewer. Please provide detailed, constructive feedback."},
                     {role: "user", content: ("## PR Details\n**Title:** " + $pr_title + "\n**Author:** " + $pr_author + "\n**URL:** " + $pr_url)},
                     {role: "user", content: ("## Code Changes\n\n```diff\n" + $pr_diff + "\n```")},
-                    {role: "user", content: "### Evaluate:\n1. **Code Quality**\n2. **Security Risks**\n3. **Best Practices**\n4. **Performance**\n5. **General Comments**"}
+                    {role: "user", content: "### At the beginning of each code review, please list the PR details including title, author, date, and URL. Then, evaluate:\n1. **Code Quality**\n2. **Security Risks**\n3. **Best Practices**\n4. **Performance**\n5. **General Comments**. First provide a concise evaulation for each of these areas, and then feel free to elaborate after a newline. "}
                   ]
                 }' > request.json
 
@@ -113,6 +113,8 @@ jobs:
         with:
           name: ai-code-review
           path: openai-code-reviews/*.txt
+
+      # End of debugging help
 
   tests:
     name: Run Django Tests
