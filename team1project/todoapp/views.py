@@ -15,7 +15,7 @@ def index(request):
 		if form.is_valid():
 			user = form.get_user()
 			login(request, user)
-			return redirect("index")
+			return redirect("task_view")
 
 	return render(request, 'index.html', {'form': form})
 
