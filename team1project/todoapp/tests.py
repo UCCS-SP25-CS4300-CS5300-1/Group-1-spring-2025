@@ -6,6 +6,7 @@ from todoapp.models import Category, Task, SubTask, TaskProgress
 from datetime import timedelta
 from django.utils import timezone
 
+
 # Create your tests here.
 
 # simple test to use for debugging CI pipeline
@@ -174,3 +175,53 @@ class ModelsTestCase(TestCase):
         self.assertEqual(self.task_progress.task, self.task)
         self.assertEqual(self.task_progress.user, self.user1)
         self.assertEqual(self.task_progress.progress, 75)
+
+
+
+class TaskTests(TestCase):
+    
+    def setUp(self):
+        """ Set up test data before each test """
+        self.client = Client()
+        self.user = User.objects.create_user(username='testuser', password='password123')
+        self.client.login(username='testuser', password='password123')
+
+        # Create a sample task
+        self.task = Task.objects.create(
+            name="Test Task",
+            description="This is a test task",
+            due_date="2025-03-20 12:00:00",
+            progress=50,
+            creator=self.user  # ✅ Ensure task has a creator
+        )
+
+    def test_task_model(self):
+        """ Test that the task model saves correctly """
+        task = Task.objects.get(name="Test Task")
+        self.assertEqual(task.description, "This is a test task")
+        self.assertEqual(task.progress, 50)
+
+    def test_task_list_page(self):
+        """ Test if the /tasks/ page loads and displays the task """
+        response = self.client.get(reverse('task_view'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Test Task")
+
+    def test_create_task(self):
+        """ Test creating a task through the form """
+        response = self.client.post(reverse('add_task'), {
+            'name': 'New Task',
+            'description': 'Created from test',
+            'due_date': '2025-04-01 14:00:00',
+            'progress': 10,
+            'creator': self.user.id  # ✅ Include creator in task creation
+        })
+        self.assertEqual(response.status_code, 302)  # Redirect after task creation
+        self.assertTrue(Task.objects.filter(name="New Task").exists())
+
+    def test_delete_task(self):
+        """ Test deleting a task """
+        task_id = self.task.id
+        response = self.client.get(reverse('delete_task', args=[task_id]))
+        self.assertEqual(response.status_code, 302)  # Redirect after deletion
+        self.assertFalse(Task.objects.filter(id=task_id).exists())  # Task should not exist
