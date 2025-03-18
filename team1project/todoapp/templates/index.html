@@ -7,13 +7,37 @@
 {% endblock %}
 
 {% block content %}
-<header>
-    <h1>Welcome to To-Do List!</h1>
-</header>
-<main>
-    <p>Welcome! This is the start of development of the To-Do List App</p>
-    <p>Customers need an app to help organize and track their tasks. Many people struggle today with handling busy schedules and responsibilities. Tracking tasks can also be stressful enough, especially for those who have many responsibilities. The To-Do List would be able to provide an environment to store, track, and suggest tasks. </p>
-</main>
-<footer>
-</footer>
+<!-- main box -->
+<div class="card p-4 shadow" style="max-width: 1200px; margin: 0 auto;">
+    <div class="card-body">
+        <div class="row">
+            <!-- left column: welcome text and login form -->
+            <div class="col-md-6">
+                <h2 class="card-title" style="margin-bottom: 30px;">Welcome to To-Do List</h2>
+                <p>Welcome! This is the start of development of the To-Do List App.</p>
+                <p>Customers need an app to help organize and track their tasks. Many people struggle today with handling busy schedules and responsibilities. Tracking tasks can also be stressful enough, especially for those who have many responsibilities. The To-Do List would be able to provide an environment to store, track, and suggest tasks.</p>
+                
+                {% if not user.is_authenticated %}
+                <!-- register button -->
+                <div>
+                    <p>If you have no account, sign up here:</p>
+                    <a type='submit' class="btn btn-secondary" href="{% url 'register' %}">Register</a>
+                </div>
+
+                <!-- login form -->
+                <form method="post" class="login-form" style= "margin-top: 30px;">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit" class="btn btn-primary">Login</button>
+                </form>
+                {% endif %}
+            </div>
+
+            <!-- right column: image-->
+            <div class="col-md-6 d-flex justify-content-end align-items-center">
+                <img src="{% static 'To-Do.jpeg' %}" alt="To-Do List" class="img-fluid rounded" style="max-width: 75%; height: auto;">
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

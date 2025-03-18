@@ -1,0 +1,6 @@
+# Ignore Python compiled files
+*.pyc
+__pycache__/
+*.sqlite3
+# Ignore Django static files (if generated automatically)
+team1project/staticfiles/
