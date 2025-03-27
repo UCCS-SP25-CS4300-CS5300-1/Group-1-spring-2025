@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
-from .models import Task, Category
+from .models import Task, Category, TaskCollabRequest
 
 
 '''
@@ -30,3 +30,8 @@ class TaskForm(forms.ModelForm):
             'progress': forms.NumberInput(attrs={'min': 0, 'max': 100, 'step': 1}),
         }
 
+
+class TaskCollabForm(forms.ModelForm):
+    class Meta:
+        model = TaskCollabRequest
+        fields = ['to_user']

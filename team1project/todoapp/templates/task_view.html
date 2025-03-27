@@ -9,7 +9,24 @@
 
     <div class="card p-4 shadow">
         <table class="table">
-            <thead>
+            <tbody>
+                <th>Task Requests</th>
+                {% for request in task_requests %}
+                <tr>
+                    <td>{{ request.task.name }}</td>
+                    <td>{{ request.task.description }}</td>
+                    <td>{{ request.task.due_date|date:"M d, Y H:i" }}</td>
+                    <td>{{ request.task.progress }}</td>
+                    <td>Shared from user {{request.task.creator}}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center">No requests available.</td>
+                </tr>
+                {% endfor %}
+
+                <!-- User's Created Tasks -->
+                <th>My Tasks</th>   
                 <tr>
                     <th>Name</th>
                     <th>Description</th>
@@ -17,8 +34,7 @@
                     <th>Progress</th>
                     <th>Actions</th>
                 </tr>
-            </thead>
-            <tbody>
+
                 {% for task in tasks %}
                 <tr>
                     <td>{{ task.name }}</td>
@@ -26,6 +42,7 @@
                     <td>{{ task.due_date|date:"M d, Y H:i" }}</td>
                     <td>{{ task.progress }}%</td>
                     <td>
+                        <a class="btn btn-primary btn-sm" href="{% url 'share_task' task_id=task.id %}">Share</a>
                         <button class="btn btn-danger btn-sm" onclick="confirmDelete({{ task.id }})">Delete</button>
                     </td>
                 </tr>

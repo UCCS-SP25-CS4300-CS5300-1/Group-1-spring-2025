@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Share this task</h2>
+
+    <div class="card p-4 shadow">
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+
+            <button type="submit" class="btn btn-success">Share Task</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
