@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.views import View
 from django.contrib import messages
-from .forms import CustomUserCreationForm, TaskCollabForm
+from .forms import CustomUserCreationForm, TaskForm, TaskCollabForm
 from .models import Task, TaskCollabRequest
 
 

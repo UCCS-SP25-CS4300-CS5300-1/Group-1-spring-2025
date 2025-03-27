@@ -1,6 +1,6 @@
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
-from .forms import CustomUserCreationForm
+from .forms import CustomUserCreationForm, TaskForm
 from django.urls import reverse
 from todoapp.models import Category, Task, SubTask, TaskProgress
 from datetime import timedelta
