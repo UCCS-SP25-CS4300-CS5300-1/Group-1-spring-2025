@@ -1,16 +1,22 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container mt-4">
-    <h2 class="mb-4">Tasks</h2>
 
-    <!-- ✅ "Create Task" Button -->
-    <a href="{% url 'add_task' %}" class="btn btn-primary mb-3">+ Create Task</a>
+<div class="container mt-4">
+    <h2 class="mb-4">Task Requests</h2>
 
     <div class="card p-4 shadow">
         <table class="table">
             <tbody>
-                <th>Task Requests</th>
+                {% if task_requests %}
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Due Date</th>
+                    <th>Progress</th>
+                    <th>Creator</th>
+                    <th>Actions</th>
+                </tr>
                 {% for request in task_requests %}
                 <tr>
                     <td>{{ request.task.name }}</td>
@@ -18,13 +24,35 @@
                     <td>{{ request.task.due_date|date:"M d, Y H:i" }}</td>
                     <td>{{ request.task.progress }}</td>
                     <td>Shared from user {{request.task.creator}}</td>
+                    <td>    
+                        <form method="post" action="{% url 'accept_task' request.id %}">
+                            {% csrf_token %}
+                            <button class="btn btn-primary btn-sm" name="accept_request">Accept</button>
+                            <button class="btn btn-danger btn-sm" name="decline_request">Decline</button>
+                        </form>
+                    </td>
                 </tr>
-                {% empty %}
+                {% endfor %}
+                {% else %}
                 <tr>
                     <td colspan="5" class="text-center">No requests available.</td>
                 </tr>
-                {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
 
+
+<div class="container mt-4">
+    <h2 class="mb-4">My Tasks</h2>
+
+    <!-- ✅ "Create Task" Button -->
+    <a href="{% url 'add_task' %}" class="btn btn-primary mb-3">+ Create Task</a>
+
+    <div class="card p-4 shadow">
+        <table class="table">
+            <tbody>
                 <!-- User's Created Tasks -->
                 <th>My Tasks</th>   
                 <tr>
@@ -49,6 +77,33 @@
                 {% empty %}
                 <tr>
                     <td colspan="5" class="text-center">No tasks available.</td>
+                </tr>
+                {% endfor %}
+
+                <!-- User's Shared Tasks -->
+                <th>Shared Tasks</th>   
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Due Date</th>
+                    <th>Progress</th>
+                    <th>Creator</th>
+                    <th>Actions</th>
+                </tr>
+                {% for task in shared_tasks %}
+                <tr>
+                    <td>{{ task.name }}</td>
+                    <td>{{ task.description }}</td>
+                    <td>{{ task.due_date|date:"M d, Y H:i" }}</td>
+                    <td>{{ task.progress }}%</td>
+                    <td>{{ task.creator }}</td>
+                    <td>
+                        <a class="btn btn-primary btn-sm" href="{% url 'share_task' task_id=task.id %}">Share</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center">No tasks shared.</td>
                 </tr>
                 {% endfor %}
             </tbody>

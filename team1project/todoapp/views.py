@@ -3,6 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.views import View
 from django.contrib import messages
+from django.http import HttpResponse
 from .forms import CustomUserCreationForm, TaskForm, TaskCollabForm
 from .models import Task, TaskCollabRequest
 
@@ -102,11 +103,16 @@ def share_task(request, task_id):
 	return render(request, 'share_task.html', {'form': form})
 
 
-def accept_task(request, userID):
-	if request == 'POST':
-		collab_request = TaskCollabRequest.objects.get(id=requestID)
-		if collab_request.to_user == request.user:
+def accept_task(request, request_id):
+	if request.method == 'POST':
+		collab_request = get_object_or_404(TaskCollabRequest, id=request_id)
+		if 'accept_request' in request.POST:
 			collab_request.task.assigned_users.add(collab_request.to_user)
-			return HttpResponse('Task collaboration request accepted')
-		else:
-			return HttpResponse('Task collaboration request not accepted')
+			collab_request.delete()
+			messages.success(request, 'Task collaboration requeset was accepted')
+
+		elif 'decline_request' in request.POST:
+			collab_request.delete()
+			messages.success(request, 'Task collaboration request not accepted')
+		
+		return redirect('task_view')
