@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from .models import Task, Category, TaskCollabRequest
+from django_select2.forms import ModelSelect2Widget
 
 
 '''
@@ -32,6 +33,13 @@ class TaskForm(forms.ModelForm):
 
 
 class TaskCollabForm(forms.ModelForm):
+    # Prevent the current user from showing up in the queryset
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        self.fields['to_user'].queryset = User.objects.exclude(id=user.id)
+
     class Meta:
         model = TaskCollabRequest
         fields = ['to_user']
+        widgets = {'to_user': ModelSelect2Widget(model=User, search_fields=['username__icontains'])}

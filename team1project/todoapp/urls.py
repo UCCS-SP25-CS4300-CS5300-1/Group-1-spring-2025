@@ -6,6 +6,7 @@ from . import views
 
 urlpatterns = [
 	path('', index, name='index'),
+	path('select2/', include('django_select2.urls')),
 	path('profile_settings/', ProfileSettings.as_view(), name='profile_settings'),
 	path('logout/', LogoutView.as_view(), name='logout'),
 	path('register/', register, name='register'),

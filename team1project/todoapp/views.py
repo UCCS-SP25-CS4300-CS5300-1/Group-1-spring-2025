@@ -76,7 +76,7 @@ def delete_task(request, task_id):
 
 def share_task(request, task_id):
 	if request.method == 'POST':
-		form = TaskCollabForm(request.POST)
+		form = TaskCollabForm(request.POST, user=request.user)
 
 		if form.is_valid():
 			task = get_object_or_404(Task, id=task_id)
@@ -88,7 +88,7 @@ def share_task(request, task_id):
 			request_filter = TaskCollabRequest.objects.filter(task=task, to_user=request.user)
 
 			# Add the from user and task to the request object
-			if request_filter != []:
+			if request_filter == []:
 				task_collab_obj.from_user = from_user
 				task_collab_obj.task = task
 				task_collab_obj.save()
@@ -98,7 +98,7 @@ def share_task(request, task_id):
 				return HttpResponse('Request was already sent')
 	
 	else:
-		form = TaskCollabForm()
+		form = TaskCollabForm(user=request.user)
 
 	return render(request, 'share_task.html', {'form': form})
 
