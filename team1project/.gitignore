@@ -5,5 +5,8 @@ __pycache__/
 # Ignore the database file
 **/db.sqlite3
 
+# Ignore migrations file
+team1project/migrations/
+
 # Ignore Django static files (if generated automatically)
  team1project/staticfiles/
