@@ -1,8 +1,8 @@
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
-from .forms import CustomUserCreationForm, TaskForm
+from .forms import CustomUserCreationForm, TaskForm, TaskCollabForm
 from django.urls import reverse
-from todoapp.models import Category, Task, SubTask, TaskProgress
+from todoapp.models import Category, Task, SubTask, TaskProgress, TaskCollabRequest
 from datetime import timedelta
 from django.utils import timezone
 
@@ -225,3 +225,35 @@ class TaskTests(TestCase):
         response = self.client.get(reverse('delete_task', args=[task_id]))
         self.assertEqual(response.status_code, 302)  # Redirect after deletion
         self.assertFalse(Task.objects.filter(id=task_id).exists())  # Task should not exist
+
+class TaskRequests(TestCase):
+    def setUp(self):
+        # User to use for testing
+        self.username = "sender123"
+        self.password = "Gl989bert48!"
+        self.sender = User.objects.create_user(username=self.username, password=self.password)
+
+        # User to use for testing if a user received it
+        self.username = "receiver12345"
+        self.password = "Gl989bert48!"
+        self.receiver = User.objects.create_user(username=self.username, password=self.password) 
+
+        # User to user if a shared user can send to more people
+        self.username = "shared_sender48!"
+        self.password = "Gl989bert48!"
+        self.shared_sender = User.objects.create_user(username=self.username, password=self.password) 
+
+
+    def test_send_tasks_accept_valid(self):
+        # Test a user can send request and a user can receive it and accept it
+        pass
+        # Test if a user can send a shared request and it can be accepted
+
+    def test_send_tasks_decline_valid(self):
+        # Test if a user can send a request and the receiver can decline it
+        pass
+        # Test if a shared user can send a request and it can be declined
+
+    def test_send_tasks_invalid(self):
+        pass
+    
