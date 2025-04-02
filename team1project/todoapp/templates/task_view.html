@@ -98,7 +98,10 @@
                     <td>{{ task.progress }}%</td>
                     <td>{{ task.creator }}</td>
                     <td>
-                        <a class="btn btn-primary btn-sm" href="{% url 'share_task' task_id=task.id %}">Share</a>
+                        <div class="button-container">
+                            <a class="btn btn-primary btn-sm" href="{% url 'share_task' task_id=task.id %}">Share</a>
+                            <a href="{% url 'exit_task' task_id=task.id %}" class="btn btn-danger btn-sm">Exit</a>
+                        </div>
                     </td>
                 </tr>
                 {% empty %}

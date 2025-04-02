@@ -76,19 +76,19 @@ def delete_task(request, task_id):
 
 def share_task(request, task_id):
 	if request.method == 'POST':
-		form = TaskCollabForm(request.POST, user=request.user)
+		task = get_object_or_404(Task, id=task_id)
+		form = TaskCollabForm(request.POST, user=request.user, task=task)
 
 		if form.is_valid():
-			task = get_object_or_404(Task, id=task_id)
 			from_user = request.user
 			task_collab_obj = form.save(commit=False)
 			
 			# Filter requests for user, prevent another request from being made
 			# if a request was already made
-			request_filter = TaskCollabRequest.objects.filter(task=task, to_user=request.user)
+			request_filter = TaskCollabRequest.objects.filter(task_id=task.id, to_user=request.user)
 
 			# Add the from user and task to the request object
-			if request_filter == []:
+			if not request_filter.exists():
 				task_collab_obj.from_user = from_user
 				task_collab_obj.task = task
 				task_collab_obj.save()
@@ -98,7 +98,8 @@ def share_task(request, task_id):
 				return HttpResponse('Request was already sent')
 	
 	else:
-		form = TaskCollabForm(user=request.user)
+		task = get_object_or_404(Task, id=task_id)
+		form = TaskCollabForm(user=request.user, task=task)
 
 	return render(request, 'share_task.html', {'form': form})
 
@@ -116,3 +117,10 @@ def accept_task(request, request_id):
 			messages.success(request, 'Task collaboration request not accepted')
 		
 		return redirect('task_view')
+
+
+def exit_task(request, task_id):
+	task = get_object_or_404(Task, id=task_id)
+	task.assigned_users.remove(request.user)
+	return redirect('task_view')
+			
