@@ -396,19 +396,81 @@ class TaskRequestsFormTests(TestCase):
         
 
 class TaskRequestsViews(TestCase):
-    def SetUp(self):
-        pass
+    def setUp(self):
+        self.task_view_url = reverse('task_view')
 
+        # User to use for testing
+        self.username = "sender123"
+        self.password = "Gl989bert48!"
+        self.sender = User.objects.create_user(username=self.username, password=self.password)
+
+        # User to use for testing if a user received it
+        self.username = "receiver12345"
+        self.password = "Gl989bert48!"
+        self.receiver = User.objects.create_user(username=self.username, password=self.password) 
+
+        # This user is shared with a task already
+        self.username = "shared_receiver48!"
+        self.password = "Gl989bert48!"
+        self.shared_receiver = User.objects.create_user(username=self.username, password=self.password) 
+
+        self.task = Task.objects.create(
+            name="Complete Project",
+            creator=self.sender,
+            description="Finish the project by the deadline",
+            due_date=timezone.now() + timedelta(days=7),
+            progress=50,
+            is_completed=False,
+            notifications_enabled=True
+        )
+
+        self.shared_task = Task.objects.create(
+            name="Complete Project",
+            creator=self.sender,
+            description="Finish the project by the deadline",
+            due_date=timezone.now() + timedelta(days=7),
+            progress=50,
+            is_completed=False,
+            notifications_enabled=True,
+        )
+    
     def test_accept_task_view(self):
-         # Test if a shared user can share a task with another user
-        #self.client.login(username=self.receiver.username, password=self.receiver.password)
-        #accept_url = f'/task_view/accept/{collab_request.id}/'
-        #response = self.client.post(accept_url, {'accept_request': 'true'})
+        # Test if a shared user can share a task with another user
+        collab_request = TaskCollabRequest.objects.create(
+            task=self.task,
+            from_user=self.sender,
+            to_user=self.receiver
+        )
 
-        #self.assertRedirects(response, self.task_view_url)
-        pass
+        # Login as the receiver
+        self.client.login(username=self.receiver.username, password="Gl989bert48!")
+
+        accept_url = reverse('accept_task', args=[collab_request.id])
+    
+        # Accept the task request
+        response = self.client.post(accept_url, {'accept_request': 'true'})
+    
+        # Verify redirect and that the user is in assigned users
+        self.assertRedirects(response, self.task_view_url)
+        self.assertIn(self.receiver, self.task.assigned_users.all())
     
     def test_send_tasks_decline_valid(self):
         # Test if a user can send a request and the receiver can decline it
-        pass
-        # Test if a shared user can send a request and it can be declined
+        # Test if a shared user can share a task with another user
+        collab_request = TaskCollabRequest.objects.create(
+            task=self.task,
+            from_user=self.sender,
+            to_user=self.receiver
+        )
+
+        # Login as the receiver
+        self.client.login(username=self.receiver.username, password="Gl989bert48!")
+
+        accept_url = reverse('accept_task', args=[collab_request.id])
+    
+        # Accept the task request
+        response = self.client.post(accept_url, {'decline_request': 'true'})
+    
+        # Verify redirect and that the user is in assigned users
+        self.assertRedirects(response, self.task_view_url)
+        self.assertNotIn(self.receiver, self.task.assigned_users.all())
