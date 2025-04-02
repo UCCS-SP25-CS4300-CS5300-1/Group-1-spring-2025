@@ -6,4 +6,4 @@ __pycache__/
 db.sqlite3
 
 # Ignore Django static files (if generated automatically)
-team1project/staticfiles/
+ team1project/staticfiles/
