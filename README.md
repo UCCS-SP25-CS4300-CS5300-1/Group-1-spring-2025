@@ -6,8 +6,6 @@ Description: The To-Do List app is a web application that helps users manage the
 
 Authors: James Hayes, Marina Alsip, Tarek Ahmed Fouad, Sam Allen, Noah Kabel
 
-# Table Of Contents
-
 # Setup Instructions 
 
 # Dependencies: 
