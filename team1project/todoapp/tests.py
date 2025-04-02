@@ -1,6 +1,8 @@
 from django.test import TestCase, Client
+from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 from .forms import CustomUserCreationForm, TaskForm, TaskCollabForm
+from .views import share_task, accept_task, exit_task
 from django.urls import reverse
 from todoapp.models import Category, Task, SubTask, TaskProgress, TaskCollabRequest
 from datetime import timedelta
@@ -60,9 +62,9 @@ class TestUserCreation(TestCase):
          self.assertTrue(form.is_valid())
 
 '''
-Test views and their http responses
+Test views dealing with user system and their http responses
 '''
-class TestViews(TestCase):
+class TestUserViews(TestCase):
     def setUp(self):
         self.client = Client()
 
@@ -226,8 +228,11 @@ class TaskTests(TestCase):
         self.assertEqual(response.status_code, 302)  # Redirect after deletion
         self.assertFalse(Task.objects.filter(id=task_id).exists())  # Task should not exist
 
-class TaskRequests(TestCase):
+
+class TaskRequestsFormTests(TestCase):
     def setUp(self):
+        self.task_view_url = reverse('task_view')
+
         # User to use for testing
         self.username = "sender123"
         self.password = "Gl989bert48!"
@@ -238,22 +243,172 @@ class TaskRequests(TestCase):
         self.password = "Gl989bert48!"
         self.receiver = User.objects.create_user(username=self.username, password=self.password) 
 
-        # User to user if a shared user can send to more people
-        self.username = "shared_sender48!"
+        # This user is shared with a task already
+        self.username = "shared_receiver48!"
         self.password = "Gl989bert48!"
-        self.shared_sender = User.objects.create_user(username=self.username, password=self.password) 
+        self.shared_receiver = User.objects.create_user(username=self.username, password=self.password) 
+
+        self.task = Task.objects.create(
+            name="Complete Project",
+            creator=self.sender,
+            description="Finish the project by the deadline",
+            due_date=timezone.now() + timedelta(days=7),
+            progress=50,
+            is_completed=False,
+            notifications_enabled=True
+        )
+
+        self.shared_task = Task.objects.create(
+            name="Complete Project",
+            creator=self.sender,
+            description="Finish the project by the deadline",
+            due_date=timezone.now() + timedelta(days=7),
+            progress=50,
+            is_completed=False,
+            notifications_enabled=True,
+        )
+
+        self.shared_task.assigned_users.add(self.shared_receiver)
+
+    '''
+    Test that a creator can send a task collab request to an unshared user
+    '''
+    def test_send_tasks_normal_valid(self):
+        task_collab_data = {
+            "task": self.task,
+            "from_user": self.sender.id,
+            "to_user": self.receiver.id
+        }
+        collab_form = TaskCollabForm(user=self.sender, task=self.task, data=task_collab_data)
+
+        # Check that the form is valid
+        self.assertTrue(collab_form.is_valid())
+
+        # Save the form into the database
+        collab_request = collab_form.save(commit=False)
+        collab_request.from_user = self.sender
+        collab_request.task = self.task
+        collab_request.save()
+
+        # Test if the object was successfully created
+        self.assertTrue(TaskCollabRequest.objects.filter(
+            task=self.task, 
+            from_user=self.sender, 
+            to_user=self.receiver
+            ).exists())
 
 
-    def test_send_tasks_accept_valid(self):
-        # Test a user can send request and a user can receive it and accept it
+    '''
+    Test if a shared user can send the task to an unshared user
+    '''
+    def test_send_tasks_by_shared_user_valid(self):
+        # Test if a form is valid if a shared user can send it to an unshared user
+        task_collab_data = {
+            "task": self.shared_task,
+            "from_user": self.shared_receiver.id,
+            "to_user": self.receiver.id
+        }
+        collab_form = TaskCollabForm(user=self.shared_receiver, task=self.task, data=task_collab_data)
+
+        # Check that the form is valid
+        self.assertTrue(collab_form.is_valid())
+        collab_request = collab_form.save(commit=False)
+        collab_request.from_user = self.shared_receiver
+        collab_request.task = self.shared_task
+        collab_request.save()
+
+        # Test if the object was successfully created
+        self.assertTrue(TaskCollabRequest.objects.filter(
+            task=self.shared_task, 
+            from_user=self.shared_receiver, 
+            to_user=self.receiver
+            ).exists())
+
+    '''
+    Test that a user cannot send a task back to themselves
+    '''
+    def test_send_tasks_to_self_invalid(self):
+        task_collab_data = {
+            "task": self.shared_task,
+            "from_user": self.shared_receiver.id,
+            "to_user": self.shared_receiver.id
+        }
+        collab_form = TaskCollabForm(user=self.shared_receiver, task=self.shared_task, data=task_collab_data)
+
+        self.assertFalse(collab_form.is_valid())  # Ensure form validation fails
+        self.assertIn("to_user", collab_form.errors)  # Check that 'to_user' has an error
+        self.assertEqual(collab_form.errors["to_user"][0], "Select a valid choice. That choice is not one of the available choices.")
+
+    
+    '''
+    Test if a shared user can share a task to its creator
+    '''
+    def test_send_task_shared_to_creator_invalid(self):
+        task_collab_data = {
+            "task": self.shared_task,
+            "from_user": self.shared_receiver.id,
+            "to_user": self.sender.id
+        }
+        collab_form = TaskCollabForm(user=self.shared_receiver, task=self.shared_task, data=task_collab_data)
+
+        self.assertFalse(collab_form.is_valid())  # Ensure form validation fails
+        self.assertIn("to_user", collab_form.errors)  # Check that 'to_user' has an error
+        self.assertEqual(collab_form.errors["to_user"][0], "Select a valid choice. That choice is not one of the available choices.")
+
+
+    '''
+    Test if a user can share a task to a shared user
+    '''
+    def test_send_task_user_to_shared_invalid(self):
+        task_collab_data = {
+            "task": self.shared_task,
+            "from_user": self.sender.id,
+            "to_user": self.shared_receiver.id
+        }
+        collab_form = TaskCollabForm(user=self.sender, task=self.shared_task, data=task_collab_data)
+
+        self.assertFalse(collab_form.is_valid())  # Ensure form validation fails
+        self.assertIn("to_user", collab_form.errors)  # Check that 'to_user' has an error
+        self.assertEqual(collab_form.errors["to_user"][0], "Select a valid choice. That choice is not one of the available choices.")
+
+
+    '''
+    Test if a user can send a task to a user that already has an outstanding request
+    '''
+    def test_send_task_exists_already_invalid(self):
+        # Create an existing request
+        outstanding_request = TaskCollabRequest.objects.create(
+            task=self.task,
+            from_user=self.sender,
+            to_user=self.receiver 
+            )
+        
+        task_collab_data = {
+            "task": self.task,
+            "from_user": self.sender.id,
+            "to_user": self.receiver.id
+        }
+        collab_form = TaskCollabForm(user=self.sender, task=self.task, data=task_collab_data)
+
+        self.assertFalse(collab_form.is_valid())  # Ensure form validation fails
+        self.assertIn("to_user", collab_form.errors)  # Check that 'to_user' has an error
+        self.assertEqual(collab_form.errors["to_user"][0], "Select a valid choice. That choice is not one of the available choices.")
+        
+
+class TaskRequestsViews(TestCase):
+    def SetUp(self):
         pass
-        # Test if a user can send a shared request and it can be accepted
 
+    def test_accept_task_view(self):
+         # Test if a shared user can share a task with another user
+        #self.client.login(username=self.receiver.username, password=self.receiver.password)
+        #accept_url = f'/task_view/accept/{collab_request.id}/'
+        #response = self.client.post(accept_url, {'accept_request': 'true'})
+
+        #self.assertRedirects(response, self.task_view_url)
+        pass
+    
     def test_send_tasks_decline_valid(self):
         # Test if a user can send a request and the receiver can decline it
         pass
         # Test if a shared user can send a request and it can be declined
-
-    def test_send_tasks_invalid(self):
-        pass
-    
