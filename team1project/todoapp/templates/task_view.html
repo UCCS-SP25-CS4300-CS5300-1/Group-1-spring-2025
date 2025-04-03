@@ -43,7 +43,7 @@
     </div>
 </div>
 
-
+ <!-- User's Created Tasks -->
 <div class="container mt-4">
     <h2 class="mb-4">My Tasks</h2>
 
@@ -52,14 +52,13 @@
     <div class="card p-4 shadow">
         <table class="table">
             <tbody>
-                <!-- User's Created Tasks -->
-                <th>My Tasks</th>   
                 <tr>
                     <th>Name</th>
                     <th>Description</th>
                     <th>Due Date</th>
                     <th>Progress</th>
-                    <th>Actions</th>
+                    <th>Shared Users</th>
+                    <th>Categories</th>
                 </tr>
 
                 {% for task in tasks %}
@@ -68,6 +67,13 @@
                     <td>{{ task.description }}</td>
                     <td>{{ task.due_date|date:"M d, Y H:i" }}</td>
                     <td>{{ task.progress }}%</td>
+                    <td>
+                        {% for users in task.assigned_users.all %}
+                            <span class="badge bg-secondary">{{ user.username }}</span>
+                        {% empty %}
+                            <span class="text-muted">None</span>
+                        {% endfor %}
+                    </td>
                     <td>
                         {% for category in task.categories.all %}
                             <span class="badge bg-secondary">{{ category.name }}</span>
@@ -85,16 +91,24 @@
                     <td colspan="5" class="text-center">No tasks available.</td>
                 </tr>
                 {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 
-                <!-- User's Shared Tasks -->
-                <th>Shared Tasks</th>   
+<!-- User's Shared Tasks --> 
+<div class="container mt-4">
+    <h2 class="mb-4">Tasks Shared with Me</h2>
+
+    <div class="card p-4 shadow">
+        <table class="table">
                 <tr>
                     <th>Name</th>
                     <th>Description</th>
                     <th>Due Date</th>
                     <th>Progress</th>
                     <th>Creator</th>
-                    <th>Actions</th>
+                    <th>Categories</th>
                 </tr>
                 {% for task in shared_tasks %}
                 <tr>
@@ -103,6 +117,13 @@
                     <td>{{ task.due_date|date:"M d, Y H:i" }}</td>
                     <td>{{ task.progress }}%</td>
                     <td>{{ task.creator }}</td>
+                    <td>
+                        {% for category in task.categories.all %}
+                            <span class="badge bg-secondary">{{ category.name }}</span>
+                        {% empty %}
+                            <span class="text-muted">None</span>
+                        {% endfor %}
+                    </td>
                     <td>
                         <div class="button-container">
                             <a class="btn btn-primary btn-sm" href="{% url 'share_task' task_id=task.id %}">Share</a>
