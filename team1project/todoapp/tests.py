@@ -397,8 +397,6 @@ class TaskRequestsFormTests(TestCase):
 
 class TaskRequestsViews(TestCase):
     def setUp(self):
-        self.task_view_url = reverse('task_view')
-
         # User to use for testing
         self.username = "sender123"
         self.password = "Gl989bert48!"
@@ -423,19 +421,49 @@ class TaskRequestsViews(TestCase):
             is_completed=False,
             notifications_enabled=True
         )
+        self.task_view_url = reverse('task_view')
+        self.share_task_url = reverse('share_task', args=[self.task.id])
 
-        self.shared_task = Task.objects.create(
-            name="Complete Project",
-            creator=self.sender,
-            description="Finish the project by the deadline",
-            due_date=timezone.now() + timedelta(days=7),
-            progress=50,
-            is_completed=False,
-            notifications_enabled=True,
+    '''
+    Test the GET operations of the share_task url
+    '''
+    def test_sharing_tasks_GET_view(self):
+        self.client.login(username=self.sender.username, password="Gl989bert48!")
+        response = self.client.get(self.share_task_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'share_task.html')
+        self.assertContains(response, '<form')
+
+    '''
+    Test if a user can share a task with another user
+    '''
+    def test_sharing_tasks_POST_view_valid(self):
+        self.client.login(username=self.sender.username, password="Gl989bert48!")
+        form_field = {'to_user': self.receiver.id}
+        response = self.client.post(self.share_task_url, form_field, follow=True)
+
+        self.assertTrue(TaskCollabRequest.objects.filter(task=self.task, to_user=self.receiver).exists())
+        self.assertRedirects(response, self.task_view_url)
+
+    '''
+    Test if a user cannot enter an invalid post
+    '''
+    def test_sharing_tasks_POST_view_invalid(self):
+        collab_request = TaskCollabRequest.objects.create(
+            task=self.task,
+            from_user=self.sender,
+            to_user=self.receiver
         )
-    
+
+        form_field = {'to_user': self.receiver.id}
+        response = self.client.post(self.share_task_url, form_field, follow=True)
+
+        self.assertEqual(response.status_code, 200)
+
+    '''
+    Test if a user can accept a task
+    '''
     def test_accept_task_view(self):
-        # Test if a shared user can share a task with another user
         collab_request = TaskCollabRequest.objects.create(
             task=self.task,
             from_user=self.sender,
@@ -454,6 +482,9 @@ class TaskRequestsViews(TestCase):
         self.assertRedirects(response, self.task_view_url)
         self.assertIn(self.receiver, self.task.assigned_users.all())
     
+    '''
+    Test if a user can decline a task
+    '''
     def test_send_tasks_decline_valid(self):
         # Test if a user can send a request and the receiver can decline it
         # Test if a shared user can share a task with another user
