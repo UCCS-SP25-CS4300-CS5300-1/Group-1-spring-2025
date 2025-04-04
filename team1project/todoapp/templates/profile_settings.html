@@ -4,12 +4,30 @@
     <div class="card-body">
         <div class="row">
             <!-- Content Column -->
-            <div class="col-md-6">
+            <div class="col-md-12">
+                <div class="d-flex justify-content-end">
+                    <button type="button" id="edit-button" class="btn btn-primary" style="background-color:#1f4e45;">Edit</button>
+                </div>
                 <h2 class="card-title" style="margin-bottom: 30px;">Profile Settings</h2>
+
                 <form method="post">
                     {% csrf_token %}
-                    {{ form.as_p }}
-                    <button href="{% url 'index' %}" name="logout" class="btn btn-danger">Logout</button>
+
+                    <div class="profile-settings">
+                        <label for="username">Username:</label>
+                        <input style="margin-left: 10px; margin-top: 10px; margin-bottom: 10px;" type="text" name="username" class="form-control-6" value="{{user.username}}" readonly>
+                        <br>
+
+                        <label for="email">Email:</label>
+                        <input style="margin-left: 45px; margin-top: 10px; margin-bottom: 10px;" type="text" name="email" class="form-control-6" value="{{user.email}}" readonly>
+                        <br>
+
+                        <label for="password">Passsword:</label>
+                        <input style="margin-left: 5px; margin-top: 10px; margin-bottom: 10px;" type="text" name="password" class="form-control-6" value="{{user.password1}}" readonly>
+                    </div>
+                    
+                    <button href="{% url 'index' %}" name="logout" class="btn btn-primary" style="background-color:#1f4e45; margin-top:20px;">Logout</button>
+                    <button type="submit" id="save-button" class="btn btn-success mt-3" style="display: none;">Save Changes</button>
                 </form>
             </div>
         </div>

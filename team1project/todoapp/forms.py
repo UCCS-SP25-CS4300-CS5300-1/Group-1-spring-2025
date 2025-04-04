@@ -1,10 +1,9 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from .models import Task, Category, TaskCollabRequest
 from django_select2.forms import ModelSelect2Widget
-
 
 '''
 Allows user to create their accounts with email as optional
@@ -16,6 +15,10 @@ class CustomUserCreationForm(UserCreationForm):
         model = User
         fields = ['username', 'email', 'password1', 'password2']
 
+class CustomUserChangeForm(UserChangeForm):
+    class Meta:
+        model = User
+        fields = ['username', 'email']
 
 class TaskForm(forms.ModelForm):
     categories = forms.ModelMultipleChoiceField(
