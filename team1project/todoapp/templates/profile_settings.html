@@ -6,7 +6,7 @@
             <!-- Content Column -->
             <div class="col-md-12">
                 <div class="d-flex justify-content-end">
-                    <button type="button" id="edit-button" class="btn btn-primary" style="background-color:#1f4e45;">Edit</button>
+                    <button type="button" id="edit-button" class="btn btn-primary" style="background-color:gray;">Edit</button>
                 </div>
                 <h2 class="card-title" style="margin-bottom: 30px;">Profile Settings</h2>
 
@@ -23,10 +23,10 @@
                         <br>
 
                         <label for="password">Passsword:</label>
-                        <input style="margin-left: 5px; margin-top: 10px; margin-bottom: 10px;" type="text" name="password" class="form-control-6" value="{{user.password1}}" readonly>
+                        <input style="margin-left: 5px; margin-top: 10px; margin-bottom: 10px;" type="text" name="password" class="form-control-6" value="************" readonly>
                     </div>
                     
-                    <button href="{% url 'index' %}" name="logout" class="btn btn-primary" style="background-color:#1f4e45; margin-top:20px;">Logout</button>
+                    <button href="{% url 'index' %}" name="logout" class="btn btn-primary" style="margin-top:20px;">Logout</button>
                     <button type="submit" id="save-button" class="btn btn-success mt-3" style="display: none;">Save Changes</button>
                 </form>
             </div>

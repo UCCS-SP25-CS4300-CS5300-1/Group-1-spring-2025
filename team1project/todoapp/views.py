@@ -4,8 +4,9 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.views import View
 from django.contrib import messages
 from django.http import HttpResponse
-from .forms import CustomUserCreationForm, TaskForm, TaskCollabForm, CustomUserChangeForm
+from .forms import CustomUserCreationForm, TaskForm, TaskCollabForm
 from .models import Task, TaskCollabRequest
+
 
 # Create your views here.
 def index(request):
@@ -34,8 +35,7 @@ def register(request):
 # Index class for handling the forms on profile settings
 class ProfileSettings(View):
 	def get(self, request):
-		form = CustomUserChangeForm(instance=request.user)
-		return render(request, "profile_settings.html", {"form": form})
+		return render(request, "profile_settings.html")
 
 	def post(self, request):
 		print("Logging out")
@@ -43,15 +43,6 @@ class ProfileSettings(View):
 				logout(request)
 				messages.success(request, "You have been logged out.")
 				return redirect("index")
-	
-		form = CustomUserChangeForm(request.POST, instance=request.user)
-		if form.is_valid():
-			form.save()
-			messages.success(request, "Profile successfully updated.")
-		else:
-			messages.error(request, "Error in updating profile.")
-		
-		return render(request, "profile_settings.html", {"form": form})
 
 def task_view(request):
     tasks = Task.objects.filter(creator=request.user)
