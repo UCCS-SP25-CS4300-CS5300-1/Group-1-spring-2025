@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_select2',
     'todoapp',
+    'webpush',
 ]
 
 MIDDLEWARE = [
@@ -137,7 +138,15 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [
     BASE_DIR / "todoapp/static",
 ]
+# settings.py
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'team1todo@gmail.com'
+EMAIL_HOST_PASSWORD = secrets.EMAIL_HOST_PASSWORD
+DEFAULT_FROM_EMAIL = 'team1todo@gmail.com'
 
 
 # Default primary key field type
