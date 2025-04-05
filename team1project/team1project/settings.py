@@ -52,7 +52,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_select2',
     'todoapp',
-    'webpush',
 ]
 
 MIDDLEWARE = [

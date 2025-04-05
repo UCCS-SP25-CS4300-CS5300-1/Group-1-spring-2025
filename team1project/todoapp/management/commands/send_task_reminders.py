@@ -25,8 +25,8 @@ class Command(BaseCommand):
                 if user.email:
                     send_mail(
                         subject=f"Reminder: Task '{task.name}' is due soon!",
-                        message=f"Hi {user.username},\n\nYour task \"{task.name}\" is due on {task.due_date.strftime('%Y-%m-%d %H:%M')}.\n\nDon't forget to complete it!",
-                        from_email='your_email@gmail.com',
+                        message=f"Hi {user.username},\n\nYour task \"{task.name}\" is due on {task.due_date.strftime('%Y-%m-%d %H:%M')}.\n\nDon't forget to complete it.",
+                        from_email='team1todo@gmail.com',
                         recipient_list=[user.email],
                         fail_silently=False
                     )
