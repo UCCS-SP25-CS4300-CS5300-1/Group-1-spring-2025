@@ -74,8 +74,8 @@ def delete_task(request, task_id):
 
 
 def share_task(request, task_id):
+	task = get_object_or_404(Task, id=task_id)
 	if request.method == 'POST':
-		task = get_object_or_404(Task, id=task_id)
 		form = TaskCollabForm(request.POST, user=request.user, task=task)
 
 		if form.is_valid():
@@ -100,7 +100,7 @@ def share_task(request, task_id):
 		task = get_object_or_404(Task, id=task_id)
 		form = TaskCollabForm(user=request.user, task=task)
 
-	return render(request, 'share_task.html', {'form': form})
+	return render(request, 'share_task.html', {'form': form, 'task': task})
 
 
 def accept_task(request, request_id):

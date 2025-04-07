@@ -68,7 +68,7 @@
                     <td>{{ task.due_date|date:"M d, Y H:i" }}</td>
                     <td>{{ task.progress }}%</td>
                     <td>
-                        {% for users in task.assigned_users.all %}
+                        {% for user in task.assigned_users.all %}
                             <span class="badge bg-secondary">{{ user.username }}</span>
                         {% empty %}
                             <span class="text-muted">None</span>
