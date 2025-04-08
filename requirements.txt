@@ -10,3 +10,4 @@ pytest==7.4.3
 pytest-django==4.5.2
 coverage==7.2.0
 django-select2==8.4.0
+django-webpush==0.3.6
