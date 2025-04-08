@@ -138,15 +138,22 @@ STATICFILES_DIRS = [
     BASE_DIR / "todoapp/static",
 ]
 # settings.py
-
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'team1todo@gmail.com'
-EMAIL_HOST_PASSWORD = secrets.EMAIL_HOST_PASSWORD
-DEFAULT_FROM_EMAIL = 'team1todo@gmail.com'
 
+WEBPUSH_SETTINGS = {
+    "VAPID_PUBLIC_KEY": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEqAR7o7laOnlcBiS5tpD20SWoo1lSw+MAdHusa+cy57JNQtk+tD0BCZUqtNF34eZ3DULw4GJJwdP09Q25HrTMsg==",
+    "VAPID_PRIVATE_KEY": "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgmf6t0W46r7tv0HpMNvD44AympWD/diWjjRRKP4j0GFOhRANCAASoBHujuVo6eVwGJLm2kPbRJaijWVLD4wB0e6xr5zLnsk1C2T60PQEJlSq00Xfh5ncNQvDgYknB0/T1DbketMyy",
+    "VAPID_ADMIN_EMAIL": "mailto:team1todo@gmail.com",
+}
+
+VAPID_PUBLIC_KEY = WEBPUSH_SETTINGS['VAPID_PUBLIC_KEY']
+
+EMAIL_HOST_USER = 'team1todo@gmail.com'
+EMAIL_HOST_PASSWORD = 'nurp publ jksb bbda'
+DEFAULT_FROM_EMAIL = 'team1todo@gmail.com'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
