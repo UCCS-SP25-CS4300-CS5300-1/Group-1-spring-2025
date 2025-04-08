@@ -158,7 +158,12 @@ def calender_view(request, year=None, month=None):
         year, month = int(year), int(month)
     
     # Fetch tasks for the month (using your due_date field)
-    tasks = Task.objects.filter(due_date__year=year, due_date__month=month).order_by('due_date')
+    tasks = Task.objects.filter(
+    creator=request.user,
+    due_date__year=year,
+    due_date__month=month
+    ).order_by('due_date')
+
     
     # Create a TaskCalendar instance and generate the HTML
     cal = TaskCalendar(tasks, year, month)
