@@ -6,7 +6,9 @@ from django.contrib import messages
 from django.http import HttpResponse
 from .forms import CustomUserCreationForm, TaskForm, TaskCollabForm
 from .models import Task, TaskCollabRequest
-
+import json
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
 # Create your views here.
 def index(request):
@@ -122,4 +124,20 @@ def exit_task(request, task_id):
 	task = get_object_or_404(Task, id=task_id)
 	task.assigned_users.remove(request.user)
 	return redirect('task_view')
+
+
+@csrf_exempt
+def save_subscription(request):
+    if request.method == 'POST':
+        subscription_data = json.loads(request.body.decode('utf-8'))
+
+        # Store the subscription
+        Subscription.objects.create(
+            user=request.user,
+            subscription=json.dumps(subscription_data)
+        )
+
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False})
+
 			
