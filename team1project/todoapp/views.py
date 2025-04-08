@@ -6,9 +6,10 @@ from django.contrib import messages
 from django.http import HttpResponse
 from .forms import CustomUserCreationForm, TaskForm, TaskCollabForm
 from .models import Task, TaskCollabRequest
-import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
+import json
 
 # Create your views here.
 def index(request):
@@ -131,13 +132,16 @@ def save_subscription(request):
     if request.method == 'POST':
         subscription_data = json.loads(request.body.decode('utf-8'))
 
-        # Store the subscription
-        Subscription.objects.create(
-            user=request.user,
-            subscription=json.dumps(subscription_data)
+        from webpush.models import PushInformation
+        from webpush import save_info
+
+        save_info(
+            request.user,
+            subscription_data
         )
 
         return JsonResponse({'success': True})
     return JsonResponse({'success': False})
+
 
 			
