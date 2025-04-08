@@ -51,7 +51,11 @@ def task_view(request):
     tasks = Task.objects.filter(creator=request.user)
     task_requests = TaskCollabRequest.objects.filter(to_user=request.user)
     shared_tasks = Task.objects.filter(assigned_users=request.user) 
-    return render(request, 'task_view.html', {'tasks': tasks, 'task_requests': task_requests, 'shared_tasks': shared_tasks})
+    return render(request, 'task_view.html', {
+	    'tasks': tasks, 
+	    'task_requests': task_requests, 
+	    'shared_tasks': shared_tasks, 
+	    'vapid_key': settings.VAPID_PUBLIC_KEY})})
 
 def add_task(request):
     if request.method == "POST":
