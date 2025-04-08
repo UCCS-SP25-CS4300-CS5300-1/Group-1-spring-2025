@@ -55,7 +55,7 @@ def task_view(request):
 	    'tasks': tasks, 
 	    'task_requests': task_requests, 
 	    'shared_tasks': shared_tasks, 
-	    'vapid_key': settings.VAPID_PUBLIC_KEY})})
+	    'vapid_key': settings.VAPID_PUBLIC_KEY})
 
 def add_task(request):
     if request.method == "POST":
