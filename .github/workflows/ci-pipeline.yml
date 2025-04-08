@@ -245,7 +245,7 @@ jobs:
           git clean -fd
           git checkout dev-branch
           git pull origin dev-branch          
-          
+          pip install -r requirements.txt
           python manage.py runserver --noinput
           sudo systemctl reload nginx
           sudo chmod 666 /var/www/django_app/Group-1-spring-2025/team1project/db.sqlite3
