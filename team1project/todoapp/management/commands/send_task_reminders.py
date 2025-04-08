@@ -3,21 +3,21 @@ from django.utils import timezone
 from django.core.mail import send_mail
 from todoapp.models import Task
 from datetime import datetime, timedelta, time
+from django.utils.timezone import localtime
+
 
 class Command(BaseCommand):
     help = 'Send email reminders for tasks due tomorrow'
 
     def handle(self, *args, **kwargs):
-        # Get current local date
-        now = timezone.localtime()
-        tomorrow_date = now.date() + timedelta(days=1)
+        user_local_now = localtime()
+        tomorrow_local_date = user_local_now.date() + timedelta(days=1)
 
-        # Define start and end of tomorrow as timezone-aware datetimes
-        start_of_tomorrow = timezone.make_aware(datetime.combine(tomorrow_date, time.min))
-        end_of_tomorrow = timezone.make_aware(datetime.combine(tomorrow_date, time.max))
+        start = timezone.make_aware(datetime.combine(tomorrow_local_date, time.min))
+        end = timezone.make_aware(datetime.combine(tomorrow_local_date, time.max))
 
         tasks_due = Task.objects.filter(
-            due_date__range=(start_of_tomorrow, end_of_tomorrow),
+            due_date__range=(start, end),
             notifications_enabled=True,
             is_completed=False
         )
