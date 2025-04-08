@@ -214,7 +214,7 @@ jobs:
             echo '```'
           } >> $GITHUB_STEP_SUMMARY
   
-  Continuous Deployment:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
