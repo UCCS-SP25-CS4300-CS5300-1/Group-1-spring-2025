@@ -64,5 +64,50 @@
             {% endblock %}
         </div>
 
+         <script>
+                if ('serviceWorker' in navigator && 'PushManager' in window) {
+                    navigator.serviceWorker.register("{% static 'webpush-sw.js' %}")
+                        .then(function(registration) {
+                            console.log('Service Worker registered with scope:', registration.scope);
+                            
+                            return registration.pushManager.getSubscription().then(async function(subscription) {
+                                if (subscription) return subscription;
+            
+                                const vapidKey = "{{ vapid_key }}";
+                                const convertedVapidKey = urlBase64ToUint8Array(vapidKey);
+            
+                                return registration.pushManager.subscribe({
+                                    userVisibleOnly: true,
+                                    applicationServerKey: convertedVapidKey
+                                });
+                            });
+                        })
+                        .then(function(subscription) {
+                            fetch('/webpush/save_information/', {
+                                method: 'POST',
+                                body: JSON.stringify(subscription),
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRFToken': '{{ csrf_token }}'
+                                }
+                            }).then(res => res.json()).then(data => {
+                                console.log('Push subscription saved:', data);
+                            });
+                        })
+                        .catch(function(error) {
+                            console.error('Service Worker registration failed:', error);
+                        });
+                }
+            
+                function urlBase64ToUint8Array(base64String) {
+                    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+                    const base64 = (base64String + padding)
+                        .replace(/-/g, '+')
+                        .replace(/_/g, '/');
+            
+                    const rawData = window.atob(base64);
+                    return new Uint8Array([...rawData].map(char => char.charCodeAt(0)));
+                }
+            </script>            
     </body>
 </html>
