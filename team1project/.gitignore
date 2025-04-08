@@ -12,4 +12,4 @@ team1project/migrations/
  team1project/staticfiles/
 
 #Ignore environment settings
-.env
+*.env
