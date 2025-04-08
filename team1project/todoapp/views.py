@@ -6,7 +6,10 @@ from django.contrib import messages
 from django.http import HttpResponse
 from .forms import CustomUserCreationForm, TaskForm, TaskCollabForm
 from .models import Task, TaskCollabRequest
-
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
+import json
 
 # Create your views here.
 def index(request):
@@ -48,7 +51,11 @@ def task_view(request):
     tasks = Task.objects.filter(creator=request.user)
     task_requests = TaskCollabRequest.objects.filter(to_user=request.user)
     shared_tasks = Task.objects.filter(assigned_users=request.user) 
-    return render(request, 'task_view.html', {'tasks': tasks, 'task_requests': task_requests, 'shared_tasks': shared_tasks})
+    return render(request, 'task_view.html', {
+	    'tasks': tasks, 
+	    'task_requests': task_requests, 
+	    'shared_tasks': shared_tasks, 
+	    'vapid_key': settings.VAPID_PUBLIC_KEY})
 
 def add_task(request):
     if request.method == "POST":
@@ -122,4 +129,23 @@ def exit_task(request, task_id):
 	task = get_object_or_404(Task, id=task_id)
 	task.assigned_users.remove(request.user)
 	return redirect('task_view')
+
+
+@csrf_exempt
+def save_subscription(request):
+    if request.method == 'POST':
+        subscription_data = json.loads(request.body.decode('utf-8'))
+
+        from webpush.models import PushInformation
+        from webpush import save_info
+
+        save_info(
+            request.user,
+            subscription_data
+        )
+
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False})
+
+
 			

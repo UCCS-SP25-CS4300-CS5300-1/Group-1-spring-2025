@@ -16,4 +16,6 @@ urlpatterns = [
 	path('tasks/share/<int:task_id>', views.share_task, name='share_task'),
 	path('tasks/accept/<int:request_id>/', views.accept_task, name='accept_task'),
 	path('tasks/exit/<int:task_id>/', views.exit_task, name='exit_task'),
+	path('webpush/', include('webpush.urls')),
+	path('webpush/save_information/', views.save_subscription, name='save_subscription'),
 ]
