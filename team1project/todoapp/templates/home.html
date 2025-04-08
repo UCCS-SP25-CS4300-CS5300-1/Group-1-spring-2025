@@ -1,0 +1,103 @@
+<style>
+    /* Ensure the table stretches and cells share equal widths */
+    .calendar table {
+      width: 100%;
+      table-layout: fixed;
+    }
+  
+    /* Make all cells square */
+    .calendar th,
+    .calendar td {
+      border: 1px solid #ccc;
+      text-align: center;
+      padding: 8px;
+      width: 100px;
+      height: 100px;
+      vertical-align: middle;
+    }
+
+    .calendar table {
+        width: 100%;
+        table-layout: fixed;
+        border-collapse: collapse;
+    }
+    .calendar th,
+    .calendar td {
+        border: 1px solid #ccc;
+        padding: 8px;
+        text-align: center;
+        aspect-ratio: 1 / 1; /* To maintain square cells */
+        vertical-align: middle;
+    }
+    /* Style for days that are not in the current month */
+    .noday {
+        background-color: #f9f9f9;
+    }
+    /* Highlight the current day */
+    .today {
+        background-color: #ffd700;  /* For example, a gold background */
+    }
+    /* Style for tasks inside each day */
+    .task {
+        font-size: 0.8em;
+        margin-top: 4px;
+        padding: 2px;
+        background-color: #eef;
+        border-radius: 4px;
+    }
+
+  </style>
+  
+
+{% extends 'base.html' %}
+    {% block content %}
+
+    <div class="container my-4">
+        <div class="row">
+    <title>Calendar - {{ month }}/{{ year }}</title>
+    <style>
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+        .noday { background-color: #f9f9f9; }
+    </style>
+    <div class="col-md-7">
+        <div class="calendar">
+            {{ calendar|safe }}
+        </div>
+    </div>
+        <!-- Optionally, list your tasks somewhere on the page -->
+    <div class="col-md-5">
+        <h2>Tasks</h2>
+            <div class="card p-4 shadow">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Due Date</th>
+                            <th>Progress</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for task in tasks %}
+                        <tr>
+                            <td>{{ task.name }}</td>
+                            <td>{{ task.description }}</td>
+                            <td>{{ task.due_date|date:"M d, Y H:i" }}</td>
+                            <td>{{ task.progress }}%</td>
+                            
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center">No tasks available.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <a href="{% url 'task_view' %}" class="btn btn-primary mb-3">Task Page</a>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+</body>
+</html>

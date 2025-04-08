@@ -10,6 +10,8 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 import json
+from datetime import datetime
+from .utils import TaskCalendar
 
 # Create your views here.
 def index(request):
@@ -147,5 +149,26 @@ def save_subscription(request):
         return JsonResponse({'success': True})
     return JsonResponse({'success': False})
 
+def calender_view(request, year=None, month=None):
+    if year is None or month is None:
+        today = datetime.today()
+        year = today.year
+        month = today.month
+    else:
+        year, month = int(year), int(month)
+    
+    # Fetch tasks for the month (using your due_date field)
+    tasks = Task.objects.filter(due_date__year=year, due_date__month=month).order_by('due_date')
+    
+    # Create a TaskCalendar instance and generate the HTML
+    cal = TaskCalendar(tasks, year, month)
+    html_calendar = cal.formatmonth(year, month)
+    
+    context = {
+        'calendar': html_calendar,
+        'tasks': tasks,
+        'year': year,
+        'month': month,
+    }
+    return render(request, 'home.html', context)
 
-			
