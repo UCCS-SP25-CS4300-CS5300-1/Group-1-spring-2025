@@ -18,4 +18,6 @@ urlpatterns = [
 	path('tasks/exit/<int:task_id>/', views.exit_task, name='exit_task'),
 	path('webpush/', include('webpush.urls')),
 	path('webpush/save_information/', views.save_subscription, name='save_subscription'),
+	path('home/', views.calender_view , name='home'),
+	
 ]

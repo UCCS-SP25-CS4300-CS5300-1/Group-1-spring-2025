@@ -40,7 +40,7 @@
                         <a class="nav-link text-white nav-hover" href="{% url 'index' %}">Welcome</a>
 
                         {% if user.is_authenticated %}
-                        <a class="nav-link text-white nav-hover" href="#">Home</a>
+                        <a class="nav-link text-white nav-hover" href="{% url 'home' %}">Home</a>
                         <a class="nav-link text-white nav-hover" href="{% url 'task_view' %}">Tasks</a>
                         <a class="nav-link text-white nav-hover" href="#">Task Archive</a>
                         <a class="nav-link text-white nav-hover" href="{% url 'profile_settings' %}">Profile Settings</a>
