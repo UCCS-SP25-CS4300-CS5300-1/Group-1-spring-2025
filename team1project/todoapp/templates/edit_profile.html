@@ -6,7 +6,7 @@
             <!-- Content Column -->
             <div class="col-md-12">
                 <div class="d-flex justify-content-end">
-                    <a href="{% url 'edit_profile' %}" class="btn btn-primary" style="background-color: gray;">Edit</a>
+                    <a href="{% url 'profile_settings' %}" class="btn btn-primary" style="background-color: gray;">Cancel</a>
                 </div>
                 <h2 class="card-title" style="margin-bottom: 30px;">Profile Settings</h2>
 
@@ -15,18 +15,19 @@
 
                     <div class="profile-settings">
                         <label for="username">Username:</label>
-                        <input style="margin-left: 10px; margin-top: 10px; margin-bottom: 10px;" type="text" name="username" class="form-control-6" value="{{user.username}}" disabled>
+                        <input style="margin-left: 10px; margin-top: 10px; margin-bottom: 10px;" type="text" name="username" class="form-control-6" value="{{user.username}}">
                         <br>
 
                         <label for="email">Email:</label>
-                        <input style="margin-left: 45px; margin-top: 10px; margin-bottom: 10px;" type="text" name="email" class="form-control-6" value="{{user.email}}" disabled>
+                        <input style="margin-left: 45px; margin-top: 10px; margin-bottom: 10px;" type="text" name="email" class="form-control-6" value="{{user.email}}">
                         <br>
 
                         <label for="password">Passsword:</label>
-                        <input style="margin-left: 5px; margin-top: 10px; margin-bottom: 10px;" type="text" name="password" class="form-control-6" value="************" disabled>
+                        <input style="margin-left: 5px; margin-top: 10px; margin-bottom: 10px;" type="text" name="password" class="form-control-6" value="************">
                     </div>
                     
-                    <button href="{% url 'index' %}" name="logout" class="btn btn-primary" style="margin-top:16px;">Logout</button>
+                    <button type="submit" id="save-button" class="btn btn-success mt-3" >Save Changes</button>
+                    <button href="{% url 'index' %}" name="logout" class="btn btn-primary" style="margin-top:16px; margin-left:5px;">Logout</button>
                 </form>
             </div>
         </div>

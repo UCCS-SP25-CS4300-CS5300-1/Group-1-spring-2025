@@ -213,6 +213,7 @@ jobs:
             cat coverage_reports/coverage_summary.txt
             echo '```'
           } >> $GITHUB_STEP_SUMMARY
+  
   deploy:
     runs-on: ubuntu-latest
 
@@ -251,5 +252,3 @@ jobs:
           sudo chmod 666 /var/www/django_app/Group-1-spring-2025/team1project/db.sqlite3
           sudo systemctl restart gunicorn
           EOF
-
-

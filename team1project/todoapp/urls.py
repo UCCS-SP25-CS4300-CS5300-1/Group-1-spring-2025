@@ -1,5 +1,5 @@
 from django.urls import path, include
-from .views import index, ProfileSettings, register
+from .views import index, ProfileSettings, EditProfile, register
 from django.contrib.auth.views import LogoutView
 from . import views
 
@@ -20,5 +20,5 @@ urlpatterns = [
 	path('webpush/', include('webpush.urls')),
 	path('webpush/save_information/', views.save_subscription, name='save_subscription'),
 	path('home/', views.calender_view , name='home'),
-	
+	path('edit_profile/', EditProfile.as_view(), name="edit_profile"),
 ]

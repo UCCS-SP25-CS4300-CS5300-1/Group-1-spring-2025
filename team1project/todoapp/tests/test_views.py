@@ -64,3 +64,20 @@ class TestUserViews(TestCase):
         response = self.client.post(self.profile_settings_url, {"logout": True})
         self.assertRedirects(response, self.index_url)
 
+class EditProfileViewTest(TestCase):
+    def setUp(self):
+        # create a test user 
+        self.user = User.objects.create_user(username="test", password="thisisatest123", email="testing@gmail.com")
+
+    def testEditProfileView(self):
+        # log in
+        self.client.login(username="test", password="thisisatest123")
+
+        # make GET request to edit_profile page
+        response = self.client.get(reverse('edit_profile'))
+
+        # assert status code (200 for success)
+        self.assertEqual(response.status_code, 200)
+
+        # assert that correct template was used
+        self.assertTemplateUsed(response, 'edit_profile.html')
