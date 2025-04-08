@@ -1,18 +1,19 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm
-from django.views import View
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib import messages
+from django.shortcuts import render, redirect, get_object_or_404
+from django.views import View
 from django.http import HttpResponse
-from .forms import CustomUserCreationForm, TaskForm, TaskCollabForm
-from .models import Task, TaskCollabRequest
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
-import json
-from datetime import datetime
+
+from .forms import CustomUserCreationForm, TaskForm, TaskCollabForm
+from .models import Task, TaskCollabRequest
 from .utils import TaskCalendar
+from datetime import datetime
+import json
 
 # Create your views here.
 def index(request):
