@@ -23,11 +23,16 @@ class Command(BaseCommand):
 
             for user in users:
                 if user.email:
-                    send_mail(
-                        subject=f"Reminder: Task '{task.name}' is due soon!",
-                        message=f"Hi {user.username},\n\nYour task \"{task.name}\" is due on {task.due_date.strftime('%Y-%m-%d %H:%M')}.\n\nDon't forget to complete it.",
-                        from_email='team1todo@gmail.com',
-                        recipient_list=[user.email],
-                        fail_silently=False
-                    )
-        self.stdout.write(self.style.SUCCESS('Task reminders sent.'))
+                    try:
+                        send_mail(
+                            subject=f"Reminder: Task '{task.name}' is due soon!",
+                            message=f"Hi {user.username},\n\nYour task \"{task.name}\" is due on {task.due_date.strftime('%Y-%m-%d %H:%M')}.\n\nDon't forget to complete it.",
+                            from_email='team1todo@gmail.com',
+                            recipient_list=[user.email],
+                            fail_silently=False
+                        )
+                    except Exception as e:
+                        self.stderr.write(f"Failed to send email to {user.email}: {e}")
+
+        # self.stdout.write(self.style.SUCCESS('Task reminders sent.'))
+        # self.stdout.write(f"Found {tasks_due.count()} tasks due in 1 day.")
