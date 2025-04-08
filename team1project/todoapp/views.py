@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
+from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm
 from django.views import View
 from django.contrib import messages
@@ -48,6 +49,31 @@ class ProfileSettings(View):
 				logout(request)
 				messages.success(request, "You have been logged out.")
 				return redirect("index")
+
+class EditProfile(View):
+	def get(self, request):
+		return render(request, "edit_profile.html")
+
+	def post(self, request):
+		# get data from POST request
+		username = request.POST.get("username")
+		email = request.POST.get("email")
+		password = request.POST.get("password")
+
+		# update appropriate fields for the currently logged in user
+		user = request.user
+		if username and username != user.username:
+			user.username = username
+		if email and email != user.email:
+			user.email = email
+		if password and password != "************":
+			user.set_password(password) # ensure to hash
+			update_session_auth_hash(request, user) # keeps user logged in after changing password
+
+		user.save()
+
+		messages.success(request, "Profile updated successfully!")
+		return redirect("profile_settings")
 
 def task_view(request):
     tasks = Task.objects.filter(creator=request.user)
