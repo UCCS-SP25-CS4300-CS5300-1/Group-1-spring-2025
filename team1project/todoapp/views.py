@@ -81,6 +81,23 @@ def delete_task(request, task_id):
 
     return redirect('task_view')  # Redirect back to task list
 
+def edit_task(request, task_id):
+    task = get_object_or_404(Task, id=task_id)
+
+
+    if request.method == 'POST':
+        form = TaskForm(request.POST, instance=task)
+        if form.is_valid():
+            updated_task = form.save(commit=False)
+            updated_task.creator = request.user
+            updated_task.save()
+            form.save_m2m()  # for ManyToMany like categories
+            return redirect('task_view')
+    else:
+        form = TaskForm(instance=task)
+
+    return render(request, 'add_task.html', {'form': form, 'edit_mode': True})
+
 
 def share_task(request, task_id):
 	task = get_object_or_404(Task, id=task_id)

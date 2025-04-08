@@ -83,6 +83,7 @@
                     </td>
                     <td>
                         <a class="btn btn-primary btn-sm" href="{% url 'share_task' task_id=task.id %}">Share</a>
+                        <a class="btn btn-secondary btn-sm" href="{% url 'edit_task' task.id %}">Edit</a>
                         <button class="btn btn-danger btn-sm" onclick="confirmDelete({{ task.id }})">Delete</button>
                     </td>
                 </tr>
