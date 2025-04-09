@@ -2,14 +2,16 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h2 class="mb-4">Create a New Task</h2>
+    <h2 class="mb-4">{{ edit_mode|default:False|yesno:"Edit Task,Create a New Task" }}</h2>
 
     <div class="card p-4 shadow">
         <form method="post">
             {% csrf_token %}
             {{ form.as_p }}
 
-            <button type="submit" class="btn btn-success">Create Task</button>
+            <button type="submit" class="btn btn-success">
+                {{ edit_mode|default:False|yesno:"Update Task,Create Task" }}
+            </button>
         </form>
     </div>
 </div>

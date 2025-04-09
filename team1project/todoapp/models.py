@@ -10,7 +10,7 @@ class Category(models.Model):
 
 class Task(models.Model):
     name = models.CharField(max_length=255)
-    creator = models.ForeignKey(User, on_delete=models.PROTECT)
+    creator = models.ForeignKey(User, on_delete=models.CASCADE)
     description = models.TextField()
     due_date = models.DateTimeField()
     progress = models.IntegerField(default=0)
@@ -21,7 +21,6 @@ class Task(models.Model):
 
     def __str__(self):
         return self.name
-
 
 
 class SubTask(models.Model):
@@ -36,3 +35,14 @@ class TaskProgress(models.Model):
 	user = models.ForeignKey(User, on_delete=models.CASCADE)
 	progress = models.IntegerField(default=0)
 	update_time = models.DateTimeField(auto_now=True)
+
+
+class TaskCollabRequest(models.Model):
+    task = models.ForeignKey(Task, on_delete=models.CASCADE)
+    from_user = models.ForeignKey(User, related_name="from_user", on_delete=models.CASCADE)
+    to_user = models.ForeignKey(User, related_name="to_user", on_delete=models.CASCADE)
+
+
+class Subscription(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    subscription = models.TextField()

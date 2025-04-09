@@ -1,6 +1,15 @@
 # Ignore Python compiled files
 *.pyc
 __pycache__/
-*.sqlite3
+
+# Ignore the database file
+**/db.sqlite3
+
+# Ignore migrations file
+team1project/migrations/
+
 # Ignore Django static files (if generated automatically)
-team1project/staticfiles/
+ team1project/staticfiles/
+
+#Ignore environment settings
+*.env

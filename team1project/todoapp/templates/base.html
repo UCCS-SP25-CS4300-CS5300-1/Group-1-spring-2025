@@ -1,5 +1,15 @@
 <!DOCTYPE html>
 <html>
+    <style>
+        .nav-hover {
+            transition: all 0.2s ease;
+            padding: 5px 10px;
+        }
+
+        .nav-hover:hover {
+            text-decoration: underline;
+        }
+    </style>
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -27,13 +37,13 @@
                 <span class="text-muted"></span>
                 <ul class="nav flex-column mt-3">
                     <li class="nav-item">
-                        <a class="nav-link text-white" href="{% url 'index' %}">Welcome</a>
+                        <a class="nav-link text-white nav-hover" href="{% url 'index' %}">Welcome</a>
 
                         {% if user.is_authenticated %}
-                        <a class="nav-link text-white" href="#">Home</a>
-                        <a class="nav-link text-white" href="{% url 'task_view' %}">Tasks</a>
-                        <a class="nav-link text-white" href="#">Task Archive</a>
-                        <a class="nav-link text-white" href="{% url 'profile_settings' %}">Profile Settings</a>
+                        <a class="nav-link text-white nav-hover" href="{% url 'home' %}">Home</a>
+                        <a class="nav-link text-white nav-hover" href="{% url 'task_view' %}">Tasks</a>
+                        <a class="nav-link text-white nav-hover" href="#">Task Archive</a>
+                        <a class="nav-link text-white nav-hover" href="{% url 'profile_settings' %}">Profile Settings</a>
                         {% endif %}
                     </li>
                 </ul>
@@ -54,5 +64,50 @@
             {% endblock %}
         </div>
 
+         <script>
+                if ('serviceWorker' in navigator && 'PushManager' in window) {
+                    navigator.serviceWorker.register("{% static 'webpush-sw.js' %}")
+                        .then(function(registration) {
+                            console.log('Service Worker registered with scope:', registration.scope);
+                            
+                            return registration.pushManager.getSubscription().then(async function(subscription) {
+                                if (subscription) return subscription;
+            
+                                const vapidKey = "{{ vapid_key }}";
+                                const convertedVapidKey = urlBase64ToUint8Array(vapidKey);
+            
+                                return registration.pushManager.subscribe({
+                                    userVisibleOnly: true,
+                                    applicationServerKey: convertedVapidKey
+                                });
+                            });
+                        })
+                        .then(function(subscription) {
+                            fetch('/webpush/save_information/', {
+                                method: 'POST',
+                                body: JSON.stringify(subscription),
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRFToken': '{{ csrf_token }}'
+                                }
+                            }).then(res => res.json()).then(data => {
+                                console.log('Push subscription saved:', data);
+                            });
+                        })
+                        .catch(function(error) {
+                            console.error('Service Worker registration failed:', error);
+                        });
+                }
+            
+                function urlBase64ToUint8Array(base64String) {
+                    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+                    const base64 = (base64String + padding)
+                        .replace(/-/g, '+')
+                        .replace(/_/g, '/');
+            
+                    const rawData = window.atob(base64);
+                    return new Uint8Array([...rawData].map(char => char.charCodeAt(0)));
+                }
+            </script>            
     </body>
 </html>

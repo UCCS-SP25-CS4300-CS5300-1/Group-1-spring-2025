@@ -73,7 +73,7 @@ jobs:
                 '{
                   model: $model,
                   messages: [
-                    {role: "system", content: "You are an expert software reviewer. Please provide detailed, constructive feedback. Your feedback will be stored as a txt file, so please do not use markdown formatting in your response."},
+                    {role: "system", content: "You are an expert software reviewer. Please provide detailed, constructive feedback. Use markdown formatting in your response."},
                     {role: "user", content: ("PR Details\nTitle: " + $pr_title + "\nAuthor: " + $pr_author + "\nDate: " + $pr_date + "\nURL: " + $pr_url)},
                     {role: "user", content: ("Code Changes\n\n" + $pr_diff)},
                     {role: "user", content: "At the beginning of each code review, please list the PR details including title, author, date, and URL. Then, evaluate:\n1. Code Quality\n2. Security Risks\n3. Best Practices\n4. Performance\n5. General Comments. For each area, start with a brief summary, then provide a more detailed analysis below."}
@@ -116,6 +116,15 @@ jobs:
           name: ai-code-review
           path: openai-code-reviews/*.txt
 
+      - name: Print AI Code Review to Summary
+        if: always()
+        run: |
+          {
+            echo "## Open AI Code Review"
+            echo ""
+            cat openai-code-reviews/review.txt          
+          } >> $GITHUB_STEP_SUMMARY
+
       # End of debugging help
 
   tests:
@@ -145,14 +154,16 @@ jobs:
           mkdir -p test_results
           cd team1project
           TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
-          python manage.py test | tee ../test_results/test_results_${TIMESTAMP}.txt || echo "No tests found, skipping test step."
+          python manage.py test | tee ../test_results/test_results.txt
 
-      - name: Upload Test Results
+      - name: Print Test Results
         if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results
-          path: test_results/*.txt
+        run: |
+          {
+            echo "## Test Results"
+            echo ""
+            cat test_results/test_results.txt    
+          } >> $GITHUB_STEP_SUMMARY
 
   coverage:
     name: Report Test Coverage
@@ -182,7 +193,7 @@ jobs:
           mkdir -p coverage_reports
           cd team1project
           coverage run --source='.' manage.py test
-          coverage report -m
+          coverage report -m | tee ../coverage_reports/coverage_summary.txt
           TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
           coverage xml -o ../coverage_reports/coverage_${TIMESTAMP}.xml
 
@@ -192,3 +203,52 @@ jobs:
         with:
           name: coverage-report
           path: coverage_reports/*.xml
+
+      - name: Print Coverage Summary to Step Summary
+        run: |
+          {
+            echo "## Test Coverage Report"
+            echo ""
+            echo '```'
+            cat coverage_reports/coverage_summary.txt
+            echo '```'
+          } >> $GITHUB_STEP_SUMMARY
+  
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Write SSH Key to File in a Visible Directory
+        run: |
+          mkdir -p "${{ github.workspace }}/ssh_key"
+          echo "${{ secrets.LINODE_SSH_PRIVATE_KEY }}" > "${{ github.workspace }}/ssh_key/id_rsa"
+          chmod 600 "${{ github.workspace }}/ssh_key/id_rsa"
+
+      - name: Add Linode to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -p ${{ secrets.LINODE_PORT }} ${{ secrets.LINODE_HOST }} >> ~/.ssh/known_hosts
+      - name: Move SSH Key to Default Location
+        run: |
+          mkdir -p "${{ github.workspace }}/.ssh"
+          cp "${{ github.workspace }}/ssh_key/id_rsa" "${{ github.workspace }}/.ssh/id_rsa"
+   
+      - name: Run Deploy Commands via ssh
+        run: |
+          ssh -i "$GITHUB_WORKSPACE/ssh_key/id_rsa" -o StrictHostKeyChecking=no -p 22 root@todolist.mooo.com << 'EOF'
+          cd /var/www/django_app
+          source djangoenv/bin/activate
+          cd /var/www/django_app/Group-1-spring-2025/team1project
+          git reset --hard origin/dev-branch
+          git clean -fd
+          git checkout dev-branch
+          git pull origin dev-branch          
+          pip install -r requirements.txt
+          python manage.py runserver --noinput
+          sudo systemctl reload nginx
+          sudo chmod 666 /var/www/django_app/Group-1-spring-2025/team1project/db.sqlite3
+          sudo systemctl restart gunicorn
+          EOF
