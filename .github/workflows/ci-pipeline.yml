@@ -215,8 +215,8 @@ jobs:
           } >> $GITHUB_STEP_SUMMARY
   
   deploy:
+    name: Continuous Deployment 
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
@@ -252,3 +252,27 @@ jobs:
           sudo chmod 666 /var/www/django_app/Group-1-spring-2025/team1project/db.sqlite3
           sudo systemctl restart gunicorn
           EOF
+          
+  linting:
+      name: Run Linting Scans
+      runs-on: ubuntu-latest
+      steps: 
+        - name: Checkout Repository
+          uses: actions/checkout@v4
+
+        - name: Set up Python
+          uses: actions/setup-python@v4
+          with:
+            python-version: '3.12.3'
+            cache: 'pip'
+
+        - name: Install Dependencies
+          run: |
+            python -m venv venv
+            source venv/bin/activate
+            pip install --upgrade pip
+            pip install -r requirements.txt
+            pip install pylint
+      
+      
+
