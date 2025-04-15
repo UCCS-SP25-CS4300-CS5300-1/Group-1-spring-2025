@@ -288,22 +288,23 @@ jobs:
             mkdir -p linting_reports
             cd team1project
             TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
-            pylint . --persistent=yes --output-format=parseable > ../linting_reports/pylint_report_${TIMESTAMP}.txt || true
-            echo "REPORT_PATH=linting_reports/pylint_report_${TIMESTAMP}.txt" >> $GITHUB_ENV
 
-        - name: Upload Linting Report
+            for module in */; do 
+              module=${module%/}
+              echo "Now linting $module..."
+              pylint "$module" --output-format=parseable > "../linting_reports/pylint_${module}_${TIMESTAMP}.txt" || true
+
+              # Print Linting Reports to Step Summary
+              echo "## PyLint Report for $module" >> $GITHUB_STEP_SUMMARY
+              echo '```' >> $GITHUB_STEP_SUMMARY
+              cat "../linting_reports/pylint_${module}_${TIMESTAMP}.txt" >> $GITHUB_STEP_SUMMARY
+              echo '```' >> $GITHUB_STEP_SUMMARY
+            done
+
+        - name: Upload Linting Reports
           if: always()
           uses: actions/upload-artifact@v4
           with:
-            name: linting-report
-            path: ${{ env.REPORT_PATH }}
+            name: pylint_reports
+            path: linting_reports/*.txt
 
-        - name: Print Linting Report to Step Summary
-          run: |
-            {
-              echo "## Pylint Linting Report"
-              echo ""
-              echo '```'
-              cat $REPORT_PATH
-              echo '```'
-            } >> $GITHUB_STEP_SUMMARY
