@@ -214,7 +214,7 @@ jobs:
             echo '```'
           } >> $GITHUB_STEP_SUMMARY
   
-  deploy:
+  deployment:
     name: Continuous Deployment 
     runs-on: ubuntu-latest
     steps:
@@ -253,7 +253,7 @@ jobs:
           sudo systemctl restart gunicorn
           EOF
           
-  linting:
+  linting_scans:
       name: Run Linting Scans
       runs-on: ubuntu-latest
       steps: 
@@ -307,4 +307,23 @@ jobs:
           with:
             name: pylint_reports
             path: linting_reports/*.txt
-
+  
+  dependency_scans:
+        name: Run Dependency Vulnerability Scans
+        runs-on: ubuntu-latest
+        steps: 
+          - name: Checkout Repository
+            uses: actions/checkout@v4
+  
+          - name: Set up Python
+            uses: actions/setup-python@v4
+            with:
+              python-version: '3.12.3'
+              cache: 'pip'
+  
+          - name: Install Dependencies
+            run: |
+              python -m venv venv
+              source venv/bin/activate
+              pip install --upgrade pip
+              pip install -r requirements.txt
