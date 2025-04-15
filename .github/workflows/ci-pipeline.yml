@@ -273,6 +273,14 @@ jobs:
             pip install --upgrade pip
             pip install -r requirements.txt
             pip install pylint
+        
+        - name: Restore Pylint Cache
+          uses: actions/cache@v4
+          with:
+            path: .pylint.d
+            key: pylint-cache-${{ runner.os }}-${{ hashFiles('team1project/**/*.py') }}
+            restore-keys: |
+              pylint-cache-${{ runner.os }}-
 
         - name: Generate Linting Scan Report
           run: |
@@ -280,7 +288,7 @@ jobs:
             mkdir -p linting_reports
             cd team1project
             TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
-            pylint . --output-format=parseable > ../linting_reports/pylint_report_${TIMESTAMP}.txt || true
+            pylint . --persistent=yes --output-format=parseable > ../linting_reports/pylint_report_${TIMESTAMP}.txt || true
             echo "REPORT_PATH=linting_reports/pylint_report_${TIMESTAMP}.txt" >> $GITHUB_ENV
 
         - name: Upload Linting Report
