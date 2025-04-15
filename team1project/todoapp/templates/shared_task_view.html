@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container mt-4">
+    <h2 class="mb-4">{{ task.name }}</h2>
+
+    <div class="card p-4 shadow">
+        <p> 
+            Creator: {{ task.creator }}
+        <br>
+            Description: {{ task.description }}
+        <br>
+            Due Date: {{ task.due_date|date:"M d, Y H:i" }}
+        <br>
+            Progress: {{ task.progress }}%
+        </p>
+        
+        {% if show_button %}
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success" name="accept_task_link">Accept Task</button>
+            </form>
+        {% endif %}  
+    </div>
+</div>
+
+{% endblock %}

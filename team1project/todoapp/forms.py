@@ -61,3 +61,11 @@ class TaskCollabForm(forms.ModelForm):
         model = TaskCollabRequest
         fields = ['to_user']
         widgets = {'to_user': ModelSelect2Widget(model=User, search_fields=['username__icontains'])}
+
+
+class FilterTasksForm(forms.Form):
+    user_category_filter = forms.ModelChoiceField(
+        queryset=Category.objects.all(),
+        widget=ModelSelect2Widget(model=Category, search_fields=['name__icontains']),
+        required=False
+    )
