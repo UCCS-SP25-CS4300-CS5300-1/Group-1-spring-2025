@@ -328,6 +328,8 @@ jobs:
               path: "./"
               format: "HTML,JSON"
               out: "dependency-scan-report"
+            env:
+              JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
   
           - name: Upload Dependency Scan Report
             if: always()
