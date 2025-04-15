@@ -315,15 +315,34 @@ jobs:
           - name: Checkout Repository
             uses: actions/checkout@v4
   
-          - name: Set up Python
-            uses: actions/setup-python@v4
+          - name: Set up Java
+            uses: actions/setup-java@v4
             with:
-              python-version: '3.12.3'
-              cache: 'pip'
+              distribution: 'temurin'
+              java-version: '17'
+
+          - name: Run OWASP
+            uses: dependency-check/Dependency-Check_Action@main
+            with:
+              project: "team1project"
+              path: "./"
+              format: "HTML,JSON"
+              out: "dependency-scan-report"
   
-          - name: Install Dependencies
+          - name: Upload Dependency Scan Report
+            if: always()
+            uses: actions/upload-artifact@v4
+            with:
+              name: dependency-vulnerability-reports
+              path: dependency-scan-report/*
+
+          - name: Print Dependency Scan Report to Step Summary
             run: |
-              python -m venv venv
-              source venv/bin/activate
-              pip install --upgrade pip
-              pip install -r requirements.txt
+              {
+                echo "## Dependency Scan Report"
+                echo ""
+                echo '```'
+                cat dependency-scan-report/dependency-check-report.json
+                echo '```'
+              } >> $GITHUB_STEP_SUMMARY
+  
