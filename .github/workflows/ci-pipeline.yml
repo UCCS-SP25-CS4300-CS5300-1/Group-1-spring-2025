@@ -273,6 +273,29 @@ jobs:
             pip install --upgrade pip
             pip install -r requirements.txt
             pip install pylint
-      
-      
 
+        - name: Generate Linting Scan Report
+          run: |
+            source venv/bin/activate
+            mkdir -p linting_reports
+            cd team1project
+            TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
+            pylint . --output-format=parseable > ../linting_reports/pylint_report_${TIMESTAMP}.txt || true
+            echo "REPORT_PATH=linting_reports/pylint_report_${TIMESTAMP}.txt" >> $GITHUB_ENV
+
+        - name: Upload Linting Report
+          if: always()
+          uses: actions/upload-artifact@v4
+          with:
+            name: linting-report
+            path: ${{ env.REPORT_PATH }}
+
+        - name: Print Linting Report to Step Summary
+          run: |
+            {
+              echo "## Pylint Linting Report"
+              echo ""
+              echo '```'
+              cat $REPORT_PATH
+              echo '```'
+            } >> $GITHUB_STEP_SUMMARY
