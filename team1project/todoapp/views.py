@@ -19,27 +19,27 @@ import json
 
 # Create your views here.
 def index(request):
-	form = AuthenticationForm()
-	if request.method == 'POST':
-		form = AuthenticationForm(request, data=request.POST)
-		if form.is_valid():
-			user = form.get_user()
-			login(request, user)
-			return redirect("task_view")
+    form = AuthenticationForm()
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            return redirect("task_view")
 
-	return render(request, 'index.html', {'form': form})
+    return render(request, 'index.html', {'form': form})
 
 def register(request):
-	form = CustomUserCreationForm()
-	
-	if request.method == "POST":
-		form = CustomUserCreationForm(request.POST)
-		if form.is_valid():
-			user = form.save()
-			login(request, user)
-			return redirect('index')
-	
-	return render(request, "register.html", {"form": form} )
+    form = CustomUserCreationForm()
+    
+    if request.method == "POST":
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect('index')
+    
+    return render(request, "register.html", {"form": form} )
 
 # Index class for handling the forms on profile settings
 class ProfileSettings(LoginRequiredMixin, View):
@@ -62,37 +62,43 @@ class EditProfile(LoginRequiredMixin, View):
 	def get(self, request):
 		return render(request, "edit_profile.html")
 
-	def post(self, request):
-		# get data from POST request
-		username = request.POST.get("username")
-		email = request.POST.get("email")
-		password = request.POST.get("password")
+    def post(self, request):
+        # get data from POST request
+        username = request.POST.get("username")
+        email = request.POST.get("email")
+        password = request.POST.get("password")
 
-		# update appropriate fields for the currently logged in user
-		user = request.user
-		if username and username != user.username:
-			user.username = username
-		if email and email != user.email:
-			user.email = email
-		if password and password != "************":
-			user.set_password(password) # ensure to hash
-			update_session_auth_hash(request, user) # keeps user logged in after changing password
+        # update appropriate fields for the currently logged in user
+        user = request.user
+        if username and username != user.username:
+            user.username = username
+        if email and email != user.email:
+            user.email = email
+        if password and password != "************":
+            user.set_password(password) # ensure to hash
+            update_session_auth_hash(request, user) # keeps user logged in after changing password
 
-		user.save()
+        user.save()
 
-		messages.success(request, "Profile updated successfully!")
-		return redirect("profile_settings")
+        messages.success(request, "Profile updated successfully!")
+        return redirect("profile_settings")
 
 @login_required(login_url='/')
 def task_view(request):
-    tasks = Task.objects.filter(creator=request.user)
+    tasks = Task.objects.filter(creator=request.user, is_completed=False)
     task_requests = TaskCollabRequest.objects.filter(to_user=request.user)
     shared_tasks = Task.objects.filter(assigned_users=request.user) 
+    archived_tasks = Task.objects.filter(is_completed=True).filter(
+    Q(creator=request.user) | Q(assigned_users=request.user)).distinct()
+
+
+
     return render(request, 'task_view.html', {
-	    'tasks': tasks, 
-	    'task_requests': task_requests, 
-	    'shared_tasks': shared_tasks, 
-	    'vapid_key': settings.VAPID_PUBLIC_KEY})
+        'tasks': tasks, 
+        'task_requests': task_requests, 
+        'shared_tasks': shared_tasks, 
+        'vapid_key': settings.VAPID_PUBLIC_KEY,
+        'archived_tasks': archived_tasks,})
 
 @login_required(login_url='/')
 def add_task(request):
@@ -126,44 +132,44 @@ def share_task(request, task_id):
 	if request.method == 'POST':
 		form = TaskCollabForm(request.POST, user=request.user, task=task)
 
-		if form.is_valid():
-			from_user = request.user
-			task_collab_obj = form.save(commit=False)
-			
-			# Filter requests for user, prevent another request from being made
-			# if a request was already made
-			request_filter = TaskCollabRequest.objects.filter(task_id=task.id, to_user=request.user)
+        if form.is_valid():
+            from_user = request.user
+            task_collab_obj = form.save(commit=False)
+            
+            # Filter requests for user, prevent another request from being made
+            # if a request was already made
+            request_filter = TaskCollabRequest.objects.filter(task_id=task.id, to_user=request.user)
 
-			# Add the from user and task to the request object
-			if not request_filter.exists():
-				task_collab_obj.from_user = from_user
-				task_collab_obj.task = task
-				task_collab_obj.save()
-				messages.success(request, 'Task collaboration request sent')
-				return redirect('task_view')
-			else:
-				return HttpResponse('Request was already sent')
-	
-	else:
-		task = get_object_or_404(Task, id=task_id)
-		form = TaskCollabForm(user=request.user, task=task)
+            # Add the from user and task to the request object
+            if not request_filter.exists():
+                task_collab_obj.from_user = from_user
+                task_collab_obj.task = task
+                task_collab_obj.save()
+                messages.success(request, 'Task collaboration request sent')
+                return redirect('task_view')
+            else:
+                return HttpResponse('Request was already sent')
+    
+    else:
+        task = get_object_or_404(Task, id=task_id)
+        form = TaskCollabForm(user=request.user, task=task)
 
 	return render(request, 'share_task.html', {'form': form, 'task': task, 'url': share_url, })
 
 @login_required(login_url='/')
 def accept_task(request, request_id):
-	if request.method == 'POST':
-		collab_request = get_object_or_404(TaskCollabRequest, id=request_id)
-		if 'accept_request' in request.POST:
-			collab_request.task.assigned_users.add(collab_request.to_user)
-			collab_request.delete()
-			messages.success(request, 'Task collaboration requeset was accepted')
+    if request.method == 'POST':
+        collab_request = get_object_or_404(TaskCollabRequest, id=request_id)
+        if 'accept_request' in request.POST:
+            collab_request.task.assigned_users.add(collab_request.to_user)
+            collab_request.delete()
+            messages.success(request, 'Task collaboration requeset was accepted')
 
-		elif 'decline_request' in request.POST:
-			collab_request.delete()
-			messages.success(request, 'Task collaboration request not accepted')
-		
-		return redirect('task_view')
+        elif 'decline_request' in request.POST:
+            collab_request.delete()
+            messages.success(request, 'Task collaboration request not accepted')
+        
+        return redirect('task_view')
 
 
 def shared_task_view(request, task_id):
@@ -227,9 +233,26 @@ def accept_task_link(request, task_id):
 
 @login_required(login_url='/')
 def exit_task(request, task_id):
-	task = get_object_or_404(Task, id=task_id)
-	task.assigned_users.remove(request.user)
-	return redirect('task_view')
+    task = get_object_or_404(Task, id=task_id)
+    task.assigned_users.remove(request.user)
+    return redirect('task_view')
+
+
+def archive_task(request, task_id):
+    task = get_object_or_404(Task, id=task_id)
+    task.is_completed = True
+    task.save()
+    return redirect('task_view')  
+
+def task_archive(request):
+    archived_tasks = Task.objects.filter(is_completed=True).filter(
+        Q(creator=request.user) | Q(assigned_users=request.user)
+    ).distinct()
+
+    return render(request, 'task_archive.html', {
+        'archived_tasks': archived_tasks
+    })
+
 
 
 @csrf_exempt

@@ -115,6 +115,8 @@
                     </td>
                     <td>
                         <a class="btn btn-primary btn-sm" href="{% url 'share_task' task_id=task.id %}">Share</a>
+                        <a class="btn btn-secondary btn-sm" href="{% url 'edit_task' task.id %}">Edit</a>
+                        <a class="btn btn-warning btn-sm" href="{% url 'archive_task' task.id %}">Archive</a>
                         <button class="btn btn-danger btn-sm" onclick="confirmDelete({{ task.id }})">Delete</button>
                     </td>
                 </tr>
@@ -172,6 +174,49 @@
         </table>
     </div>
 </div>
+
+<!-- User's Archived Tasks -->
+<div class="container mt-4">
+    <h2 class="mb-4">Archived Tasks</h2>
+
+    <div class="card p-4 shadow">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Due Date</th>
+                    <th>Progress</th>
+                    <th>Creator</th>
+                    <th>Categories</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in archived_tasks %}
+                <tr>
+                    <td>{{ task.name }}</td>
+                    <td>{{ task.description }}</td>
+                    <td>{{ task.due_date|date:"M d, Y H:i" }}</td>
+                    <td>{{ task.progress }}%</td>
+                    <td>{{ task.creator }}</td>
+                    <td>
+                        {% for category in task.categories.all %}
+                            <span class="badge bg-secondary">{{ category.name }}</span>
+                        {% empty %}
+                            <span class="text-muted">None</span>
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center">No archived tasks available.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
 
 <script>
     function confirmDelete(taskId) {

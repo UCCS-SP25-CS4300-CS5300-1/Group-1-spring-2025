@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Task Archive</h2>
+
+    <div class="card p-4 shadow">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Due Date</th>
+                    <th>Progress</th>
+                    <th>Categories</th>
+                    <th>Creator</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in archived_tasks %}
+                <tr>
+                    <td>{{ task.name }}</td>
+                    <td>{{ task.description }}</td>
+                    <td>{{ task.due_date|date:"M d, Y H:i" }}</td>
+                    <td>{{ task.progress }}%</td>
+                    <td>
+                        {% for user in task.assigned_users.all %}
+                            <span class="badge bg-secondary">{{ user.username }}</span>
+                        {% empty %}
+                            <span class="text-muted">None</span>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% for category in task.categories.all %}
+                            <span class="badge bg-secondary">{{ category.name }}</span>
+                        {% empty %}
+                            <span class="text-muted">None</span>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" onclick="confirmDelete({{ task.id }})">Delete</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    function confirmDelete(taskId) {
+        if (confirm("Are you sure you want to permanently delete this task?")) {
+            window.location.href = `/tasks/delete/${taskId}/`;
+        }
+    }
+</script>
+
+{% endblock %}
