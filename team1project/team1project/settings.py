@@ -33,6 +33,7 @@ ALLOWED_HOSTS = [
     'app-samallenonline-5.devedu.io',
     'localhost',
     'todolist.mooo.com',
+    'todolistapp.tech'
     ]
 
 # Add your domain here if you are getting csrf verification error
