@@ -339,7 +339,7 @@ jobs:
               source venv/bin/activate
               mkdir -p dependency_reports
               TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
-              snyk test --file=requirements.txt --command=python3 --json > "dependency_reports/snyk_report_${TIMESTAMP}.json" || true
+              snyk test --file=requirements.txt --command=python3 --reporter=html > "dependency_reports/snyk_report_${TIMESTAMP}.html" || true
               
               echo "## Snyk Dependency Scan Report" >> $GITHUB_STEP_SUMMARY
               echo '```' >> $GITHUB_STEP_SUMMARY
