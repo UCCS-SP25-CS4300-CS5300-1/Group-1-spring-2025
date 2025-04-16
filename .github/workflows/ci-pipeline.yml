@@ -343,7 +343,7 @@ jobs:
               
               echo "## Snyk Dependency Scan Report" >> $GITHUB_STEP_SUMMARY
               echo '```' >> $GITHUB_STEP_SUMMARY
-              cat "dependency_reports/snyk_report_${TIMESTAMP}.json" >> $GITHUB_STEP_SUMMARY
+              cat "dependency_reports/snyk_report_${TIMESTAMP}.html" >> $GITHUB_STEP_SUMMARY
               echo '```' >> $GITHUB_STEP_SUMMARY
       
           - name: Upload Dependency Scan Report
@@ -351,4 +351,4 @@ jobs:
             uses: actions/upload-artifact@v4
             with:
               name: snyk-dependency-reports
-              path: dependency_reports/*.json
+              path: dependency_reports/*.html
