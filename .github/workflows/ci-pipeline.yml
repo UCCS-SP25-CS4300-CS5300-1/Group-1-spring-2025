@@ -314,37 +314,42 @@ jobs:
         steps: 
           - name: Checkout Repository
             uses: actions/checkout@v4
-  
-          - name: Set up Java
-            uses: actions/setup-java@v4
-            with:
-              distribution: 'temurin'
-              java-version: '17'
 
-          - name: Run OWASP
-            uses: dependency-check/Dependency-Check_Action@main
+          - name: Set up Python
+            uses: actions/setup-python@v4
             with:
-              project: "team1project"
-              path: "./"
-              format: "HTML,JSON"
-              out: "dependency-scan-report"
+              python-version: '3.12.3'
+              cache: 'pip'
+      
+          - name: Install Dependencies
+            run: |
+              python -m venv venv
+              source venv/bin/activate
+              pip install --upgrade pip
+              pip install -r requirements.txt
+      
+          - name: Install Snyk
+            run: |
+              npm install -g snyk
+      
+          - name: Genereate Dependency Scan Report
             env:
-              JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
-  
+              SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+            run: |
+              source venv/bin/activate
+              mkdir -p dependency_reports
+              cd team1project
+              TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
+              snyk test --file=requirements.txt --command=python3 --json > "../dependency_reports/snyk_report_${TIMESTAMP}.json" || true
+              
+              echo "## Snyk Dependency Scan Report" >> $GITHUB_STEP_SUMMARY
+              echo '```' >> $GITHUB_STEP_SUMMARY
+              cat "../dependency_reports/snyk_report_${TIMESTAMP}.json" >> $GITHUB_STEP_SUMMARY
+              echo '```' >> $GITHUB_STEP_SUMMARY
+      
           - name: Upload Dependency Scan Report
             if: always()
             uses: actions/upload-artifact@v4
             with:
-              name: dependency-vulnerability-reports
-              path: dependency-scan-report/*
-
-          - name: Print Dependency Scan Report to Step Summary
-            run: |
-              {
-                echo "## Dependency Scan Report"
-                echo ""
-                echo '```'
-                cat dependency-scan-report/dependency-check-report.json
-                echo '```'
-              } >> $GITHUB_STEP_SUMMARY
-  
+              name: snyk-dependency-reports
+              path: dependency_reports/*.json
