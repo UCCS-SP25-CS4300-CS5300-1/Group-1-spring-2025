@@ -195,14 +195,13 @@ jobs:
           coverage run --source='.' manage.py test
           coverage report -m | tee ../coverage_reports/coverage_summary.txt
           TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
-          coverage xml -o ../coverage_reports/coverage_${TIMESTAMP}.xml
 
       - name: Upload Coverage Report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: coverage_reports/*.xml
+          path: coverage_reports/*.txt
 
       - name: Print Coverage Summary to Step Summary
         run: |
@@ -210,7 +209,7 @@ jobs:
             echo "## Test Coverage Report"
             echo ""
             echo '```'
-            cat coverage_reports/coverage_summary.txt
+            cat coverage_reports/*.txt
             echo '```'
           } >> $GITHUB_STEP_SUMMARY
   
@@ -305,7 +304,7 @@ jobs:
           if: always()
           uses: actions/upload-artifact@v4
           with:
-            name: pylint_reports
+            name: pylint_report
             path: linting_reports/*.txt
   
   dependency_scans:
@@ -332,7 +331,7 @@ jobs:
             run: |
               npm install -g snyk
       
-          - name: Genereate Dependency Scan Report
+          - name: Generate Dependency Scan Report
             env:
               SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
             run: |
@@ -340,6 +339,7 @@ jobs:
               mkdir -p dependency_reports
               TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
               snyk test --file=requirements.txt --command=python3 --reporter=html > "dependency_reports/snyk_report_${TIMESTAMP}.html" || true
+              snyk test --file=requirements.txt --command=python3 > "dependency_reports/snyk_report_${TIMESTAMP}.txt" || true
               
               echo "## Snyk Dependency Scan Report" >> $GITHUB_STEP_SUMMARY
               echo '```' >> $GITHUB_STEP_SUMMARY
@@ -350,5 +350,5 @@ jobs:
             if: always()
             uses: actions/upload-artifact@v4
             with:
-              name: snyk-dependency-reports
-              path: dependency_reports/*.html
+              name: snyk-dependency-report
+              path: dependency_reports/*.txt
