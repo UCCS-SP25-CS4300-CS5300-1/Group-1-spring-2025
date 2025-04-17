@@ -10,6 +10,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.utils import timezone
 
 from .forms import CustomUserCreationForm, TaskForm, TaskCollabForm, FilterTasksForm
 from .models import Task, TaskCollabRequest
@@ -85,11 +86,18 @@ class EditProfile(LoginRequiredMixin, View):
 
 @login_required(login_url='/')
 def task_view(request):
-    tasks = Task.objects.filter(creator=request.user, is_completed=False)
+    tasks = Task.objects.filter(
+        Q(creator=request.user) | Q(assigned_users=request.user),
+        Q(is_completed=False) | Q(is_completed=True, due_date__gte=timezone.now())
+    ).distinct()
     task_requests = TaskCollabRequest.objects.filter(to_user=request.user)
     shared_tasks = Task.objects.filter(assigned_users=request.user) 
-    archived_tasks = Task.objects.filter(is_completed=True).filter(
-    Q(creator=request.user) | Q(assigned_users=request.user)).distinct()
+    archived_tasks = Task.objects.filter(
+        is_completed=True,
+        due_date__lt=timezone.now()
+    ).filter(
+        Q(creator=request.user) | Q(assigned_users=request.user)
+    ).distinct().order_by('-due_date')[:10]
 
 
 
@@ -245,7 +253,7 @@ def archive_task(request, task_id):
     return redirect('task_view')  
 
 def task_archive(request):
-    archived_tasks = Task.objects.filter(is_completed=True).filter(
+    archived_tasks = Task.objects.filter(is_completed=True, due_date__lt=timezone.now()).filter(
         Q(creator=request.user) | Q(assigned_users=request.user)
     ).distinct()
 
