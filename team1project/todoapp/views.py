@@ -123,7 +123,7 @@ def get_filtered_tasks(request):
                 my_filtered_tasks = my_filtered_tasks.filter(
                     Q(categories__in=user_filter) | Q(categories=None)
                 ).distinct()
-                shared_filtered_tasks = filtered_tasks.filter(
+                shared_filtered_tasks = shared_filtered_tasks.filter(
                     Q(categories__in=user_filter) | Q(categories=None)
                 ).distinct()
             

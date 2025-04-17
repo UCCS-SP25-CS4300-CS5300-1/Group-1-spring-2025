@@ -1,6 +1,11 @@
-from django.test import TestCase, Client
+from django.test import TestCase, Client, RequestFactory
 from django.contrib.auth.models import User
 from django.urls import reverse
+from datetime import timedelta
+from django.utils import timezone
+
+from todoapp.views import get_filtered_tasks
+from todoapp.models import Task, Category
 
 '''
 Test views dealing with user system and their http responses
@@ -84,4 +89,101 @@ class EditProfileViewTest(TestCase):
 
 class FilterTasksViewTest(TestCase):
     def setUp(self):
+        # User to use for testing
+        self.username = "test1"
+        self.password = "Gl989bert48!"
+        self.user = User.objects.create_user(username=self.username, password=self.password)
+
+        # User to use for testing
+        self.other_username = "test2"
+        self.password = "Gl989bert48!"
+        self.other_user = User.objects.create_user(username=self.other_username, password=self.password)
+
+        self.category_work = Category.objects.create(name="Work")
+        self.category_misc = Category.objects.create(name="Misc")
+
+        # Test filtering on this task
+        self.task_1 = Task.objects.create(
+            name="No Category",
+            creator=self.user,
+            description="Finish the project by the deadline",
+            due_date=timezone.now() + timedelta(days=7),
+            progress=50,
+            is_completed=False,
+            notifications_enabled=True,
+        )
+
+        # Test filtering on this task
+        self.task_2 = Task.objects.create(
+            name="Shared Work Project",
+            creator=self.other_user,
+            description="Finish the project by the deadline",
+            due_date=timezone.now() + timedelta(days=7),
+            progress=50,
+            is_completed=False,
+            notifications_enabled=True,
+        )
+        self.task_2.categories.add(self.category_work)
+        self.task_2.assigned_users.add(self.user)
+
+        self.task_3 = Task.objects.create(
+            name="Misc Project",
+            creator=self.user,
+            description="Finish the project by the deadline",
+            due_date=timezone.now() + timedelta(days=7),
+            progress=50,
+            is_completed=False,
+            notifications_enabled=True,
+        )
+        self.task_3.categories.add(self.category_misc)
+
+    '''
+    Test if tasks show up with no data submitted
+    By default, should be all of them, shared and owned
+    '''
+    def test_get_filtered_tasks_no_filter(self):
+        factory = RequestFactory()
+        request = factory.get('/')
+        request.user = self.user
+
+        form, my_tasks, shared_tasks = get_filtered_tasks(request)
+
+        # Test that form was not submitted
+        self.assertEqual(form.is_valid(), False)
+
+        # Test that all tasks appear
+        self.assertEqual(my_tasks.count(), 2)
+        self.assertEqual(shared_tasks.count(), 1)
+
+        # Test that all of them appear on page
+        self.assertTrue(self.task_1 in my_tasks)
+        self.assertTrue(self.task_2 in shared_tasks)
+        self.assertTrue(self.task_3 in my_tasks)
+
+    '''
+    Test that filter works
+    '''
+    def test_get_filtered_tasks_filter(self):
+        factory = RequestFactory()
+        request = factory.get('/',{
+            'make-filter': 'true',
+            'user_category_filter': [self.category_work.id]
+        })
+
+        request.user = self.user
+
+        form, my_tasks, shared_tasks = get_filtered_tasks(request)
+
+        # Test that the form is valid
+        self.assertEqual(form.is_valid(), True)
+
+        # Test that there is only one task in my_tasks and 
+        # shared_tasks
+        self.assertEqual(my_tasks.count(), 1)
+        self.assertEqual(shared_tasks.count(), 1)
         
+        # Check that task 1 and 2 were filtred, but task 3
+        # was not included
+        self.assertTrue(self.task_1 in my_tasks)
+        self.assertTrue(self.task_2 in shared_tasks)
+        self.assertFalse(self.task_3 in my_tasks)
