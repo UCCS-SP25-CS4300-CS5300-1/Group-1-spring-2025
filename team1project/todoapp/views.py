@@ -9,6 +9,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from django.db.models import Q
+from django.utils import timezone
 
 from .forms import CustomUserCreationForm, TaskForm, TaskCollabForm
 from .models import Task, TaskCollabRequest
@@ -78,11 +79,18 @@ class EditProfile(View):
         return redirect("profile_settings")
 
 def task_view(request):
-    tasks = Task.objects.filter(creator=request.user, is_completed=False)
+    tasks = Task.objects.filter(
+        Q(creator=request.user) | Q(assigned_users=request.user),
+        Q(is_completed=False) | Q(is_completed=True, due_date__gte=timezone.now())
+    ).distinct()
     task_requests = TaskCollabRequest.objects.filter(to_user=request.user)
     shared_tasks = Task.objects.filter(assigned_users=request.user) 
-    archived_tasks = Task.objects.filter(is_completed=True).filter(
-    Q(creator=request.user) | Q(assigned_users=request.user)).distinct()
+    archived_tasks = Task.objects.filter(
+        is_completed=True,
+        due_date__lt=timezone.now()
+    ).filter(
+        Q(creator=request.user) | Q(assigned_users=request.user)
+    ).distinct().order_by('-due_date')[:10]
 
 
 
@@ -191,7 +199,7 @@ def archive_task(request, task_id):
     return redirect('task_view')  
 
 def task_archive(request):
-    archived_tasks = Task.objects.filter(is_completed=True).filter(
+    archived_tasks = Task.objects.filter(is_completed=True, due_date__lt=timezone.now()).filter(
         Q(creator=request.user) | Q(assigned_users=request.user)
     ).distinct()
 

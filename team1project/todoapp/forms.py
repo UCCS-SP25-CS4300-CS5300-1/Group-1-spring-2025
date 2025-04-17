@@ -27,7 +27,7 @@ class TaskForm(forms.ModelForm):
         fields = ['name', 'description', 'due_date', 'progress', 'categories', 'notifications_enabled']
         widgets = {
             'due_date': forms.DateInput(attrs={'type': 'date'}),
-            'progress': forms.NumberInput(attrs={'min': 0, 'max': 100, 'step': 1}),
+            'progress': forms.NumberInput(attrs={'type': 'range', 'min': '0', 'max': '100', 'step': '1', 'oninput': 'updateProgressLabel(this.value)'}),
         }
 
 

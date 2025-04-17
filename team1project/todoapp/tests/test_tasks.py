@@ -20,7 +20,7 @@ class TaskTests(TestCase):
             description="This is a test task",
             due_date="2025-03-20 12:00:00",
             progress=50,
-            creator=self.user  # ✅ Ensure task has a creator
+            creator=self.user  # Ensure task has a creator
         )
 
     def test_task_model(self):
@@ -42,7 +42,7 @@ class TaskTests(TestCase):
             'description': 'Created from test',
             'due_date': '2025-04-01 14:00:00',
             'progress': 10,
-            'creator': self.user.id  # ✅ Include creator in task creation
+            'creator': self.user.id  # Include creator in task creation
         })
         self.assertEqual(response.status_code, 302)  # Redirect after task creation
         self.assertTrue(Task.objects.filter(name="New Task").exists())
@@ -53,6 +53,19 @@ class TaskTests(TestCase):
         response = self.client.get(reverse('delete_task', args=[task_id]))
         self.assertEqual(response.status_code, 302)  # Redirect after deletion
         self.assertFalse(Task.objects.filter(id=task_id).exists())  # Task should not exist
+
+    def test_task_progress_100_sets_completed(self):
+        task = Task.objects.create(
+            name="Auto archive test",
+            creator=self.user,
+            description="Test task",
+            due_date=timezone.now() + timedelta(days=1),
+            progress=99
+        )
+        task.progress = 100
+        task.save()
+        self.assertTrue(task.is_completed)
+
 
 class TaskRequestsViews(TestCase):
     def setUp(self):

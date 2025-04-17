@@ -19,6 +19,11 @@ class Task(models.Model):
     assigned_users = models.ManyToManyField(User, related_name="assigned_tasks")
     notifications_enabled = models.BooleanField(default=False) 
 
+    def save(self, *args, **kwargs):
+        if self.progress == 100:
+            self.is_completed = True
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.name
 

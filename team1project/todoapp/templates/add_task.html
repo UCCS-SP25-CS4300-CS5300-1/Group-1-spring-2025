@@ -7,7 +7,63 @@
     <div class="card p-4 shadow">
         <form method="post">
             {% csrf_token %}
-            {{ form.as_p }}
+            
+            <div class="mb-3">
+                {{ form.name.label_tag }} 
+                {{ form.name }}
+            </div>
+
+            <div class="mb-3">
+                {{ form.description.label_tag }}
+                {{ form.description }}
+            </div>
+
+            <div class="mb-3">
+                {{ form.due_date.label_tag }}
+                {{ form.due_date }}
+            </div>
+
+            <div class="mb-3">
+                <label for="id_progress_slider">Progress:</label>
+                <div class="d-flex align-items-center">
+                    <input 
+                        type="number" 
+                        id="id_progress" 
+                        name="progress" 
+                        min="0" 
+                        max="100" 
+                        step="1" 
+                        value="{{ form.progress.value|default:0 }}" 
+                        class="form-control w-auto"
+                    >
+                    <input 
+                        type="range" 
+                        id="id_progress_slider" 
+                        min="0" 
+                        max="100" 
+                        step="1" 
+                        value="{{ form.progress.value|default:0 }}" 
+                        class="form-range me-3"
+                    >
+                    
+                </div>
+            </div>
+            
+
+            <div class="mb-3">
+                {{ form.categories.label_tag }}
+                {{ form.categories }}
+            </div>
+
+            <div class="mb-3">
+                {{ form.assigned_users.label_tag }}
+                {{ form.assigned_users }}
+            </div>
+
+            <div class="mb-3">
+                {{ form.notifications_enabled.label_tag }}
+                {{ form.notifications_enabled }}
+            </div>
 
             <button type="submit" class="btn btn-success">
                 {{ edit_mode|default:False|yesno:"Update Task,Create Task" }}
@@ -15,4 +71,26 @@
         </form>
     </div>
 </div>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const slider = document.getElementById("id_progress_slider");
+        const numberInput = document.getElementById("id_progress");
+
+        // Update number when slider changes
+        slider.addEventListener("input", function () {
+            numberInput.value = slider.value;
+        });
+
+        // Update slider when number changes
+        numberInput.addEventListener("input", function () {
+            let value = parseInt(numberInput.value) || 0;
+            value = Math.min(100, Math.max(0, value));
+            numberInput.value = value;
+            slider.value = value;
+        });
+    });
+</script>
+
 {% endblock %}
