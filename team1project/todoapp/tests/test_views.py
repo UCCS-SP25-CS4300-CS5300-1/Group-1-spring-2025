@@ -82,3 +82,6 @@ class EditProfileViewTest(TestCase):
         # assert that correct template was used
         self.assertTemplateUsed(response, 'edit_profile.html')
 
+class FilterTasksViewTest(TestCase):
+    def setUp(self):
+        

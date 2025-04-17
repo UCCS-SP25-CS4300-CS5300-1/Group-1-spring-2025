@@ -8,6 +8,7 @@ from django.http import HttpResponse
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
+from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
@@ -58,10 +59,10 @@ class ProfileSettings(LoginRequiredMixin, View):
 				return redirect("index")
 
 class EditProfile(LoginRequiredMixin, View):
-	login_url = '/'
+    login_url = '/'
 
-	def get(self, request):
-		return render(request, "edit_profile.html")
+    def get(self, request):
+        return render(request, "edit_profile.html")
 
     def post(self, request):
         # get data from POST request
@@ -100,13 +101,35 @@ def task_view(request):
     ).distinct().order_by('-due_date')[:10]
 
 
-
+    form, filtered_tasks, shared_filtered_tasks = get_filtered_tasks(request)
     return render(request, 'task_view.html', {
-        'tasks': tasks, 
+        'my_tasks': filtered_tasks, 
         'task_requests': task_requests, 
-        'shared_tasks': shared_tasks, 
+        'shared_tasks': shared_filtered_tasks, 
         'vapid_key': settings.VAPID_PUBLIC_KEY,
-        'archived_tasks': archived_tasks,})
+        'archived_tasks': archived_tasks,
+		'form': form})
+
+
+def get_filtered_tasks(request):
+    form = FilterTasksForm(request.GET or None)
+    my_filtered_tasks = Task.objects.filter(creator=request.user)
+    shared_filtered_tasks = Task.objects.filter(assigned_users=request.user)
+
+    if 'make-filter' in request.GET:
+        if form.is_valid():
+            user_filter = form.cleaned_data['user_category_filter']
+            if user_filter:
+                my_filtered_tasks = my_filtered_tasks.filter(
+                    Q(categories__in=user_filter) | Q(categories=None)
+                ).distinct()
+                shared_filtered_tasks = filtered_tasks.filter(
+                    Q(categories__in=user_filter) | Q(categories=None)
+                ).distinct()
+            
+    return form, my_filtered_tasks, shared_filtered_tasks
+
+
 
 @login_required(login_url='/')
 def add_task(request):
@@ -131,15 +154,32 @@ def delete_task(request, task_id):
 
     return redirect('task_view')  # Redirect back to task list
 
+@login_required(login_url = '/')
+def edit_task(request, task_id):
+    task = get_object_or_404(Task, id=task_id)
+
+
+    if request.method == 'POST':
+        form = TaskForm(request.POST, instance=task)
+        if form.is_valid():
+            updated_task = form.save(commit=False)
+            updated_task.creator = request.user
+            updated_task.save()
+            form.save_m2m()  # for ManyToMany like categories
+            return redirect('task_view')
+    else:
+        form = TaskForm(instance=task)
+
+    return render(request, 'add_task.html', {'form': form, 'edit_mode': True})
+
 
 @login_required(login_url='/')
 def share_task(request, task_id):
-	task = get_object_or_404(Task, id=task_id)
-	share_url = f"{request.get_host()}/shared task/{task_id}"
+    task = get_object_or_404(Task, id=task_id)
+    share_url = f"{request.get_host()}/shared task/{task_id}"
 
-	if request.method == 'POST':
-		form = TaskCollabForm(request.POST, user=request.user, task=task)
-
+    if request.method == 'POST':
+        form = TaskCollabForm(request.POST, user=request.user, task=task)
         if form.is_valid():
             from_user = request.user
             task_collab_obj = form.save(commit=False)
@@ -162,7 +202,7 @@ def share_task(request, task_id):
         task = get_object_or_404(Task, id=task_id)
         form = TaskCollabForm(user=request.user, task=task)
 
-	return render(request, 'share_task.html', {'form': form, 'task': task, 'url': share_url, })
+    return render(request, 'share_task.html', {'form': form, 'task': task, 'url': share_url, })
 
 @login_required(login_url='/')
 def accept_task(request, request_id):
@@ -308,17 +348,3 @@ def calender_view(request, year=None, month=None):
         'month': month,
     }
     return render(request, 'home.html', context)
-
-@login_required(login_url='/')
-def filter_by_category(request):
-	form = FilterTasksForm()
-	if request.method == 'GET':
-		form = FilterTasksForm(request.GET)
-		if form.is_valid():
-			user_filter = form.cleaned_data['user_category_filter']
-			filtered_tasks = Task.objects.filter(categories=user_filter)
-			return render(request, 'task_view.html', {'filtered': tasks, 'form': form})
-		
-		else:
-			form = FilterTasksForm()
-	return render(request, 'task_view.html', {'form': form})

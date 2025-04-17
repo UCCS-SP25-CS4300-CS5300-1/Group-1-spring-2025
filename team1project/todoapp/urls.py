@@ -15,7 +15,6 @@ urlpatterns = [
 	path('tasks/delete/<int:task_id>/', views.delete_task, name='delete_task'),
 	path('tasks/archive/<int:task_id>/', views.archive_task, name='archive_task'),
 	path('tasks/add/', views.add_task, name='add_task'),
-	path('tasks/filter/', views.filter_by_category, name='filter_task'),
 	path('tasks/edit/<int:task_id>/', views.edit_task, name='edit_task'),
 	path('tasks/share/<int:task_id>', views.share_task, name='share_task'),
 	path('shared task/<int:task_id>', views.shared_task_view, name='shared_task_view'),

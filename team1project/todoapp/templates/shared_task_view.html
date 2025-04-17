@@ -5,7 +5,7 @@
     <h2 class="mb-4">{{ task.name }}</h2>
 
     <div class="card p-4 shadow">
-        <p> 
+        <p style="color: black;"> 
             Creator: {{ task.creator }}
         <br>
             Description: {{ task.description }}
@@ -20,7 +20,7 @@
                 {% csrf_token %}
                 <button type="submit" class="btn btn-success" name="accept_task_link">Accept Task</button>
             </form>
-        {% endif %}  
+        {% endif %}
     </div>
 </div>
 
