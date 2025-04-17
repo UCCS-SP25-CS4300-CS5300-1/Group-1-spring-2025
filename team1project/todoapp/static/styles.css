@@ -1,4 +1,9 @@
-.button-container{
+.button-container .title-card{
     display: flex;
+    gap: 10px;
+}
+
+.title-card {
+    display: flex; 
     gap: 10px;
 }

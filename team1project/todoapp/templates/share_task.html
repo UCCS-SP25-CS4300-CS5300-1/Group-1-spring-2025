@@ -32,6 +32,7 @@
                 {% empty %}
                     <p>None</p>
             {% endfor %}
+            <p>Link: {{ url }}</p>
 
             <form method="post">
                 {% csrf_token %}

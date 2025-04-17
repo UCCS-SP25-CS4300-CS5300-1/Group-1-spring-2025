@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from .models import Task, Category, TaskCollabRequest
-from django_select2.forms import ModelSelect2Widget
+from django_select2.forms import ModelSelect2Widget, ModelSelect2MultipleWidget
 
 '''
 Allows user to create their accounts with email as optional
@@ -61,3 +61,13 @@ class TaskCollabForm(forms.ModelForm):
         model = TaskCollabRequest
         fields = ['to_user']
         widgets = {'to_user': ModelSelect2Widget(model=User, search_fields=['username__icontains'])}
+
+
+# Return a filter to be used to filter based on task
+class FilterTasksForm(forms.Form): 
+    user_category_filter = forms.ModelMultipleChoiceField(
+        queryset=Category.objects.all(),
+        widget=ModelSelect2MultipleWidget(search_fields=['name__icontains']),
+        required=False,
+        label="Select categories:"
+    )

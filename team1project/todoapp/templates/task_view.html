@@ -2,54 +2,48 @@
 
 {% block content %}
 
-<div class="container mt-4">
-    <h2 class="mb-4">Task Requests</h2>
+{% block extra_css %}
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
+    <style>
+        /* Ensure Select2 dropdown takes full width */
+        .select2-container {
+            width: 50% !important;
+        }
+    </style>
+    <script>
+        $(document).ready(function() {
+            $('.django-select2').select2({
+                width: 'resolve',
+            });  // Apply Select2 styling
+        });
+    </script>
+    {{ form.media.css }}
+{% endblock %}
 
+<!-- Filter tasks GET request -->
+<div class="container mt-4">
     <div class="card p-4 shadow">
-        <table class="table">
-            <tbody>
-                {% if task_requests %}
-                <tr>
-                    <th>Name</th>
-                    <th>Description</th>
-                    <th>Due Date</th>
-                    <th>Progress</th>
-                    <th>Creator</th>
-                    <th>Actions</th>
-                </tr>
-                {% for request in task_requests %}
-                <tr>
-                    <td>{{ request.task.name }}</td>
-                    <td>{{ request.task.description }}</td>
-                    <td>{{ request.task.due_date|date:"M d, Y H:i" }}</td>
-                    <td>{{ request.task.progress }}</td>
-                    <td>Shared from user {{request.task.creator}}</td>
-                    <td>    
-                        <form method="post" action="{% url 'accept_task' request.id %}">
-                            {% csrf_token %}
-                            <button class="btn btn-primary btn-sm" name="accept_request">Accept</button>
-                            <button class="btn btn-danger btn-sm" name="decline_request">Decline</button>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
-                {% else %}
-                <tr>
-                    <td colspan="5" class="text-center">No requests available.</td>
-                </tr>
-                {% endif %}
-            </tbody>
-        </table>
+        <div class="filter-form">
+            <form method="get" name="filter_tasks">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" name="make-filter" class="btn btn-primary">Filter</button>
+            </form> 
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+            {{ form.media.js }}
+        </div>
     </div>
 </div>
 
- <!-- User's Created Tasks -->
+<!-- User's Created Tasks -->
 <div class="container mt-4">
-    <h2 class="mb-4">My Tasks</h2>
-
-    <a href="{% url 'add_task' %}" class="btn btn-primary mb-3">+ Create Task</a>
-
     <div class="card p-4 shadow">
+        <div class="title-card">
+            <h2 class="mb-4">My Tasks</h2>
+
+            <a href="{% url 'add_task' %}" class="btn btn-primary mb-3">+ Create Task</a>
+        </div>
+        
         <table class="table">
             <tbody>
                 <tr>
@@ -61,7 +55,7 @@
                     <th>Categories</th>
                 </tr>
 
-                {% for task in tasks %}
+                {% for task in my_tasks %}
                 <tr>
                     <td>{{ task.name }}</td>
                     <td>{{ task.description }}</td>
@@ -100,9 +94,10 @@
 
 <!-- User's Shared Tasks --> 
 <div class="container mt-4">
-    <h2 class="mb-4">Tasks Shared with Me</h2>
-
     <div class="card p-4 shadow">
+        <div class="title-card">
+            <h2 class="mb-4">Tasks Shared with Me</h2>
+        </div>
         <table class="table">
                 <tr>
                     <th>Name</th>
@@ -143,11 +138,56 @@
     </div>
 </div>
 
+<!-- Incoming Task Requests -->
+<div class="container mt-4">
+    <div class="card p-4 shadow">
+        <div class="title-card">
+            <h2 class="mb-4">Task Requests</h2>
+        </div>
+        <table class="table">
+            <tbody>
+                {% if task_requests %}
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Due Date</th>
+                    <th>Progress</th>
+                    <th>Creator</th>
+                    <th>Actions</th>
+                </tr>
+                {% for request in task_requests %}
+                <tr>
+                    <td>{{ request.task.name }}</td>
+                    <td>{{ request.task.description }}</td>
+                    <td>{{ request.task.due_date|date:"M d, Y H:i" }}</td>
+                    <td>{{ request.task.progress }}</td>
+                    <td>Shared from user {{request.task.creator}}</td>
+                    <td>    
+                        <form method="post" action="{% url 'accept_task' request.id %}">
+                            {% csrf_token %}
+                            <button class="btn btn-primary btn-sm" name="accept_request">Accept</button>
+                            <button class="btn btn-danger btn-sm" name="decline_request">Decline</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center">No requests available.</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
 <!-- User's Archived Tasks -->
 <div class="container mt-4">
-    <h2 class="mb-4">Archived Tasks</h2>
 
     <div class="card p-4 shadow">
+        <div class="title-card">
+            <h2 class="mb-4">Archived Tasks</h2>
+        </div>
         <table class="table">
             <thead>
                 <tr>

@@ -9,9 +9,11 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from django.db.models import Q
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
 
-from .forms import CustomUserCreationForm, TaskForm, TaskCollabForm
+from .forms import CustomUserCreationForm, TaskForm, TaskCollabForm, FilterTasksForm
 from .models import Task, TaskCollabRequest
 from .utils import TaskCalendar
 from datetime import datetime
@@ -42,18 +44,23 @@ def register(request):
     return render(request, "register.html", {"form": form} )
 
 # Index class for handling the forms on profile settings
-class ProfileSettings(View):
-    def get(self, request):
-        return render(request, "profile_settings.html")
+class ProfileSettings(LoginRequiredMixin, View):
+	login_url = '/'
 
-    def post(self, request):
-        print("Logging out")
-        if "logout" in request.POST:
-                logout(request)
-                messages.success(request, "You have been logged out.")
-                return redirect("index")
+	def get(self, request):
+		return render(request, "profile_settings.html")
 
-class EditProfile(View):
+
+	def post(self, request):
+		print("Logging out")
+		if "logout" in request.POST:
+				logout(request)
+				messages.success(request, "You have been logged out.")
+				return redirect("index")
+
+class EditProfile(LoginRequiredMixin, View):
+    login_url = '/'
+
     def get(self, request):
         return render(request, "edit_profile.html")
 
@@ -78,6 +85,7 @@ class EditProfile(View):
         messages.success(request, "Profile updated successfully!")
         return redirect("profile_settings")
 
+@login_required(login_url='/')
 def task_view(request):
     tasks = Task.objects.filter(
         Q(creator=request.user) | Q(assigned_users=request.user),
@@ -93,14 +101,37 @@ def task_view(request):
     ).distinct().order_by('-due_date')[:10]
 
 
-
+    form, filtered_tasks, shared_filtered_tasks = get_filtered_tasks(request)
     return render(request, 'task_view.html', {
-        'tasks': tasks, 
+        'my_tasks': filtered_tasks, 
         'task_requests': task_requests, 
-        'shared_tasks': shared_tasks, 
+        'shared_tasks': shared_filtered_tasks, 
         'vapid_key': settings.VAPID_PUBLIC_KEY,
-        'archived_tasks': archived_tasks,})
+        'archived_tasks': archived_tasks,
+		'form': form})
 
+
+def get_filtered_tasks(request):
+    form = FilterTasksForm(request.GET or None)
+    my_filtered_tasks = Task.objects.filter(creator=request.user)
+    shared_filtered_tasks = Task.objects.filter(assigned_users=request.user)
+
+    if 'make-filter' in request.GET:
+        if form.is_valid():
+            user_filter = form.cleaned_data['user_category_filter']
+            if user_filter:
+                my_filtered_tasks = my_filtered_tasks.filter(
+                    Q(categories__in=user_filter) | Q(categories=None)
+                ).distinct()
+                shared_filtered_tasks = shared_filtered_tasks.filter(
+                    Q(categories__in=user_filter) | Q(categories=None)
+                ).distinct()
+            
+    return form, my_filtered_tasks, shared_filtered_tasks
+
+
+
+@login_required(login_url='/')
 def add_task(request):
     if request.method == "POST":
         form = TaskForm(request.POST)
@@ -115,7 +146,7 @@ def add_task(request):
 
     return render(request, 'add_task.html', {'form': form})
 
-
+@login_required(login_url='/')
 def delete_task(request, task_id):
     task = get_object_or_404(Task, id=task_id)
 
@@ -123,6 +154,7 @@ def delete_task(request, task_id):
 
     return redirect('task_view')  # Redirect back to task list
 
+@login_required(login_url = '/')
 def edit_task(request, task_id):
     task = get_object_or_404(Task, id=task_id)
 
@@ -141,11 +173,13 @@ def edit_task(request, task_id):
     return render(request, 'add_task.html', {'form': form, 'edit_mode': True})
 
 
+@login_required(login_url='/')
 def share_task(request, task_id):
     task = get_object_or_404(Task, id=task_id)
+    share_url = f"{request.get_host()}/shared task/{task_id}"
+
     if request.method == 'POST':
         form = TaskCollabForm(request.POST, user=request.user, task=task)
-
         if form.is_valid():
             from_user = request.user
             task_collab_obj = form.save(commit=False)
@@ -168,9 +202,9 @@ def share_task(request, task_id):
         task = get_object_or_404(Task, id=task_id)
         form = TaskCollabForm(user=request.user, task=task)
 
-    return render(request, 'share_task.html', {'form': form, 'task': task})
+    return render(request, 'share_task.html', {'form': form, 'task': task, 'url': share_url, })
 
-
+@login_required(login_url='/')
 def accept_task(request, request_id):
     if request.method == 'POST':
         collab_request = get_object_or_404(TaskCollabRequest, id=request_id)
@@ -186,6 +220,66 @@ def accept_task(request, request_id):
         return redirect('task_view')
 
 
+def shared_task_view(request, task_id):
+	'''
+	This function allows users to view shared task and accept it without creating a request object
+
+	Args: 
+		request: Detect type of request.
+		task_id: Pass the shared task id with other users
+	
+	Returns: 
+		If successful, redirects user back to task view page
+	'''
+	task = get_object_or_404(Task, id=task_id)
+	no_requests = True
+	if request.user.is_authenticated:
+		task_collab_filter = TaskCollabRequest.objects.filter(task_id = task_id, to_user=request.user)
+		if task_collab_filter.exists():
+			no_requests = False
+
+	can_accept = (
+		request.user.is_authenticated and 
+		request.user.username != task.creator.username and 
+		request.user not in task.assigned_users.all() 
+		and no_requests
+		)
+	context = {
+		"task": task,
+		"show_button": can_accept
+	}
+
+	return render(request, 'shared_task_view.html', context)
+
+
+@login_required(login_url='/')
+def accept_task_link(request, task_id):
+	task = get_object_or_404(Task, id=task_id)
+	task_collab_filter = TaskCollabRequest.objects.filter(task_id = task_id, to_user=request.user)
+	
+	# anonymous users do not have requests, but check if authenticated users have an outstanding request
+	no_requests = True
+	if request.user.is_authenticated:
+		task_collab_filter = TaskCollabRequest.objects.filter(task_id = task_id, to_user=request.user)
+		if task_collab_filter.exists():
+			no_requests = False
+
+	can_accept = (
+		request.user.is_authenticated and 
+		request.user.username != task.creator.username and 
+		request.user not in task.assigned_users.all() 
+		and no_requests
+		)
+	
+	# Check if user is valid for accepting the task
+	if request.method =='POST' and 'accept_task_link' in request.POST:
+		if can_accept:	
+			task.assigned_users.add(request.user)
+			return redirect('task_view')
+	return redirect('shared_task_view', task_id=task.id)
+
+
+@login_required(login_url='/')
 def exit_task(request, task_id):
     task = get_object_or_404(Task, id=task_id)
     task.assigned_users.remove(request.user)
@@ -225,6 +319,8 @@ def save_subscription(request):
         return JsonResponse({'success': True})
     return JsonResponse({'success': False})
 
+
+@login_required(login_url='/')
 def calender_view(request, year=None, month=None):
     if year is None or month is None:
         today = datetime.today()
@@ -252,4 +348,3 @@ def calender_view(request, year=None, month=None):
         'month': month,
     }
     return render(request, 'home.html', context)
-

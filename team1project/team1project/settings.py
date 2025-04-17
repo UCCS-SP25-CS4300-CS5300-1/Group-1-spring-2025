@@ -161,3 +161,6 @@ DEFAULT_FROM_EMAIL = 'team1todo@gmail.com'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+SELECT2_CACHE_BACKEND = 'default'
+SELECT2_CACHE_BACKEND_ALIAS = 'select2'
