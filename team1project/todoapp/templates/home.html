@@ -46,9 +46,17 @@
         border-radius: 4px;
     }
 
-  </style>
-  
+    .calendar .holiday {
+        font-size: 0.75em;
+        margin-top: 2px;
+        padding: 2px 4px;
+        background-color: #fdecea;   
+        color: #a94442;              
+        border-radius: 4px;
+        }
 
+
+  </style>
 
 {% extends 'base.html' %}
     {% block content %}
@@ -68,7 +76,22 @@
     </style>
     <div class="col-md-7">
         <div class="calendar">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <!-- NOTE: no leading slash, just "?year=…&month=…" -->
+            <a href="?year={{ prev_year }}&month={{ prev_month }}" class="btn btn-outline-secondary">
+              ← Prev
+            </a>
+  
+            <h4>{{ month }}/{{ year }}</h4>
+  
+            <a href="?year={{ next_year }}&month={{ next_month }}" class="btn btn-outline-secondary">
+              Next →
+            </a>
+          </div>
+  
+          <div id="calendar-container">
             {{ calendar|safe }}
+          </div>
         </div>
     </div>
         <!-- Optionally, list your tasks somewhere on the page -->
@@ -103,7 +126,11 @@
                 <a href="{% url 'task_view' %}" class="btn btn-light border border-dark" >Task Page</a>
             </div>
         </div>
+      </div>
+  
     </div>
-    {% endblock %}
+  </div>
+  {% endblock %}
+    
 </body>
 </html>
