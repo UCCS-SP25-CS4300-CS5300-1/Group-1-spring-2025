@@ -20,6 +20,18 @@
     {{ form.media.css }}
 {% endblock %}
 
+{% if suggested_name %}
+    <div class="alert alert-info ">
+        <strong>˗ˏˋ ★ ˎˊ˗ &ensp; Task Suggestion: &ensp; </strong> {{ suggested_name }}
+        <a href="{% url 'add_task' %}?name={{ suggested_name|urlencode }}&description={{ suggested_description|urlencode }}{% for cat in suggested_categories %}&categories={{ cat|urlencode }}{% endfor %}" class="btn btn-secondary">
+            Add Task
+        </a>
+    </div>
+{% else %}
+    <strong>You have no task suggestions at the moment. Create a task first!</strong>
+{% endif %}
+
+
 <!-- User's Created Tasks -->
 <div class="container mt-4">
     <div class="card p-4 shadow">
