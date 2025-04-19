@@ -15,8 +15,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
 import os
 from .forms import CustomUserCreationForm, TaskForm, TaskCollabForm, FilterTasksForm
-from .models import Task, TaskCollabRequest, Category
-from .models import Task, TaskCollabRequest, WebPushSubscription
+from .models import Task, TaskCollabRequest, Category, WebPushSubscription
 from .utils import TaskCalendar
 from datetime import datetime
 import openai
@@ -438,3 +437,4 @@ def service_worker(request):
 
 def about(request):
     return render(request, 'about.html')
+ 
