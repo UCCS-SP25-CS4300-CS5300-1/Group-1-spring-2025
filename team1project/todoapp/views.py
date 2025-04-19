@@ -14,17 +14,13 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
 
 from .forms import CustomUserCreationForm, TaskForm, TaskCollabForm, FilterTasksForm
-from .models import Task, TaskCollabRequest
+from .models import Task, TaskCollabRequest, Category
 from .utils import TaskCalendar
 from datetime import datetime
 import openai
 import json
 
 # Create your views here.
-
-# Retrieves user data and sends to OpenAI API to faciliate task suggestions
-import openai
-from django.conf import settings
 
 # Retrieves user data and sends to OpenAI API to facilitate task suggestions
 def get_ai_task_suggestion(user):
@@ -40,12 +36,12 @@ def get_ai_task_suggestion(user):
         })
 
     task_data_str = "\n".join([
-        f"Task: {task['name']}\nDescription: {task['description']}\nCategories: {', '.join(task['categories'])}"
+        f"Task: {task['name']}\nDescription: {task['description']}\nDue Date: {task['due_date']}\nCategories: {', '.join(task['categories'])}"
         for task in task_data
     ])
 
     prompt = f"""
-    Based on the user's previous tasks and patterns, suggest a new task for the user. Return the response in JSON format with the following keys: name, description, due date, and categories.
+    Based on the user's previous tasks and patterns, suggest a new task for the user. Try to predict what task the user wants to complete next, or what task they may have forgotten to create. Make sure the task is relevant. Return the response in JSON format with the following keys: name, description, due date, and categories.
 
     User's Tasks:
     {task_data_str}
@@ -196,11 +192,25 @@ def add_task(request):
             form.save_m2m()
             return redirect('task_view')
     else:
+        name = request.GET.get('name')
+        description = request.GET.get('description')
+        categories = request.GET.getlist('categories')
+        due_date = request.GET.get('due_date')
+        # print("Due date for task:", due_date)
+        
         form = TaskForm()
+        initial = {}
 
-        suggested_task = request.GET.get('suggested_task')
-        if suggested_task:
-            form.initial = {'name': suggested_task}
+        if name:
+            initial['name'] = name
+        if description:
+            initial['description'] = description
+        if categories:
+            initial['categories'] = list(Category.objects.filter(name__in=categories).values_list('id', flat=True))
+        if due_date:
+            initial['due_date'] = datetime.strptime(due_date, "%Y-%m-%d").date()
+
+        form.initial = initial
 
     return render(request, 'add_task.html', {'form': form})
 

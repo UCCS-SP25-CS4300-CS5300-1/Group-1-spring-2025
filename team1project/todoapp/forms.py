@@ -30,7 +30,6 @@ class TaskForm(forms.ModelForm):
             'progress': forms.NumberInput(attrs={'type': 'range', 'min': '0', 'max': '100', 'step': '1', 'oninput': 'updateProgressLabel(this.value)'}),
         }
 
-
 class TaskCollabForm(forms.ModelForm):
     # Prevent the current user from showing up in the queryset
     def __init__(self, *args, **kwargs):
