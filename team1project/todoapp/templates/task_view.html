@@ -20,9 +20,16 @@
     {{ form.media.css }}
 {% endblock %}
 
+<div class="alert alert-info alert-dismissible fade show d-flex justify-content-between align-items-center flex-wrap gap-2 border border-dark" style="background-color:white;" role="alert">
+    <p class="mb-0">
+      Welcome to the tasks page! Here, you will be able to view and manage tasks that are active, shared with you, and archived. You are also able to create new tasks and edit existing ones.
+    </p>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>  
+
 {% if suggested_name %}
     <div class="alert alert-info d-flex justify-content-between align-items-center flex-wrap gap-2">
-        <p style= "margin-top: 10px;"><b>˗ˏˋ ★ ˎˊ˗ &ensp; Task Suggestion: &ensp; </b> {{ suggested_name }}</p>
+        <p style= "margin-top: 10px;" title="Personalized tasks are suggested to you based on your activity and patterns! Click 'Add Task' to customize this task and add it to your calender."><b>˗ˏˋ ★ ˎˊ˗ &ensp; Task Suggestion: &ensp; </b> {{ suggested_name }}</p>
         <a href="{% url 'add_task' %}?name={{ suggested_name|urlencode }}&description={{ suggested_description|urlencode }}{% for cat in suggested_categories %}&categories={{ cat|urlencode }}{% endfor %}" class="btn btn-light border border-dark">
             Add Task
         </a>
@@ -31,12 +38,11 @@
     <strong>You have no task suggestions at the moment. Create a task first!</strong>
 {% endif %}
 
-
 <!-- User's Created Tasks -->
 <div class="container mt-4">
     <div class="card p-4 shadow">
         <div class="filter-form">
-            <form method="get" name="filter_tasks" class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <form method="get" title="Select a category to filter all tasks based on their category assignment." name="filter_tasks" class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                 {% csrf_token %}
                 {{ form.as_p }}
                 <button type="submit" name="make-filter" class="btn btn-light border border-dark">Filter</button>
