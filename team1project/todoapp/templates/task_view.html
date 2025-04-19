@@ -7,7 +7,7 @@
     <style>
         /* Ensure Select2 dropdown takes full width */
         .select2-container {
-            width: 50% !important;
+            width: 300px !important;
         }
     </style>
     <script>
@@ -20,28 +20,23 @@
     {{ form.media.css }}
 {% endblock %}
 
-<!-- Filter tasks GET request -->
+<!-- User's Created Tasks -->
 <div class="container mt-4">
     <div class="card p-4 shadow">
         <div class="filter-form">
-            <form method="get" name="filter_tasks">
+            <form method="get" name="filter_tasks" class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                 {% csrf_token %}
                 {{ form.as_p }}
-                <button type="submit" name="make-filter" class="btn btn-primary">Filter</button>
+                <button type="submit" name="make-filter" class="btn btn-secondary" style="color: white; background-color: gray;">Filter</button>
             </form> 
             <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
             {{ form.media.js }}
         </div>
-    </div>
-</div>
 
-<!-- User's Created Tasks -->
-<div class="container mt-4">
-    <div class="card p-4 shadow">
-        <div class="title-card">
+        <div class="title-card d-flex justify-content-between align-items-center mt-4 mb-3" style="margin-top:20px;">
             <h2 class="mb-4">My Tasks</h2>
 
-            <a href="{% url 'add_task' %}" class="btn btn-primary mb-3">+ Create Task</a>
+            <a href="{% url 'add_task' %}" class="btn btn-secondary mb-3" style="color: white; background-color: gray;">+ Create Task</a>
         </div>
         
         <table class="table">
@@ -89,14 +84,9 @@
                 {% endfor %}
             </tbody>
         </table>
-    </div>
-</div>
 
-<!-- User's Shared Tasks --> 
-<div class="container mt-4">
-    <div class="card p-4 shadow">
         <div class="title-card">
-            <h2 class="mb-4">Tasks Shared with Me</h2>
+            <h2 class="mb-4" style="margin-top:20px;">Tasks Shared with Me</h2>
         </div>
         <table class="table">
                 <tr>
@@ -135,14 +125,9 @@
                 {% endfor %}
             </tbody>
         </table>
-    </div>
-</div>
 
-<!-- Incoming Task Requests -->
-<div class="container mt-4">
-    <div class="card p-4 shadow">
         <div class="title-card">
-            <h2 class="mb-4">Task Requests</h2>
+            <h2 class="mb-4" style="margin-top: 20px;">Task Requests</h2>
         </div>
         <table class="table">
             <tbody>
