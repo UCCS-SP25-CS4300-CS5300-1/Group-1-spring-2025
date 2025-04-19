@@ -7,29 +7,33 @@ from django.views import View
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_GET
 from django.conf import settings
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
-
+import os
 from .forms import CustomUserCreationForm, TaskForm, TaskCollabForm, FilterTasksForm
-from .models import Task, TaskCollabRequest
+from .models import Task, TaskCollabRequest, WebPushSubscription
 from .utils import TaskCalendar
 from datetime import datetime
 import json
+import traceback
+from .forms import CustomAuthenticationForm
 
-# Create your views here.
+
 def index(request):
-    form = AuthenticationForm()
+    form = CustomAuthenticationForm()
     if request.method == 'POST':
-        form = AuthenticationForm(request, data=request.POST)
+        form = CustomAuthenticationForm(request, data=request.POST)
         if form.is_valid():
             user = form.get_user()
             login(request, user)
             return redirect("task_view")
 
     return render(request, 'index.html', {'form': form})
+
 
 def register(request):
     form = CustomUserCreationForm()
@@ -106,7 +110,7 @@ def task_view(request):
         'my_tasks': filtered_tasks, 
         'task_requests': task_requests, 
         'shared_tasks': shared_filtered_tasks, 
-        'vapid_key': settings.VAPID_PUBLIC_KEY,
+        'vapid_key': settings.WEBPUSH_SETTINGS['VAPID_PUBLIC_KEY'],
         'archived_tasks': archived_tasks,
 		'form': form})
 
@@ -302,22 +306,28 @@ def task_archive(request):
     })
 
 
-
 @csrf_exempt
 def save_subscription(request):
     if request.method == 'POST':
-        subscription_data = json.loads(request.body.decode('utf-8'))
+        if not request.user.is_authenticated:
+            return JsonResponse({'success': False, 'error': 'User not authenticated'}, status=403)
+        try:
+            subscription_data = json.loads(request.body.decode('utf-8'))
+            save_info(request.user, subscription_data)
+            return JsonResponse({'success': True})
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+        except Exception as e:
+            print("Error in save_subscription:", e)
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    return JsonResponse({'success': False, 'error': 'Invalid method'}, status=405)
 
-        from webpush.models import PushInformation
-        from webpush import save_info
 
-        save_info(
-            request.user,
-            subscription_data
-        )
-
-        return JsonResponse({'success': True})
-    return JsonResponse({'success': False})
+def save_info(user, subscription_data):
+    WebPushSubscription.objects.update_or_create(
+        user=user,
+        defaults={'subscription_info': subscription_data}
+    )
 
 
 @login_required(login_url='/')
@@ -348,3 +358,19 @@ def calender_view(request, year=None, month=None):
         'month': month,
     }
     return render(request, 'home.html', context)
+
+
+@require_GET
+@csrf_exempt
+def service_worker(request):
+    # Path to your static webpush-sw.js file
+    file_path = os.path.join(settings.BASE_DIR, 'todoapp', 'static', 'webpush-sw.js')
+
+    with open(file_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+
+    return HttpResponse(content, content_type='application/javascript')
+
+
+def about(request):
+    return render(request, 'about.html')

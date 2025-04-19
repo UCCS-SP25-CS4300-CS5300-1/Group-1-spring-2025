@@ -9,6 +9,11 @@ self.addEventListener('push', function(event) {
             data = event.data.json();
         } catch (e) {
             console.error("Error parsing push data:", e);
+            // fallback to text
+            data = {
+                head: "Notification",
+                body: event.data.text()
+            };
         }
     }
 

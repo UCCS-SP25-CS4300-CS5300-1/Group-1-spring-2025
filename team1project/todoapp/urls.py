@@ -22,7 +22,10 @@ urlpatterns = [
 	path('tasks/accept/<int:request_id>/', views.accept_task, name='accept_task'),
 	path('tasks/exit/<int:task_id>/', views.exit_task, name='exit_task'),
 	path('webpush/', include('webpush.urls')),
-	path('webpush/save_information/', views.save_subscription, name='save_subscription'),
 	path('home/', views.calender_view , name='home'),
 	path('edit_profile/', EditProfile.as_view(), name="edit_profile"),
+	path('webpush-sw.js', views.service_worker, name='service_worker'),
+	path('save-subscription/', views.save_subscription, name='save_subscription'),
+	path('service-worker.js', views.service_worker, name='service_worker'),
+	path('about/', views.about, name='about'),
 ]

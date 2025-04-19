@@ -48,6 +48,7 @@ class TaskCollabRequest(models.Model):
     to_user = models.ForeignKey(User, related_name="to_user", on_delete=models.CASCADE)
 
 
-class Subscription(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    subscription = models.TextField()
+class WebPushSubscription(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    subscription_info = models.JSONField()  # If you're using Django 3.1+
+    created_at = models.DateTimeField(auto_now_add=True)
