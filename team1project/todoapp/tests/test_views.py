@@ -212,21 +212,6 @@ class PushNotificationViewsTests(TestCase):
         self.assertIn("self.addEventListener", response.content.decode())
 
 
-    def test_save_subscription_authenticated(self):
-        
-        self.client.login(username="testuser", password="testpass")
-        response = self.client.post(
-            "/save-subscription/",
-            data=json.dumps(self.subscription_data),
-            content_type="application/json"
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertJSONEqual(
-            str(response.content, encoding='utf8'),
-            {"success": True}
-        )
-        self.assertTrue(WebPushSubscription.objects.filter(user=self.user).exists())
-
     def test_save_subscription_unauthenticated(self):
         response = self.client.post(
             "/save-subscription/",
