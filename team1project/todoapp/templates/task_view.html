@@ -27,16 +27,31 @@
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
   </div>  
 
-{% if suggested_name %}
-    <div class="alert alert-info d-flex justify-content-between align-items-center flex-wrap gap-2">
-        <p style= "margin-top: 10px;" title="Personalized tasks are suggested to you based on your activity and patterns! Click 'Add Task' to customize this task and add it to your calender."><b>˗ˏˋ ★ ˎˊ˗ &ensp; Task Suggestion: &ensp; </b> {{ suggested_name }}</p>
-        <a href="{% url 'add_task' %}?name={{ suggested_name|urlencode }}&description={{ suggested_description|urlencode }}{% for cat in suggested_categories %}&categories={{ cat|urlencode }}{% endfor %}" class="btn btn-light border border-dark">
-            Add Task
-        </a>
-    </div>
-{% else %}
-    <strong>You have no task suggestions at the moment. Create a task first!</strong>
-{% endif %}
+
+<div class="alert alert-info d-flex justify-content-between align-items-center flex-wrap gap-2" style="display: flex;">
+    <!-- Display generated task name and an option to add the generated task -->
+    {% if suggested_name and has_task %}
+            <p style= "margin-top: 10px;" title="Personalized tasks are suggested to you based on your activity and patterns! Click 'Add Task' to customize this task and add it to your calender."><b>˗ˏˋ ★ ˎˊ˗ &ensp; Task Suggestion: &ensp; </b> {{ suggested_name }}</p>
+            <a href="{% url 'add_task' %}?name={{ suggested_name|urlencode }}&description={{ suggested_description|urlencode }}{% for cat in suggested_categories %}&categories={{ cat|urlencode }}{% endfor %}" class="btn btn-light border border-dark">
+                Add Task
+            </a>
+    
+    <!-- If user has not generated a task print this -->
+    {% elif has_task and not suggested_name %}
+        <strong>Generate a Task</strong>
+
+    <!-- Prevent user from generating a task before making a task of their own -->
+    {% else %}
+            <strong>Make a task before generating one</strong>
+    {% endif %}
+
+        <!-- Allow user to generate a task with AI if they have at least one task they made -->
+    {% if has_task %}
+        <form method="get">
+            <button name="generate-task" type="submit" class="btn btn-light border border-dark">Generate Task</button>
+        </form>
+    {% endif %}
+</div>
 
 <!-- User's Created Tasks -->
 <div class="container mt-4">

@@ -23,45 +23,47 @@ import json
 # Create your views here.
 
 # Retrieves user data and sends to OpenAI API to facilitate task suggestions
-def get_ai_task_suggestion(user):
-    tasks = Task.objects.filter(creator=user)
+def get_ai_task_suggestion(request):
+    if 'generate-task' in request.GET:
+        tasks = Task.objects.filter(creator=request.user)
 
-    task_data = []
-    for task in tasks:
-        task_data.append({
-            'name': task.name,
-            'description': task.description,
-            'due_date': task.due_date,
-            'categories': [category.name for category in task.categories.all()]
-        })
+        task_data = []
+        for task in tasks:
+            task_data.append({
+                'name': task.name,
+                'description': task.description,
+                'due_date': task.due_date,
+                'categories': [category.name for category in task.categories.all()]
+            })
 
-    task_data_str = "\n".join([
-        f"Task: {task['name']}\nDescription: {task['description']}\nDue Date: {task['due_date']}\nCategories: {', '.join(task['categories'])}"
-        for task in task_data
-    ])
+        task_data_str = "\n".join([
+            f"Task: {task['name']}\nDescription: {task['description']}\nDue Date: {task['due_date']}\nCategories: {', '.join(task['categories'])}"
+            for task in task_data
+        ])
 
-    prompt = f"""
-    Based on the user's previous tasks and patterns, suggest a new task for the user. Try to predict what task the user wants to complete next, or what task they may have forgotten to create. Make sure the task is relevant. Return the response in JSON format with the following keys: name, description, due date, and categories.
+        prompt = f"""
+        Based on the user's previous tasks and patterns, suggest a new task for the user. Try to predict what task the user wants to complete next, or what task they may have forgotten to create. Make sure the task is relevant. Return the response in JSON format with the following keys: name, description, due date, and categories.
 
-    User's Tasks:
-    {task_data_str}
+        User's Tasks:
+        {task_data_str}
 
-    Respond only with the JSON object.
-    """
+        Respond only with the JSON object.
+        """
 
-    client = openai.OpenAI(api_key=settings.OPENAI_TASK_SUGGESTION)
+        client = openai.OpenAI(api_key=settings.OPENAI_TASK_SUGGESTION)
 
-    response = client.completions.create(
-        model="gpt-3.5-turbo-instruct",
-        prompt=prompt,
-        max_tokens=100,
-        temperature=0.7,
-    )
+        response = client.completions.create(
+            model="gpt-3.5-turbo-instruct",
+            prompt=prompt,
+            max_tokens=100,
+            temperature=0.7,
+        )
 
-    try:
-        return json.loads(response.choices[0].text.strip())
-    except json.JSONDecodeError:
-        return None
+        try:
+            return json.loads(response.choices[0].text.strip())
+        except json.JSONDecodeError:
+            return None
+
 
 def index(request):
     form = AuthenticationForm()
@@ -143,10 +145,11 @@ def task_view(request):
     ).filter(
         Q(creator=request.user) | Q(assigned_users=request.user)
     ).distinct().order_by('-due_date')[:10]
+    has_task = Task.objects.filter(creator=request.user).exists()
 
     form, filtered_tasks, shared_filtered_tasks = get_filtered_tasks(request)
-
-    task_suggestion = get_ai_task_suggestion(request.user)
+    
+    task_suggestion = get_ai_task_suggestion(request)
     suggested_name = task_suggestion.get('name', '') if task_suggestion else ''
     suggested_description = task_suggestion.get('description', '') if task_suggestion else ''
     suggested_categories = task_suggestion.get('categories', []) if task_suggestion else []
@@ -161,6 +164,7 @@ def task_view(request):
         'suggested_name': suggested_name,
         'suggested_description': suggested_description,
         'suggested_categories': suggested_categories,
+        'has_task': has_task
     })
 
 def get_filtered_tasks(request):
