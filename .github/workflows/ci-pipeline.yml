@@ -244,8 +244,20 @@ jobs:
           git reset --hard origin/dev-branch
           git clean -fd
           git checkout dev-branch
-          git pull origin dev-branch          
+          git pull origin dev-branch
+
+          # ensure .env is in place
+          if [ ! -f .env ]; then
+            echo "OPENAI_TASK_SUGGESTION"=${{ secrets.OPENAI_TASK_SUGGESTION }}" > .env
+            echo "WEBPUSH_SETTINGS"=${{ secrets.WEBPUSH_SETTINGS }}" >> .env
+            echo "VAPID_PUBLIC_KEY"=${{ secrets.VAPID_PUBLIC_KEY }}" >> .env
+            echo "EMAIL_HOST_PASSWORD"=${{ secrets.EMAIL_HOST_PASSWORD }}" >> .env
+          fi
+          
+          pip install --upgrade pip  
           pip install -r requirements.txt
+          python manage.py makemigrations
+          python manage.py migrate
           python manage.py runserver --noinput
           sudo systemctl reload nginx
           sudo chmod 666 /var/www/django_app/Group-1-spring-2025/team1project/db.sqlite3
