@@ -25,6 +25,7 @@ from .forms import CustomAuthenticationForm
 import holidays
 
 
+
 # Create your views here.
 
 # Retrieves user data and sends to OpenAI API to facilitate task suggestions
@@ -397,6 +398,52 @@ def save_info(user, subscription_data):
         defaults={'subscription_info': subscription_data}
     )
 
+
+@login_required(login_url='/')
+def calender_view(request, year=None, month=None):
+    if year is None or month is None:
+        today = datetime.today()
+        year = today.year
+        month = today.month
+    else:
+        year, month = int(year), int(month)
+    
+    # Fetch tasks for the month (using your due_date field)
+    tasks = Task.objects.filter(
+    creator=request.user,
+    due_date__year=year,
+    due_date__month=month
+    ).order_by('due_date')
+
+    
+    # Create a TaskCalendar instance and generate the HTML
+    cal = TaskCalendar(tasks, year, month)
+    html_calendar = cal.formatmonth(year, month)
+    
+    context = {
+        'calendar': html_calendar,
+        'tasks': tasks,
+        'year': year,
+        'month': month,
+    }
+    return render(request, 'home.html', context)
+
+
+@require_GET
+@csrf_exempt
+def service_worker(request):
+    # Path to your static webpush-sw.js file
+    file_path = os.path.join(settings.BASE_DIR, 'todoapp', 'static', 'webpush-sw.js')
+
+    with open(file_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+
+    return HttpResponse(content, content_type='application/javascript')
+
+
+def about(request):
+    return render(request, 'about.html')
+ 
 
 @csrf_exempt
 def calender_view(request):
