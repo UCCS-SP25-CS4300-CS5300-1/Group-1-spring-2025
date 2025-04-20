@@ -21,6 +21,9 @@
     <style>
         body {
             margin: 0;
+            background-image: url('../static/todolist-background.png');
+            background-size: cover;
+            background-repeat: no-repeat;
         }
 
         .nav-hover {
@@ -119,7 +122,7 @@
     <!-- Sidebar -->
     <div class="sidebar collapsed" id="sidebar">
         <ul class="nav flex-column mt-3">
-            <li class="nav-item">
+            <li class="nav-item" style="margin-top: 25px;">
                 <a class="nav-link" href="{% url 'index' %}">Welcome</a>
                 {% if user.is_authenticated %}
                 <a class="nav-link" href="{% url 'home' %}">Home</a>
