@@ -6,6 +6,7 @@ from datetime import timedelta
 from todoapp.models import Task
 from django.contrib.auth.models import User
 from unittest.mock import patch
+from django.utils.timezone import localtime
 
 class SendTaskRemindersCommandTest(TestCase):
     def setUp(self):
