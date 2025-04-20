@@ -2,12 +2,13 @@ import calendar
 from datetime import datetime
 
 class TaskCalendar(calendar.HTMLCalendar):
-    def __init__(self, tasks, year, month, holidays=None):
+    def __init__(self, tasks, year, month, holidays=None, user=None):
         super().__init__()
         self.year     = year
         self.month    = month
         self.tasks    = self.group_by_day(tasks)
         self.holidays = holidays or {}
+        self.user     = user
 
     def group_by_day(self, tasks):
         """Organize tasks by their due day for quick lookup."""
@@ -26,13 +27,17 @@ class TaskCalendar(calendar.HTMLCalendar):
         if day == today.day and self.month == today.month and self.year == today.year:
             cssclass += ' today'
 
-        # 1) tasks
+        # 1) tasks (mark shared ones)
         day_tasks = self.tasks.get(day, [])
-        task_html = ''.join(
-            f'<div class="task">{t.name[:7]}</div>'
-            for t in day_tasks[:2]
-        ) + ('<div class="task">…</div>' if len(day_tasks) > 2 else '')
-
+        snippets = []
+        for t in day_tasks[:2]:
+            shared_flag = ' shared' if t.creator != self.user else ''
+            snippets.append(
+                f'<div class="task{shared_flag}">{t.name[:7]}</div>'
+            )
+        if len(day_tasks) > 2:
+            snippets.append('<div class="task more">…</div>')
+        task_html = ''.join(snippets)
         # 2) holiday (if any)
         hol_name = self.holidays.get(day)
         hol_html = f'<div class="holiday">{hol_name}</div>' if hol_name else ''

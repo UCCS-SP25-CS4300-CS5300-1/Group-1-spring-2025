@@ -411,11 +411,11 @@ def calender_view(request):
 
     # 2) Fetch tasks for the calendar and for the sidebar
     monthly_tasks = Task.objects.filter(
-        creator=request.user,
+        Q(creator=request.user) | Q(assigned_users=request.user),
         due_date__year=year,
         due_date__month=month,
         is_completed=False
-    ).order_by('due_date')
+    ).distinct().order_by('due_date')
 
     all_tasks = Task.objects.filter(
         creator=request.user,
