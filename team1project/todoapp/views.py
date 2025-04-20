@@ -14,12 +14,57 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
 
 from .forms import CustomUserCreationForm, TaskForm, TaskCollabForm, FilterTasksForm
-from .models import Task, TaskCollabRequest
+from .models import Task, TaskCollabRequest, Category
 from .utils import TaskCalendar
 from datetime import datetime
+import openai
 import json
 
 # Create your views here.
+
+# Retrieves user data and sends to OpenAI API to facilitate task suggestions
+def get_ai_task_suggestion(request):
+    if 'generate-task' in request.GET:
+        tasks = Task.objects.filter(creator=request.user)
+
+        task_data = []
+        for task in tasks:
+            task_data.append({
+                'name': task.name,
+                'description': task.description,
+                'due_date': task.due_date,
+                'categories': [category.name for category in task.categories.all()]
+            })
+
+        task_data_str = "\n".join([
+            f"Task: {task['name']}\nDescription: {task['description']}\nDue Date: {task['due_date']}\nCategories: {', '.join(task['categories'])}"
+            for task in task_data
+        ])
+
+        prompt = f"""
+        Based on the user's previous tasks and patterns, suggest a new task for the user. Try to predict what task the user wants to complete next, or what task they may have forgotten to create. Make sure the task is relevant. Return the response in JSON format with the following keys: name, description, due date, and categories.
+
+        User's Tasks:
+        {task_data_str}
+
+        Respond only with the JSON object.
+        """
+
+        client = openai.OpenAI(api_key=settings.OPENAI_TASK_SUGGESTION)
+
+        response = client.completions.create(
+            model="gpt-3.5-turbo-instruct",
+            prompt=prompt,
+            max_tokens=100,
+            temperature=0.7,
+        )
+
+        try:
+            return json.loads(response.choices[0].text.strip())
+        except json.JSONDecodeError:
+            return None
+
+
 def index(request):
     form = AuthenticationForm()
     if request.method == 'POST':
@@ -91,6 +136,7 @@ def task_view(request):
         Q(creator=request.user) | Q(assigned_users=request.user),
         Q(is_completed=False) | Q(is_completed=True, due_date__gte=timezone.now())
     ).distinct()
+
     task_requests = TaskCollabRequest.objects.filter(to_user=request.user)
     shared_tasks = Task.objects.filter(assigned_users=request.user) 
     archived_tasks = Task.objects.filter(
@@ -99,17 +145,27 @@ def task_view(request):
     ).filter(
         Q(creator=request.user) | Q(assigned_users=request.user)
     ).distinct().order_by('-due_date')[:10]
-
+    has_task = Task.objects.filter(creator=request.user).exists()
 
     form, filtered_tasks, shared_filtered_tasks = get_filtered_tasks(request)
+    
+    task_suggestion = get_ai_task_suggestion(request)
+    suggested_name = task_suggestion.get('name', '') if task_suggestion else ''
+    suggested_description = task_suggestion.get('description', '') if task_suggestion else ''
+    suggested_categories = task_suggestion.get('categories', []) if task_suggestion else []
+
     return render(request, 'task_view.html', {
         'my_tasks': filtered_tasks, 
         'task_requests': task_requests, 
         'shared_tasks': shared_filtered_tasks, 
         'vapid_key': settings.VAPID_PUBLIC_KEY,
         'archived_tasks': archived_tasks,
-		'form': form})
-
+		'form': form,
+        'suggested_name': suggested_name,
+        'suggested_description': suggested_description,
+        'suggested_categories': suggested_categories,
+        'has_task': has_task
+    })
 
 def get_filtered_tasks(request):
     form = FilterTasksForm(request.GET or None)
@@ -129,8 +185,6 @@ def get_filtered_tasks(request):
             
     return form, my_filtered_tasks, shared_filtered_tasks
 
-
-
 @login_required(login_url='/')
 def add_task(request):
     if request.method == "POST":
@@ -142,7 +196,25 @@ def add_task(request):
             form.save_m2m()
             return redirect('task_view')
     else:
+        name = request.GET.get('name')
+        description = request.GET.get('description')
+        categories = request.GET.getlist('categories')
+        due_date = request.GET.get('due_date')
+        # print("Due date for task:", due_date)
+        
         form = TaskForm()
+        initial = {}
+
+        if name:
+            initial['name'] = name
+        if description:
+            initial['description'] = description
+        if categories:
+            initial['categories'] = list(Category.objects.filter(name__in=categories).values_list('id', flat=True))
+        if due_date:
+            initial['due_date'] = datetime.strptime(due_date, "%Y-%m-%d").date()
+
+        form.initial = initial
 
     return render(request, 'add_task.html', {'form': form})
 
@@ -158,7 +230,6 @@ def delete_task(request, task_id):
 def edit_task(request, task_id):
     task = get_object_or_404(Task, id=task_id)
 
-
     if request.method == 'POST':
         form = TaskForm(request.POST, instance=task)
         if form.is_valid():
@@ -171,7 +242,6 @@ def edit_task(request, task_id):
         form = TaskForm(instance=task)
 
     return render(request, 'add_task.html', {'form': form, 'edit_mode': True})
-
 
 @login_required(login_url='/')
 def share_task(request, task_id):
@@ -219,7 +289,6 @@ def accept_task(request, request_id):
         
         return redirect('task_view')
 
-
 def shared_task_view(request, task_id):
 	'''
 	This function allows users to view shared task and accept it without creating a request object
@@ -251,7 +320,6 @@ def shared_task_view(request, task_id):
 
 	return render(request, 'shared_task_view.html', context)
 
-
 @login_required(login_url='/')
 def accept_task_link(request, task_id):
 	task = get_object_or_404(Task, id=task_id)
@@ -278,13 +346,11 @@ def accept_task_link(request, task_id):
 			return redirect('task_view')
 	return redirect('shared_task_view', task_id=task.id)
 
-
 @login_required(login_url='/')
 def exit_task(request, task_id):
     task = get_object_or_404(Task, id=task_id)
     task.assigned_users.remove(request.user)
     return redirect('task_view')
-
 
 def archive_task(request, task_id):
     task = get_object_or_404(Task, id=task_id)
@@ -300,8 +366,6 @@ def task_archive(request):
     return render(request, 'task_archive.html', {
         'archived_tasks': archived_tasks
     })
-
-
 
 @csrf_exempt
 def save_subscription(request):

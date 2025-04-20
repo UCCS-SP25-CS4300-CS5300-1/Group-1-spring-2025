@@ -11,5 +11,5 @@ team1project/migrations/
 # Ignore Django static files (if generated automatically)
  team1project/staticfiles/
 
-#Ignore environment settings
+# Ignore environment settings
 *.env

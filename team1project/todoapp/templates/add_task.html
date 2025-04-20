@@ -9,22 +9,25 @@
             {% csrf_token %}
             
             <div class="mb-3">
-                {{ form.name.label_tag }} 
+                <b>{{ form.name.label_tag }} </b>
+                <br>
                 {{ form.name }}
             </div>
 
             <div class="mb-3">
-                {{ form.description.label_tag }}
+                <b>{{ form.description.label_tag }}</b>
+                <br>
                 {{ form.description }}
             </div>
 
             <div class="mb-3">
-                {{ form.due_date.label_tag }}
+                <b>{{ form.due_date.label_tag }}</b>
+                <br>
                 {{ form.due_date }}
             </div>
 
             <div class="mb-3">
-                <label for="id_progress_slider">Progress:</label>
+                <label for="id_progress_slider"><b>Progress:</b></label>
                 <div class="d-flex align-items-center">
                     <input 
                         type="number" 
@@ -51,7 +54,7 @@
             
 
             <div class="mb-3">
-                {{ form.categories.label_tag }}
+                <b>{{ form.categories.label_tag }}</b>
                 {{ form.categories }}
             </div>
 
@@ -61,13 +64,16 @@
             </div>
 
             <div class="mb-3">
-                {{ form.notifications_enabled.label_tag }}
+                <b>{{ form.notifications_enabled.label_tag }}</b>
+                <br>
                 {{ form.notifications_enabled }}
             </div>
 
             <button type="submit" class="btn btn-success">
                 {{ edit_mode|default:False|yesno:"Update Task,Create Task" }}
             </button>
+
+            <a href="{% url 'task_view' %}" name="Cancel" class="btn btn-light border border-dark" >Cancel</a>
         </form>
     </div>
 </div>
