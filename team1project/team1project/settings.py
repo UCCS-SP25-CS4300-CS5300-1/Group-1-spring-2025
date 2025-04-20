@@ -79,6 +79,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'todoapp.context_processors.vapid_key',
             ],
         },
     },
@@ -146,12 +147,12 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
 WEBPUSH_SETTINGS = {
-    "VAPID_PUBLIC_KEY": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEqAR7o7laOnlcBiS5tpD20SWoo1lSw+MAdHusa+cy57JNQtk+tD0BCZUqtNF34eZ3DULw4GJJwdP09Q25HrTMsg==",
-    "VAPID_PRIVATE_KEY": "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgmf6t0W46r7tv0HpMNvD44AympWD/diWjjRRKP4j0GFOhRANCAASoBHujuVo6eVwGJLm2kPbRJaijWVLD4wB0e6xr5zLnsk1C2T60PQEJlSq00Xfh5ncNQvDgYknB0/T1DbketMyy",
+    "VAPID_PUBLIC_KEY": "BBiZBGqqJD6mKor9xOGrGh08LRpzaKyg4l0JspaEU6SewYJr3AkbHwSsIibZPT7ONhfQTJVNYTy90WCY0TZHjZ4=",
+    "VAPID_PRIVATE_KEY": "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgYUfUxUOC1z6aYUqLm4T_OUJ9Hz4KtoVNo5Edx2hsDYmhRANCAAQYmQRqqiQ-piqK_cThqxodPC0ac2isoOJdCbKWhFOknsGCa9wJGx8ErCIm2T0-zjYX0EyVTWE8vdFgmNE2R42e",
     "VAPID_ADMIN_EMAIL": "mailto:team1todo@gmail.com",
 }
 
-VAPID_PUBLIC_KEY = WEBPUSH_SETTINGS['VAPID_PUBLIC_KEY']
+VAPID_PUBLIC_KEY = "BBiZBGqqJD6mKor9xOGrGh08LRpzaKyg4l0JspaEU6SewYJr3AkbHwSsIibZPT7ONhfQTJVNYTy90WCY0TZHjZ4="
 
 EMAIL_HOST_USER = 'team1todo@gmail.com'
 EMAIL_HOST_PASSWORD = 'nurp publ jksb bbda'

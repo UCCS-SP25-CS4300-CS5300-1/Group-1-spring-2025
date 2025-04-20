@@ -3,10 +3,13 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 from datetime import timedelta
 from django.utils import timezone
-
 from todoapp.views import get_filtered_tasks
 from todoapp.models import Task, Category
-
+import os
+import json
+from django.conf import settings
+from django.http import HttpResponse
+from todoapp.models import WebPushSubscription
 '''
 Test views dealing with user system and their http responses
 '''
@@ -187,3 +190,43 @@ class FilterTasksViewTest(TestCase):
         self.assertTrue(self.task_1 in my_tasks)
         self.assertTrue(self.task_2 in shared_tasks)
         self.assertFalse(self.task_3 in my_tasks)
+
+
+class PushNotificationViewsTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(username="testuser", password="testpass")
+
+        self.subscription_data = {
+            "endpoint": "https://example.com/fake-endpoint",
+            "keys": {
+                "p256dh": "somekey",
+                "auth": "authkey"
+            }
+        }
+
+    def test_service_worker_view(self):
+        response = self.client.get('/service-worker.js')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'application/javascript')
+        self.assertIn("self.addEventListener", response.content.decode())
+
+
+    def test_save_subscription_unauthenticated(self):
+        response = self.client.post(
+            "/save-subscription/",
+            data=json.dumps(self.subscription_data),
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertIn("User not authenticated", response.json()["error"])
+
+    def test_save_subscription_invalid_json(self):
+        self.client.login(username="testuser", password="testpass")
+        response = self.client.post(
+            "/save-subscription/",
+            data="not valid json",
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("Invalid JSON", response.json()["error"])

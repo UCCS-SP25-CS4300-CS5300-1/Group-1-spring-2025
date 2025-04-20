@@ -11,9 +11,10 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         now = timezone.now()
-        soon = now + timedelta(minutes=10)
+        soon = now + timedelta(hours=24)
 
         tasks = Task.objects.filter(due_date__lte=soon, due_date__gte=now, is_completed=False, notifications_enabled=True)
+        self.stdout.write(f"Found {tasks.count()} tasks due within 24 hours.")
 
         for task in tasks:
             users = list(task.assigned_users.all()) + [task.creator]
