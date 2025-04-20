@@ -82,12 +82,11 @@
             background-color: #5b8e85;
             color: white;
             border: none;
-            padding: 8px 12px;
-            border-radius: 4px;
             z-index: 2000; 
+            width: 50px !important;
+            height:60px !important;
+            font-size: 30px !important;
 }
-
-
 
         @media (max-width: 768px) {
             .sidebar {
@@ -113,6 +112,7 @@
         <div class="container-fluid d-flex align-items-center">
             <button class="toggle-btn me-3" onclick="toggleSidebar()">☰</button>
             <a class="navbar-brand mb-0 h1" href="{% url 'home' %}" style="font-size: 2rem;">To-Do List</a>
+            <p></p>
         </div>
     </nav>
   
