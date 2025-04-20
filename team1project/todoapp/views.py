@@ -484,7 +484,7 @@ def calender_view(request):
     }
 
     # 5) Generate the calendar HTML (including holidays)
-    cal = TaskCalendar(monthly_tasks, year, month, holidays=holiday_dict)
+    cal = TaskCalendar(monthly_tasks, year, month, holidays=holiday_dict, user=request.user)
     html_calendar = cal.formatmonth(year, month)
 
     # 6) Render once, passing everything into the template
