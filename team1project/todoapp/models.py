@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User 
+from django.utils import timezone
+
 
 class Category(models.Model):
     name = models.CharField(max_length=50)
@@ -15,6 +17,7 @@ class Task(models.Model):
     due_date = models.DateTimeField()
     progress = models.IntegerField(default=0)
     is_completed = models.BooleanField(default=False)
+    is_archived = models.BooleanField(default=False)
     categories = models.ManyToManyField(Category, related_name="tasks", blank=True)
     assigned_users = models.ManyToManyField(User, related_name="assigned_tasks")
     notifications_enabled = models.BooleanField(default=False) 
@@ -22,6 +25,8 @@ class Task(models.Model):
     def save(self, *args, **kwargs):
         if self.progress == 100:
             self.is_completed = True
+        if self.is_completed and self.due_date < timezone.now():
+            self.is_archived = True
         super().save(*args, **kwargs)
 
     def __str__(self):

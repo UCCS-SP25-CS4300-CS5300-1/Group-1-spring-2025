@@ -44,6 +44,7 @@
                         {% endfor %}
                     </td>
                     <td>
+                        <a href="{% url 'restore_task' task.id %}" class="btn btn-secondary btn-sm">Restore</a>
                         <button class="btn btn-danger btn-sm" onclick="confirmDelete({{ task.id }})">Delete</button>
                     </td>
                 </tr>

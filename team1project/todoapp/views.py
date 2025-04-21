@@ -141,17 +141,12 @@ class EditProfile(LoginRequiredMixin, View):
 def task_view(request):
     tasks = Task.objects.filter(
         Q(creator=request.user) | Q(assigned_users=request.user),
-        Q(is_completed=False) | Q(is_completed=True, due_date__gte=timezone.now())
+        Q(is_archived=False)
     ).distinct()
 
     task_requests = TaskCollabRequest.objects.filter(to_user=request.user)
     shared_tasks = Task.objects.filter(assigned_users=request.user) 
-    archived_tasks = Task.objects.filter(
-        is_completed=True,
-        due_date__lt=timezone.now()
-    ).filter(
-        Q(creator=request.user) | Q(assigned_users=request.user)
-    ).distinct().order_by('-due_date')[:10]
+    
     has_task = Task.objects.filter(creator=request.user).exists()
 
     form, filtered_tasks, shared_filtered_tasks = get_filtered_tasks(request)
@@ -166,7 +161,6 @@ def task_view(request):
         'task_requests': task_requests, 
         'shared_tasks': shared_filtered_tasks, 
         'vapid_key': settings.WEBPUSH_SETTINGS['VAPID_PUBLIC_KEY'],
-        'archived_tasks': archived_tasks,
 		'form': form,
         'suggested_name': suggested_name,
         'suggested_description': suggested_description,
@@ -176,8 +170,14 @@ def task_view(request):
 
 def get_filtered_tasks(request):
     form = FilterTasksForm(request.GET or None)
-    my_filtered_tasks = Task.objects.filter(creator=request.user)
-    shared_filtered_tasks = Task.objects.filter(assigned_users=request.user)
+    my_filtered_tasks = Task.objects.filter(
+        creator=request.user,
+        is_archived=False
+    )
+    shared_filtered_tasks = Task.objects.filter(
+        assigned_users=request.user,
+        is_archived=False
+    )
 
     if 'make-filter' in request.GET:
         if form.is_valid():
@@ -361,12 +361,19 @@ def exit_task(request, task_id):
 
 def archive_task(request, task_id):
     task = get_object_or_404(Task, id=task_id)
-    task.is_completed = True
+    task.is_archived = True
     task.save()
     return redirect('task_view')  
 
+def restore_task(request, task_id):
+    task = get_object_or_404(Task, id=task_id)
+    if task.creator == request.user or request.user in task.assigned_users.all():
+        task.is_archived = False
+        task.save()
+    return redirect('task_archive')
+
 def task_archive(request):
-    archived_tasks = Task.objects.filter(is_completed=True, due_date__lt=timezone.now()).filter(
+    archived_tasks = Task.objects.filter(is_archived=True).filter(
         Q(creator=request.user) | Q(assigned_users=request.user)
     ).distinct()
 
