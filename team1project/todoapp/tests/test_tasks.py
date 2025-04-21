@@ -1,12 +1,11 @@
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from django.urls import reverse
-from datetime import timedelta
 from django.utils import timezone
 from urllib.parse import quote
-
 from todoapp.forms import TaskCollabForm
 from todoapp.models import Task, TaskCollabRequest
+from datetime import timedelta
 
 class TaskTests(TestCase):
     def setUp(self):
