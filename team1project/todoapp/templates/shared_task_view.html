@@ -16,9 +16,9 @@
         </p>
         
         {% if show_button %}
-            <form method="post">
+            <form method="post" action="{% url 'accept_request_link' task.id %}">
                 {% csrf_token %}
-                <button type="submit" class="btn btn-success" name="accept_task_link">Accept Task</button>
+                <button type="submit" name="accept_task_link" class="btn btn-success">Accept Task</button>
             </form>
         {% endif %}
     </div>

@@ -253,7 +253,7 @@ def edit_task(request, task_id):
 @login_required(login_url='/')
 def share_task(request, task_id):
     task = get_object_or_404(Task, id=task_id)
-    share_url = f"{request.get_host()}/shared task/{task_id}"
+    share_url = f"{request.get_host()}/shared_task/{task_id}"
 
     if request.method == 'POST':
         form = TaskCollabForm(request.POST, user=request.user, task=task)
