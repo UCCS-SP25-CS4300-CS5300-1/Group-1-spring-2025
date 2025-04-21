@@ -20,23 +20,33 @@
         <div class="row">
             <!-- left column: welcome text and login form -->
             <div class="col-md-6">
-                <h2 class="card-title" style="margin-bottom: 30px;">Welcome to To-Do List!</h2>
-                <p>Welcome! This is the start of development of the To-Do List App.</p>
-                <p>Customers need an app to help organize and track their tasks. Many people struggle today with handling busy schedules and responsibilities. Tracking tasks can also be stressful enough, especially for those who have many responsibilities. The To-Do List would be able to provide an environment to store, track, and suggest tasks.</p>
+                <h2 class="card-title" style="margin-bottom: 10px;">Welcome!</h2>
+                <hr>
+                <p>This is the start of development of the To-Do List App.</p>
+
+                {% if user.is_authenticated %}
+                <div>
+                    <p>For more information about the app and our team, please navigate to the "About" page by clicking on the navigation button 
+                        in the top left corner. 
+                    </p>
+                </div>
+                {% endif %}
                 
                 {% if not user.is_authenticated %}
-                <!-- register button -->
-                <div>
-                    <p>If you have no account, sign up here:</p>
-                    <a type='submit' class="btn btn-secondary" href="{% url 'register' %}">Register</a>
-                </div>
 
                 <!-- login form -->
                 <form method="post" class="login-form" style= "margin-top: 30px;">
                     {% csrf_token %}
                     {{ form.as_p }}
-                    <button type="submit" class="btn btn-primary">Login</button>
+                    <button type="submit" class="btn btn-light border border-dark">Login</button>
                 </form>
+
+                <!-- register button -->
+                <br>
+                <div>
+                    <p>If you have no account, sign up here:</p>
+                    <a type='submit' class="btn btn-secondary" href="{% url 'register' %}">Register</a>
+                </div>
                 {% endif %}
             </div>
 
