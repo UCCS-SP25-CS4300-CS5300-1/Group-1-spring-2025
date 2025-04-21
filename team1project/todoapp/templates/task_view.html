@@ -27,29 +27,33 @@
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
   </div>  
 
-
-<div class="alert alert-info d-flex justify-content-between align-items-center flex-wrap gap-2" style="display: flex;">
+  <div class="alert alert-info d-flex justify-content-between align-items-center flex-wrap gap-2">
     <!-- Display generated task name and an option to add the generated task -->
     {% if suggested_name and has_task %}
-            <p style= "margin-top: 10px;" title="Personalized tasks are suggested to you based on your activity and patterns! Click 'Add Task' to customize this task and add it to your calender."><b>˗ˏˋ ★ ˎˊ˗ &ensp; Task Suggestion: &ensp; </b> {{ suggested_name }}</p>
+        <p class="mb-0 mt-2" title="Personalized tasks are suggested to you based on your activity and patterns! Click 'Add Task' to customize this task and add it to your calendar.">
+            <b>˗ˏˋ ★ ˎˊ˗ &ensp; Task Suggestion: &ensp;</b> {{ suggested_name }}
+        </p>
+
+        <!-- Button container floated right -->
+        <div class="d-flex gap-2 ms-auto">
             <a href="{% url 'add_task' %}?name={{ suggested_name|urlencode }}&description={{ suggested_description|urlencode }}{% for cat in suggested_categories %}&categories={{ cat|urlencode }}{% endfor %}" class="btn btn-light border border-dark">
                 Add Task
             </a>
-    
-    <!-- If user has not generated a task print this -->
+
+            <form method="get">
+                <button name="generate-task" type="submit" class="btn btn-light border border-dark">Generate Task</button>
+            </form>
+        </div>
+
     {% elif has_task and not suggested_name %}
         <strong>˗ˏˋ ★ ˎˊ˗ &ensp; Generate a personalized task</strong>
 
-    <!-- Prevent user from generating a task before making a task of their own -->
-    {% else %}
-            <strong>˗ˏˋ ★ ˎˊ˗ &ensp; Create a task first!</strong>
-    {% endif %}
-
-        <!-- Allow user to generate a task with AI if they have at least one task they made -->
-    {% if has_task %}
-        <form method="get">
-            <button name="generate-task" type="submit" class="btn btn-light border border-dark">Generate Task</button>
+        <form method="get" class="ms-auto">
+            <button name="generate-task" type="submit" class="btn btn-light border border-dark">Generate</button>
         </form>
+
+    {% else %}
+        <strong>˗ˏˋ ★ ˎˊ˗ &ensp; Create a task first!</strong>
     {% endif %}
 </div>
 
@@ -60,7 +64,7 @@
             <form method="get" title="Select a category to filter all tasks based on their category assignment." name="filter_tasks" class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                 {% csrf_token %}
                 {{ form.as_p }}
-                <button type="submit" name="make-filter" class="btn btn-light border border-dark">Filter</button>
+                <button type="submit" name="make-filter" class="btn btn-secondary">Filter</button>
             </form> 
             <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
             {{ form.media.js }}
