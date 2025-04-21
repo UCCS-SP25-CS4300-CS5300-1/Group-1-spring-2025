@@ -240,6 +240,7 @@ jobs:
           ssh -i "$GITHUB_WORKSPACE/ssh_key/id_rsa" -o StrictHostKeyChecking=no -p 22 root@todolist.mooo.com << 'EOF'
           cd /var/www/django_app
           source djangoenv/bin/activate
+          pip install -r requirements.txt
           cd /var/www/django_app/Group-1-spring-2025/team1project
           git reset --hard origin/dev-branch
           git clean -fd
@@ -255,7 +256,7 @@ jobs:
           fi
           
           pip install --upgrade pip  
-          pip install -r requirements.txt
+          
           python manage.py makemigrations
           python manage.py migrate
           python manage.py runserver --noinput
