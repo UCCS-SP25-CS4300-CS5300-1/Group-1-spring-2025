@@ -22,6 +22,8 @@ import openai
 import json
 import traceback
 from .forms import CustomAuthenticationForm
+import holidays
+
 
 
 # Create your views here.
@@ -442,3 +444,60 @@ def service_worker(request):
 def about(request):
     return render(request, 'about.html')
  
+
+@csrf_exempt
+def calender_view(request):
+    # 1) Get year/month from querystring (GET) or default to today
+    year  = request.GET.get('year')
+    month = request.GET.get('month')
+    if year and month:
+        year, month = int(year), int(month)
+    else:
+        today = datetime.today()
+        year, month = today.year, today.month
+
+    # 2) Fetch tasks for the calendar and for the sidebar
+    monthly_tasks = Task.objects.filter(
+        Q(creator=request.user) | Q(assigned_users=request.user),
+        due_date__year=year,
+        due_date__month=month,
+        is_completed=False
+    ).distinct().order_by('due_date')
+
+    all_tasks = Task.objects.filter(
+        creator=request.user,
+        is_completed=False
+    ).order_by('due_date')
+
+    # 3) Compute prev/next month pointers
+    prev_month = 12 if month == 1 else month - 1
+    prev_year  = year - 1 if month == 1 else year
+    next_month = 1  if month == 12 else month + 1
+    next_year  = year + 1 if month == 12 else year
+
+    # 4) Build holiday dictionary for this month
+    us_hols = holidays.CountryHoliday('US', years=[year])
+    holiday_dict = {
+        dt.day: name
+        for dt, name in us_hols.items()
+        if dt.month == month
+    }
+
+    # 5) Generate the calendar HTML (including holidays)
+    cal = TaskCalendar(monthly_tasks, year, month, holidays=holiday_dict, user=request.user)
+    html_calendar = cal.formatmonth(year, month)
+
+    # 6) Render once, passing everything into the template
+    context = {
+        'calendar':    html_calendar,
+        'year':        year,
+        'month':       month,
+        'all_tasks':   all_tasks,
+        'prev_year':   prev_year,
+        'prev_month':  prev_month,
+        'next_year':   next_year,
+        'next_month':  next_month,
+        # if you need holiday_dict separately, you can pass it too:
+        'holiday_dict': holiday_dict,
+    }
+    return render(request, 'home.html', context)

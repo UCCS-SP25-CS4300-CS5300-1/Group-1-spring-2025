@@ -1,6 +1,9 @@
 # Ignore Python compiled files
 *.pyc
 __pycache__/
+**/__pycache__/
+*.py[cod]
+
 
 # Ignore the database file
 **/db.sqlite3
