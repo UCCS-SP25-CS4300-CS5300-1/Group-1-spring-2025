@@ -163,8 +163,17 @@ DEFAULT_FROM_EMAIL = 'team1todo@gmail.com'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-SELECT2_CACHE_BACKEND = 'default'
-SELECT2_CACHE_BACKEND_ALIAS = 'select2'
+# Cache settings
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    },
+    'select2': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}
+
+SELECT2_CACHE_BACKEND = 'select2'
 
 # Used for task suggestions OPENAI API implementation 
 load_dotenv()
