@@ -85,7 +85,7 @@ class TaskCollabForm(forms.ModelForm):
 class FilterTasksForm(forms.Form): 
     user_category_filter = forms.ModelMultipleChoiceField(
         queryset=Category.objects.all(),
-        widget=ModelSelect2MultipleWidget(search_fields=['name__icontains']),
+        widget=forms.CheckboxSelectMultiple,
         required=False,
         label="Select categories:"
     )

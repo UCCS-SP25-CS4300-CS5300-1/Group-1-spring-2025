@@ -11,11 +11,12 @@
         }
     </style>
     <script>
-        $(document).ready(function() {
-            $('.django-select2').select2({
-                width: 'resolve',
-            });  // Apply Select2 styling
-        });
+        function resetFilter(){
+            document.getElementsByName('reset-filter');
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(checkbox => checkbox.checked = false);
+            document.forms['filter_tasks'].submit();
+        }
     </script>
     {{ form.media.css }}
 {% endblock %}
@@ -60,14 +61,26 @@
 <!-- User's Created Tasks -->
 <div class="container mt-4">
     <div class="card p-4 shadow">
+
+        <!-- Filter tasks form -->
         <div class="filter-form">
             <form method="get" title="Select a category to filter all tasks based on their category assignment." name="filter_tasks" class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                 {% csrf_token %}
-                {{ form.as_p }}
-                <button type="submit" name="make-filter" class="btn btn-secondary">Filter</button>
+                
+                <label class="form-label">{{ form.user_category_filter.label }}</label>
+                <div class="d-flex flex-row gap-3">
+                    {% for checkbox in form.user_category_filter %}
+                        <div class="form-check">
+                            {{ checkbox.tag }}
+                            <label class="form-check-label">{{ checkbox.choice_label }}</label>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" name="make-filter" class="btn btn-secondary">Filter</button>
+                    <button type="button" name="reset-filter" class="btn btn-secondary" onclick="resetFilter()">Reset</button>
+                </div>
             </form> 
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-            {{ form.media.js }}
         </div>
 
         <div class="title-card d-flex justify-content-between align-items-center mt-4 mb-3" style="margin-top:20px;">
