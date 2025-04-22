@@ -38,7 +38,7 @@ def get_ai_task_suggestion(request):
             task_data.append({
                 'name': task.name,
                 'description': task.description,
-                'due_date': task.due_date.isoformat() if task.due_date else None,
+                'due_date': task.due_date,
                 'categories': [category.name for category in task.categories.all()]
             })
 
@@ -47,23 +47,29 @@ def get_ai_task_suggestion(request):
             for task in task_data
         ])
 
+        prompt = f"""
+        Based on the user's previous tasks and patterns, suggest a new task for the user. Try to predict what task the user wants to complete next, or what task they may have forgotten to create. Make sure the task is relevant. Return the response in JSON format with the following keys: name, description, due date, and categories.
+
+        User's Tasks:
+        {task_data_str}
+
+        Respond only with the JSON object.
+        """
+
         client = openai.OpenAI(api_key=settings.OPENAI_TASK_SUGGESTION)
 
-        response = client.chat.completions.create(
-            model="gpt-4-turbo",
-            messages=[
-                {"role": "system", "content": "You are an AI assistant that generates intelligent task suggestions."},
-                {"role": "user", "content": f"""Based on the user's previous tasks and patterns, suggest a new task for the user. Try to predict what task the user wants to complete next, or what task they may have forgotten to create. Make sure the task is relevant. Return the response in JSON format with the following keys: name, description, due date, and categories.\n\nUser's Tasks:\n{task_data_str}\n\nRespond only with the JSON object."""}
-            ],
-            max_tokens=300,
+        response = client.completions.create(
+            model="gpt-3.5-turbo-instruct",
+            prompt=prompt,
+            max_tokens=100,
             temperature=0.7,
         )
 
         try:
-            suggestion_json = response.choices[0].message.content.strip()
-            return json.loads(suggestion_json)
+            return json.loads(response.choices[0].text.strip())
         except json.JSONDecodeError:
             return None
+
 
 def index(request):
     form = CustomAuthenticationForm()
