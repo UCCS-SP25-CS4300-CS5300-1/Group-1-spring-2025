@@ -79,6 +79,7 @@ def get_ai_task_suggestion(request):
     except Exception as e:
         raise e
 
+
 def index(request):
     """This is a function to show tasks to an authenticated user"""
     form = CustomAuthenticationForm()
