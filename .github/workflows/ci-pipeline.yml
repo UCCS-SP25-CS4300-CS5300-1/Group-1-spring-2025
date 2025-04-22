@@ -130,7 +130,7 @@ jobs:
   tests:
     name: Run Django Tests
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'
+    if: always()
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -153,6 +153,7 @@ jobs:
           source venv/bin/activate
           mkdir -p test_results
           cd team1project
+          python manage.py migrate
           TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
           python manage.py test | tee ../test_results/test_results.txt
 
@@ -169,7 +170,7 @@ jobs:
     name: Report Test Coverage
     runs-on: ubuntu-latest
     needs: tests
-    if: github.event_name == 'push'
+    if: always()
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -192,17 +193,17 @@ jobs:
           source venv/bin/activate
           mkdir -p coverage_reports
           cd team1project
+          python manage.py migrate
           coverage run --source='.' manage.py test
           coverage report -m | tee ../coverage_reports/coverage_summary.txt
           TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
-          coverage xml -o ../coverage_reports/coverage_${TIMESTAMP}.xml
 
       - name: Upload Coverage Report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: coverage_reports/*.xml
+          path: coverage_reports/*.txt
 
       - name: Print Coverage Summary to Step Summary
         run: |
@@ -210,13 +211,13 @@ jobs:
             echo "## Test Coverage Report"
             echo ""
             echo '```'
-            cat coverage_reports/coverage_summary.txt
+            cat coverage_reports/*.txt
             echo '```'
           } >> $GITHUB_STEP_SUMMARY
   
-  deploy:
+  deployment:
+    name: Continuous Deployment 
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
@@ -241,14 +242,127 @@ jobs:
           ssh -i "$GITHUB_WORKSPACE/ssh_key/id_rsa" -o StrictHostKeyChecking=no -p 22 root@todolist.mooo.com << 'EOF'
           cd /var/www/django_app
           source djangoenv/bin/activate
+          pip install -r requirements.txt
           cd /var/www/django_app/Group-1-spring-2025/team1project
           git reset --hard origin/dev-branch
           git clean -fd
           git checkout dev-branch
-          git pull origin dev-branch          
-          pip install -r requirements.txt
+          git pull origin dev-branch
+
+          # ensure .env is in place
+          if [ ! -f .env ]; then
+            echo "OPENAI_TASK_SUGGESTION"=${{ secrets.OPENAI_TASK_SUGGESTION }}" > .env
+            echo "WEBPUSH_SETTINGS"=${{ secrets.WEBPUSH_SETTINGS }}" >> .env
+            echo "VAPID_PUBLIC_KEY"=${{ secrets.VAPID_PUBLIC_KEY }}" >> .env
+            echo "EMAIL_HOST_PASSWORD"=${{ secrets.EMAIL_HOST_PASSWORD }}" >> .env
+          fi
+          
+          pip install --upgrade pip  
+          
+          python manage.py migrate
           python manage.py runserver --noinput
           sudo systemctl reload nginx
           sudo chmod 666 /var/www/django_app/Group-1-spring-2025/team1project/db.sqlite3
           sudo systemctl restart gunicorn
           EOF
+          
+  linting_scans:
+      name: Run Linting Scans
+      runs-on: ubuntu-latest
+      steps: 
+        - name: Checkout Repository
+          uses: actions/checkout@v4
+
+        - name: Set up Python
+          uses: actions/setup-python@v4
+          with:
+            python-version: '3.12.3'
+            cache: 'pip'
+
+        - name: Install Dependencies
+          run: |
+            python -m venv venv
+            source venv/bin/activate
+            pip install --upgrade pip
+            pip install -r requirements.txt
+            pip install pylint
+        
+        - name: Restore Pylint Cache
+          uses: actions/cache@v4
+          with:
+            path: .pylint.d
+            key: pylint-cache-${{ runner.os }}-${{ hashFiles('team1project/**/*.py') }}
+            restore-keys: |
+              pylint-cache-${{ runner.os }}-
+
+        - name: Generate Linting Scan Report
+          run: |
+            source venv/bin/activate
+            mkdir -p linting_reports
+            cd team1project
+            TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
+
+            for module in */; do 
+              module=${module%/}
+              echo "Now linting $module..."
+              pylint "$module" --output-format=parseable > "../linting_reports/pylint_${module}_${TIMESTAMP}.txt" || true
+
+              # Print Linting Reports to Step Summary
+              echo "## PyLint Report for $module" >> $GITHUB_STEP_SUMMARY
+              echo '```' >> $GITHUB_STEP_SUMMARY
+              cat "../linting_reports/pylint_${module}_${TIMESTAMP}.txt" >> $GITHUB_STEP_SUMMARY
+              echo '```' >> $GITHUB_STEP_SUMMARY
+            done
+
+        - name: Upload Linting Reports
+          if: always()
+          uses: actions/upload-artifact@v4
+          with:
+            name: pylint_report
+            path: linting_reports/*.txt
+  
+  dependency_scans:
+        name: Run Dependency Vulnerability Scans
+        runs-on: ubuntu-latest
+        steps: 
+          - name: Checkout Repository
+            uses: actions/checkout@v4
+
+          - name: Set up Python
+            uses: actions/setup-python@v4
+            with:
+              python-version: '3.12.3'
+              cache: 'pip'
+      
+          - name: Install Dependencies
+            run: |
+              python -m venv venv
+              source venv/bin/activate
+              pip install --upgrade pip
+              pip install -r requirements.txt
+      
+          - name: Install Snyk
+            run: |
+              npm install -g snyk
+      
+          - name: Generate Dependency Scan Report
+            env:
+              SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+            run: |
+              source venv/bin/activate
+              mkdir -p dependency_reports
+              TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
+              snyk test --file=requirements.txt --command=python3 --reporter=html > "dependency_reports/snyk_report_${TIMESTAMP}.html" || true
+              snyk test --file=requirements.txt --command=python3 > "dependency_reports/snyk_report_${TIMESTAMP}.txt" || true
+              
+              echo "## Snyk Dependency Scan Report" >> $GITHUB_STEP_SUMMARY
+              echo '```' >> $GITHUB_STEP_SUMMARY
+              cat "dependency_reports/snyk_report_${TIMESTAMP}.html" >> $GITHUB_STEP_SUMMARY
+              echo '```' >> $GITHUB_STEP_SUMMARY
+      
+          - name: Upload Dependency Scan Report
+            if: always()
+            uses: actions/upload-artifact@v4
+            with:
+              name: snyk-dependency-report
+              path: dependency_reports/*.txt

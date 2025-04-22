@@ -1,12 +1,19 @@
 {% extends 'base.html' %}
 {% block content %}
+<div class="alert alert-info alert-dismissible fade show d-flex justify-content-between align-items-center flex-wrap gap-2 border border-dark" style="background-color:white;" role="alert">
+    <p class="mb-0">
+      Welcome to the profile settings page! Here, you will be able to manage and edit your personal information as well as toggle certain user preferences.
+    </p>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>  
+  
 <div class="card p-4 shadow" style="max-width: 1200px; margin: 0 auto;">
     <div class="card-body">
         <div class="row">
             <!-- Content Column -->
             <div class="col-md-12">
                 <div class="d-flex justify-content-end">
-                    <a href="{% url 'edit_profile' %}" class="btn btn-primary" style="background-color: gray;">Edit</a>
+                    <a href="{% url 'edit_profile' %}" class="btn btn-secondary">Edit</a>
                 </div>
                 <h2 class="card-title" style="margin-bottom: 30px;">Profile Settings</h2>
 
@@ -26,7 +33,7 @@
                         <input style="margin-left: 5px; margin-top: 10px; margin-bottom: 10px;" type="text" name="password" class="form-control-6" value="************" disabled>
                     </div>
                     
-                    <button href="{% url 'index' %}" name="logout" class="btn btn-primary" style="margin-top:16px;">Logout</button>
+                    <button href="{% url 'index' %}" name="logout" class="btn btn-light border border-dark"  style="margin-top:16px;">Logout</button>
                 </form>
             </div>
         </div>

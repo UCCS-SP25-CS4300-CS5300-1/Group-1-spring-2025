@@ -6,7 +6,7 @@
             <!-- Content Column -->
             <div class="col-md-12">
                 <div class="d-flex justify-content-end">
-                    <a href="{% url 'profile_settings' %}" class="btn btn-primary" style="background-color: gray;">Cancel</a>
+                    <a href="{% url 'profile_settings' %}" class="btn btn-secondary" style="color: white; background-color: gray;">Cancel</a>
                 </div>
                 <h2 class="card-title" style="margin-bottom: 30px;">Profile Settings</h2>
 
@@ -26,8 +26,9 @@
                         <input style="margin-left: 5px; margin-top: 10px; margin-bottom: 10px;" type="text" name="password" class="form-control-6" value="************">
                     </div>
                     
-                    <button type="submit" id="save-button" class="btn btn-success mt-3" >Save Changes</button>
-                    <button href="{% url 'index' %}" name="logout" class="btn btn-primary" style="margin-top:16px; margin-left:5px;">Logout</button>
+                    <br>
+                    <button type="submit" id="save-button" class="btn btn-light border border-dark" >Save Changes</button>
+                    <button href="{% url 'index' %}" name="logout" class="btn btn-secondary" style="margin-left:5px;">Logout</button>
                 </form>
             </div>
         </div>

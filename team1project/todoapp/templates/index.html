@@ -7,29 +7,46 @@
 {% endblock %}
 
 {% block content %}
+<div class="alert alert-info alert-dismissible fade show d-flex justify-content-between align-items-center flex-wrap gap-2 border border-dark" style="background-color:white;" role="alert">
+    <p class="mb-0">
+      Welcome to the To-Do List app! These alerts will appear to provide you with information on how to use the app and navigate each page. To dismiss this alert, click the 'x' on the right hand side of the message. 
+    </p>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>  
+
 <!-- main box -->
 <div class="card p-4 shadow" style="max-width: 1200px; margin: 0 auto;">
     <div class="card-body">
         <div class="row">
             <!-- left column: welcome text and login form -->
             <div class="col-md-6">
-                <h2 class="card-title" style="margin-bottom: 30px;">Welcome to To-Do List</h2>
-                <p>Welcome! This is the start of development of the To-Do List App.</p>
-                <p>Customers need an app to help organize and track their tasks. Many people struggle today with handling busy schedules and responsibilities. Tracking tasks can also be stressful enough, especially for those who have many responsibilities. The To-Do List would be able to provide an environment to store, track, and suggest tasks.</p>
+                <h2 class="card-title" style="margin-bottom: 10px;">Welcome!</h2>
+                <hr>
+                <p>This is the start of development of the To-Do List App.</p>
+
+                {% if user.is_authenticated %}
+                <div>
+                    <p>For more information about the app and our team, please navigate to the "About" page by clicking on the navigation button 
+                        in the top left corner. 
+                    </p>
+                </div>
+                {% endif %}
                 
                 {% if not user.is_authenticated %}
-                <!-- register button -->
-                <div>
-                    <p>If you have no account, sign up here:</p>
-                    <a type='submit' class="btn btn-secondary" href="{% url 'register' %}">Register</a>
-                </div>
 
                 <!-- login form -->
                 <form method="post" class="login-form" style= "margin-top: 30px;">
                     {% csrf_token %}
                     {{ form.as_p }}
-                    <button type="submit" class="btn btn-primary">Login</button>
+                    <button type="submit" class="btn btn-light border border-dark">Login</button>
                 </form>
+
+                <!-- register button -->
+                <br>
+                <div>
+                    <p>If you have no account, sign up here:</p>
+                    <a type='submit' class="btn btn-secondary" href="{% url 'register' %}">Register</a>
+                </div>
                 {% endif %}
             </div>
 

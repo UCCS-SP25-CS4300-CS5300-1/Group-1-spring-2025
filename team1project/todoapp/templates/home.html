@@ -1,103 +1,223 @@
+
 <style>
-    /* Ensure the table stretches and cells share equal widths */
-    .calendar table {
+  /* Ensure the table stretches and cells share equal widths */
+  .calendar table {
+    width: 100%;
+    table-layout: fixed;
+  }
+
+  /* Make all cells square */
+  .calendar th,
+  .calendar td {
+    border: 1px solid #ccc;
+    text-align: center;
+    padding: 8px;
+    width: 100px;
+    height: 100px;
+    vertical-align: middle;
+  }
+
+  .calendar table {
       width: 100%;
       table-layout: fixed;
-    }
-  
-    /* Make all cells square */
-    .calendar th,
-    .calendar td {
+      border-collapse: collapse;
+  }
+  .calendar th,
+  .calendar td {
       border: 1px solid #ccc;
-      text-align: center;
       padding: 8px;
-      width: 100px;
-      height: 100px;
+      text-align: center;
+      aspect-ratio: 1 / 1; /* To maintain square cells */
       vertical-align: middle;
-    }
+  }
+  /* Style for days that are not in the current month */
+  .noday {
+      background-color: #f9f9f9;
+  }
+  /* Highlight the current day */
+  .today {
+      background-color: #ffd700;  /* For example, a gold background */
+  }
+  /* Style for tasks inside each day */
+  .task {
+      font-size: 0.8em;
+      margin-top: 4px;
+      padding: 2px;
+      background-color: #eef;
+      border-radius: 4px;
+  }
 
-    .calendar table {
-        width: 100%;
-        table-layout: fixed;
-        border-collapse: collapse;
-    }
-    .calendar th,
-    .calendar td {
-        border: 1px solid #ccc;
-        padding: 8px;
-        text-align: center;
-        aspect-ratio: 1 / 1; /* To maintain square cells */
-        vertical-align: middle;
-    }
-    /* Style for days that are not in the current month */
-    .noday {
-        background-color: #f9f9f9;
-    }
-    /* Highlight the current day */
-    .today {
-        background-color: #ffd700;  /* For example, a gold background */
-    }
-    /* Style for tasks inside each day */
-    .task {
-        font-size: 0.8em;
-        margin-top: 4px;
-        padding: 2px;
-        background-color: #eef;
-        border-radius: 4px;
-    }
+.calendar .task {
+  background: #eef;
+  color: #000;
+}
 
-  </style>
-  
+/* brown for archived tasks on the calendar */
+.calendar .task.archived {
+  background: teal !important;
+  color: white !important;
+}
+
+/* green for shared tasks on the calendar */
+.calendar .task.shared {
+  background: green !important;
+  color: white !important;
+}
+
+  .calendar .holiday {
+      font-size: 0.75em;
+      margin-top: 2px;
+      padding: 2px 4px;
+      background-color: #fdecea;   
+      color: #a94442;              
+      border-radius: 4px;
+      }
+
+  /* default user‑owned task */
+  .task {
+  font-size: 0.8em;
+  margin-top: 4px;
+  padding: 2px;
+  background-color: #eef;
+  border-radius: 4px;
+  }
+
+  /* shared task: light purple */
+  .task.shared {
+  background-color: #8efaae;
+  }
+
+  /* the “more…” indicator if >2 tasks */
+  .task.more {
+  background-color: #ccc;
+  color: #333;
+  }
+
+
+
+
+</style>
 
 {% extends 'base.html' %}
-    {% block content %}
+{% block content %}
 
-    <div class="container my-4">
-        <div class="row">
-    <title>Calendar - {{ month }}/{{ year }}</title>
-    <style>
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-        .noday { background-color: #f9f9f9; }
-    </style>
-    <div class="col-md-7">
-        <div class="calendar">
-            {{ calendar|safe }}
+
+<script>
+function resetFilter(){
+    document.getElementsByName('reset-filter');
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(checkbox => checkbox.checked = false);
+    document.forms['filter_tasks'].submit();
+}
+</script>
+
+<div class="alert alert-info alert-dismissible fade show d-flex justify-content-between align-items-center flex-wrap gap-2 border border-dark" style="background-color:white;" role="alert">
+  <p class="mb-0">
+  Welcome to the home page! Here, you will be able to view all your tasks for a given month on your personal calendar. The current day is highlighted in yellow, and the tasks for a selected day are listed on the right.</p>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>  
+
+<div class="card p-4 shadow">
+  <div class="card-body">
+  <div class="container mt-4">
+      <div class="row">
+  <title>Calendar - {{ month }}/{{ year }}</title>
+  <style>
+      table { width: 100%; border-collapse: collapse; }
+      th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+      .noday { background-color: #f9f9f9; }
+  </style>
+  <div class="col-md-7">
+      <div class="calendar">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <!-- NOTE: no leading slash, just "?year=…&month=…" -->
+          <a href="?year={{ prev_year }}&month={{ prev_month }}" class="btn btn-outline-secondary">
+            ← Prev
+          </a>
+
+          <h4>{{ month }}/{{ year }}</h4>
+
+          <a href="?year={{ next_year }}&month={{ next_month }}" class="btn btn-outline-secondary">
+            Next →
+          </a>
         </div>
-    </div>
-        <!-- Optionally, list your tasks somewhere on the page -->
-    <div class="col-md-5">
-        <h2 style="margin-bottom: 20px; margin-left: 20px;">Tasks</h2>
-            <div class="card p-4 shadow">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Description</th>
-                            <th>Due Date</th>
-                            <th>Progress</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for task in tasks %}
-                        <tr>
-                            <td>{{ task.name }}</td>
-                            <td>{{ task.description }}</td>
-                            <td>{{ task.due_date|date:"M d, Y H:i" }}</td>
-                            <td>{{ task.progress }}%</td>
-                            
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="5" class="text-center">No tasks available.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                <a href="{% url 'task_view' %}" class="btn btn-primary mb-3">Task Page</a>
+
+        <div id="calendar-container">
+          {{ calendar|safe }}
+      </div>
+
+      <div class="calendar‑legend d-flex gap-3 align-items-center mt-3">
+        <div class="legend-item d-flex align-items-center">
+          <span class="legend-swatch me-1" style="width:16px; height:16px; background:teal; display:inline-block; border:1px solid #ccc;"></span>
+          Archived Task
+        </div>
+        <div class="legend-item d-flex align-items-center">
+          <span class="legend-swatch me-1" style="width:16px; height:16px; background:green; display:inline-block; border:1px solid #ccc;"></span>
+          Shared Task
+        </div>
+        <div class="legend-item d-flex align-items-center">
+          <span class="legend-swatch me-1" style="width:16px; height:16px; background:#eef; display:inline-block; border:1px solid #ccc;"></span>
+          Your Task
+        </div>
+      </div>
+      
+      </div>
+  </div>
+      <!-- Optionally, list your tasks somewhere on the page -->
+  <div class="col-md-5">
+      <h2 style="margin-bottom: 20px; margin-left: 200px;">Tasks</h2>
+      <hr>
+      <!-- Filter tasks form -->
+      <div class="filter-form">
+        <form method="get" title="Select a category to filter all tasks based on their category assignment." name="filter_tasks" class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            {% csrf_token %}
+            
+            <label class="form-label">{{ form.user_category_filter.label }}</label>
+            <div class="d-flex flex-row flex-wrap align-items-center">
+                {% for checkbox in form.user_category_filter %}
+                    <div class="form-check">
+                        {{ checkbox.tag }}
+                        <label class="form-check-label">{{ checkbox.choice_label }}</label>
+                    </div>
+                {% endfor %}
+                <button type="submit" name="make-filter" class="btn btn-secondary" style="margin-left:15px; margin-right:15px; margin-top:15px;">Filter</button>
+                <button type="button" name="reset-filter" class="btn btn-secondary" style="margin-top:15px;" onclick="resetFilter()">Reset</button>
             </div>
-        </div>
+        </form> 
     </div>
-    {% endblock %}
+          <div class="card p-4 shadow">
+              <table class="table">
+                  <thead>
+                      <tr>
+                          <th>Name</th>
+                          <th>Description</th>
+                          <th>Due Date</th>
+                          <th>Progress</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                      {% for task in all_tasks %}
+                      <tr>
+                          <td>{{ task.name }}</td>
+                          <td>{{ task.description }}</td>
+                          <td>{{ task.due_date|date:"M d, Y H:i" }}</td>
+                          <td>{{ task.progress }}%</td>
+                          
+                      </tr>
+                      {% empty %}
+                      <tr>
+                          <td colspan="5" class="text-center">No tasks available.</td>
+                      </tr>
+                      {% endfor %}
+                  </tbody>
+              </table>
+              <a href="{% url 'task_view' %}" class="btn btn-light border border-dark" >Task Page</a>
+          </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+  
 </body>
 </html>

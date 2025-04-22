@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card p-4 shadow" style="max-width: 1200px; margin: 0 auto;">
+        <div class="card-body">
+            <p class="text-center mb-4" ><b>Welcome to To-Do List!</b></p>
+            <hr>
+            <p>Users need an app to help organize and track their tasks. Many people struggle today with handling busy schedules and responsibilities. Tracking tasks can also be stressful enough, especially for those who have many responsibilities. The To-Do List would be able to provide an environment to store, track, and suggest tasks.</p>
+        </div>
+    </div>        
+    <h1 class="text-center mb-4" style="margin-top: 30px;">Meet Our Team</h1>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 justify-content-center">
+        <!-- Developer Card 1 -->
+        <div class="col">
+            <div class="card h-100 text-center shadow">
+                <img src="{% static '1.jpg' %}" class="card-img-top" alt="Dev 1">
+                <div class="card-body">
+                    <h5 class="card-title">Dev 1</h5>
+                    <p class="card-text">Sam</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Developer Card 2 -->
+        <div class="col">
+            <div class="card h-100 text-center shadow">
+                <img src="{% static '2.jpg' %}" class="card-img-top" alt="Dev 2">
+                <div class="card-body">
+                    <h5 class="card-title">Dev 2</h5>
+                    <p class="card-text">James</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Developer Card 3 -->
+        <div class="col">
+            <div class="card h-100 text-center shadow">
+                <img src="{% static '3.jpg' %}" class="card-img-top" alt="Dev 3">
+                <div class="card-body">
+                    <h5 class="card-title">Dev 3</h5>
+                    <p class="card-text">Tarek</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Developer Card 4 -->
+        <div class="col">
+            <div class="card h-100 text-center shadow">
+                <img src="{% static '4.jpg' %}" class="card-img-top" alt="Dev 4">
+                <div class="card-body">
+                    <h5 class="card-title">Dev 4</h5>
+                    <p class="card-text">Noah</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Developer Card 5 -->
+        <div class="col">
+            <div class="card h-100 text-center shadow">
+                <img src="{% static '5.jpg' %}" class="card-img-top" alt="Dev 5">
+                <div class="card-body">
+                    <h5 class="card-title">Dev 5</h5>
+                    <p class="card-text">Marina</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

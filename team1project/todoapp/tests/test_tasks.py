@@ -1,11 +1,11 @@
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from django.urls import reverse
-from datetime import timedelta
 from django.utils import timezone
-
+from urllib.parse import quote
 from todoapp.forms import TaskCollabForm
 from todoapp.models import Task, TaskCollabRequest
+from datetime import timedelta
 
 class TaskTests(TestCase):
     def setUp(self):
@@ -20,7 +20,7 @@ class TaskTests(TestCase):
             description="This is a test task",
             due_date="2025-03-20 12:00:00",
             progress=50,
-            creator=self.user  # ✅ Ensure task has a creator
+            creator=self.user  # Ensure task has a creator
         )
 
     def test_task_model(self):
@@ -42,7 +42,7 @@ class TaskTests(TestCase):
             'description': 'Created from test',
             'due_date': '2025-04-01 14:00:00',
             'progress': 10,
-            'creator': self.user.id  # ✅ Include creator in task creation
+            'creator': self.user.id  # Include creator in task creation
         })
         self.assertEqual(response.status_code, 302)  # Redirect after task creation
         self.assertTrue(Task.objects.filter(name="New Task").exists())
@@ -53,6 +53,19 @@ class TaskTests(TestCase):
         response = self.client.get(reverse('delete_task', args=[task_id]))
         self.assertEqual(response.status_code, 302)  # Redirect after deletion
         self.assertFalse(Task.objects.filter(id=task_id).exists())  # Task should not exist
+
+    def test_task_progress_100_sets_completed(self):
+        task = Task.objects.create(
+            name="Auto archive test",
+            creator=self.user,
+            description="Test task",
+            due_date=timezone.now() + timedelta(days=1),
+            progress=99
+        )
+        task.progress = 100
+        task.save()
+        self.assertTrue(task.is_completed)
+
 
 class TaskRequestsViews(TestCase):
     def setUp(self):
@@ -330,3 +343,101 @@ class TaskRequestsFormTests(TestCase):
         self.assertIn("to_user", collab_form.errors)  # Check that 'to_user' has an error
         self.assertEqual(collab_form.errors["to_user"][0], "Select a valid choice. That choice is not one of the available choices.")
         
+
+class TestTaskShareLink(TestCase):
+    def setUp(self):
+
+        # User to use for testing
+        self.username = "sender123"
+        self.password = "Gl989bert48!"
+        self.sender = User.objects.create_user(username=self.username, password=self.password)
+
+        # User to use for testing if a user received it
+        self.username = "receiver12345"
+        self.password = "Gl989bert48!"
+        self.receiver = User.objects.create_user(username=self.username, password=self.password) 
+
+        # This user is shared with a task already
+        self.username = "shared_user48!"
+        self.password = "Gl989bert48!"
+        self.shared_user = User.objects.create_user(username=self.username, password=self.password) 
+
+        self.task = Task.objects.create(
+            name="Complete Project",
+            creator=self.sender,
+            description="Finish the project by the deadline",
+            due_date=timezone.now() + timedelta(days=7),
+            progress=50,
+            is_completed=False,
+            notifications_enabled=True
+        )
+
+        self.task.assigned_users.add(self.shared_user)
+
+        self.task_view_url = reverse('task_view')
+        self.index_url = reverse('index')
+
+        # Task shared and accept links for regular task
+        self.share_task_link_url = reverse('shared_task_view', args=[self.task.id])
+        self.accept_task_link_url = reverse('accept_request_link', args=[self.task.id])
+
+    def test_accept_task_link_as_receiver_valid(self):
+         # Login as the receiver
+        self.client.login(username=self.receiver.username, password="Gl989bert48!")
+    
+        # Check that the page was accessed
+        response = self.client.get(self.share_task_link_url)
+        self.assertEqual(response.status_code, 200)
+
+        # Check that task can be accepted through link
+        response = self.client.post(self.accept_task_link_url, {"accept_task_link": "true"})
+        
+        # Verify redirect and that the user is in assigned users
+        self.assertRedirects(response, self.task_view_url)
+        self.assertIn(self.receiver, self.task.assigned_users.all())
+
+    def test_accept_task_link_as_creator_invalid(self):
+         # Login as the sender (or creator of the task)
+        self.client.login(username=self.sender.username, password="Gl989bert48!")
+    
+        # Check that the page was accessed
+        response = self.client.get(self.share_task_link_url)
+        self.assertEqual(response.status_code, 200)
+
+        # Check that task cannot be accepted by a creator
+        response = self.client.post(self.accept_task_link_url, {"accept_task_link": "true"})
+        
+        # Verify redirect and that the user is in assigned users
+        self.assertRedirects(response, self.share_task_link_url)
+        self.assertNotIn(self.sender, self.task.assigned_users.all())
+
+    def test_accept_task_link_as_shared_invalid(self):
+        # Login as the shared user
+          # Login as the sender (or creator of the task)
+        self.client.login(username=self.shared_user.username, password="Gl989bert48!")
+    
+        # Check that the page was accessed
+        response = self.client.get(self.share_task_link_url)
+        self.assertEqual(response.status_code, 200)
+
+        # Check that task cannot be accepted by a shared user
+        response = self.client.post(self.accept_task_link_url, {"accept_task_link": "true"})
+        
+        # Verify redirect
+        self.assertRedirects(response, self.share_task_link_url)
+    
+    def test_accept_task_as_anonymous_invalid(self):
+        self.client.logout()
+
+        # Check that the page was accessed
+        response = self.client.get(self.share_task_link_url)
+        self.assertEqual(response.status_code, 200)
+
+        # Check that task cannot be accepted by an anonymous user
+        response = self.client.post(self.accept_task_link_url, {"accept_task_link": "true"})
+        
+        # This is the redirect url from the login_required decorator
+        expected_url = f'/?next={quote(self.accept_task_link_url)}'
+
+        # Verify redirect and that the user is in assigned users
+        self.assertRedirects(response, expected_url)
