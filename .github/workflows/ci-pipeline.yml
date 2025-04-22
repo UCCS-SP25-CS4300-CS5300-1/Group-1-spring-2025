@@ -153,7 +153,6 @@ jobs:
           source venv/bin/activate
           mkdir -p test_results
           cd team1project
-          python manage.py makemigrations
           python manage.py migrate
           TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
           python manage.py test | tee ../test_results/test_results.txt
@@ -194,7 +193,6 @@ jobs:
           source venv/bin/activate
           mkdir -p coverage_reports
           cd team1project
-          python manage.py makemigrations
           python manage.py migrate
           coverage run --source='.' manage.py test
           coverage report -m | tee ../coverage_reports/coverage_summary.txt
@@ -261,7 +259,6 @@ jobs:
           
           pip install --upgrade pip  
           
-          python manage.py makemigrations
           python manage.py migrate
           python manage.py runserver --noinput
           sudo systemctl reload nginx
