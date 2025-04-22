@@ -149,7 +149,7 @@ def task_view(request):
     
     has_task = Task.objects.filter(creator=request.user).exists()
 
-    form, filtered_tasks, shared_filtered_tasks = get_filtered_tasks(request)
+    form, filtered_tasks, shared_filtered_tasks, _ = get_filtered_tasks(request)
     
     task_suggestion = get_ai_task_suggestion(request)
     suggested_name = task_suggestion.get('name', '') if task_suggestion else ''
@@ -179,6 +179,12 @@ def get_filtered_tasks(request):
         is_archived=False
     )
 
+    filtered_archived_tasks = Task.objects.filter(
+        is_archived=True
+    ).filter(
+        Q(creator=request.user) | Q(assigned_users=request.user)
+    ).distinct()
+
     if 'make-filter' in request.GET:
         if form.is_valid():
             user_filter = form.cleaned_data['user_category_filter']
@@ -189,8 +195,13 @@ def get_filtered_tasks(request):
                 shared_filtered_tasks = shared_filtered_tasks.filter(
                     Q(categories__in=user_filter) | Q(categories=None)
                 ).distinct()
+                filtered_archived_tasks = filtered_archived_tasks.filter(
+                    Q(categories__in=user_filter) | Q(categories=None)
+                ).distinct()
             
-    return form, my_filtered_tasks, shared_filtered_tasks
+    return form, my_filtered_tasks, shared_filtered_tasks, filtered_archived_tasks
+
+
 
 @login_required(login_url='/')
 def add_task(request):
@@ -373,12 +384,13 @@ def restore_task(request, task_id):
     return redirect('task_archive')
 
 def task_archive(request):
-    archived_tasks = Task.objects.filter(is_archived=True).filter(
-        Q(creator=request.user) | Q(assigned_users=request.user)
-    ).distinct()
+    form, _, _, filtered_archived_tasks = get_filtered_tasks(request)
+
+
 
     return render(request, 'task_archive.html', {
-        'archived_tasks': archived_tasks
+        'archived_tasks': filtered_archived_tasks,
+        'form': form,
     })
 
 
