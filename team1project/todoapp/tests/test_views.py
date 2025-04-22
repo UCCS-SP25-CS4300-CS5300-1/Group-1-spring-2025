@@ -151,7 +151,7 @@ class FilterTasksViewTest(TestCase):
         request = factory.get('/')
         request.user = self.user
 
-        form, my_tasks, shared_tasks = get_filtered_tasks(request)
+        form, my_tasks, shared_tasks, _ = get_filtered_tasks(request)
 
         # Test that form was not submitted
         self.assertEqual(form.is_valid(), False)
@@ -177,7 +177,7 @@ class FilterTasksViewTest(TestCase):
 
         request.user = self.user
 
-        form, my_tasks, shared_tasks = get_filtered_tasks(request)
+        form, my_tasks, shared_tasks, _ = get_filtered_tasks(request)
 
         # Test that the form is valid
         self.assertEqual(form.is_valid(), True)
