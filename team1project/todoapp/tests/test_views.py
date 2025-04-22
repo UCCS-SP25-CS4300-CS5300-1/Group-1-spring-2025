@@ -106,6 +106,7 @@ class FilterTasksViewTest(TestCase):
 
         self.category_work = Category.objects.create(name="Work")
         self.category_misc = Category.objects.create(name="Misc")
+        self.category_personal = Category.objects.create(name="Personal")
 
         # Test filtering on this task
         self.task_1 = Task.objects.create(
@@ -142,6 +143,18 @@ class FilterTasksViewTest(TestCase):
         )
         self.task_3.categories.add(self.category_misc)
 
+        self.archived_task = Task.objects.create(
+            name="Personal Archived Task",
+            creator=self.user,
+            description="Finish the project by the deadline",
+            due_date=timezone.now() + timedelta(days=7),
+            progress=50,
+            is_completed=False,
+            is_archived=True,
+            notifications_enabled=True,
+        )
+        self.archived_task.categories.add(self.category_personal)
+
     '''
     Test if tasks show up with no data submitted
     By default, should be all of them, shared and owned
@@ -151,7 +164,7 @@ class FilterTasksViewTest(TestCase):
         request = factory.get('/')
         request.user = self.user
 
-        form, my_tasks, shared_tasks, _ = get_filtered_tasks(request)
+        form, my_tasks, shared_tasks, filtered_archived_tasks = get_filtered_tasks(request)
 
         # Test that form was not submitted
         self.assertEqual(form.is_valid(), False)
@@ -159,11 +172,13 @@ class FilterTasksViewTest(TestCase):
         # Test that all tasks appear
         self.assertEqual(my_tasks.count(), 2)
         self.assertEqual(shared_tasks.count(), 1)
+        self.assertEqual(filtered_archived_tasks.count(), 1)
 
         # Test that all of them appear on page
         self.assertTrue(self.task_1 in my_tasks)
         self.assertTrue(self.task_2 in shared_tasks)
         self.assertTrue(self.task_3 in my_tasks)
+        self.assertTrue(self.archived_task in filtered_archived_tasks)
 
     '''
     Test that filter works
@@ -177,21 +192,49 @@ class FilterTasksViewTest(TestCase):
 
         request.user = self.user
 
-        form, my_tasks, shared_tasks, _ = get_filtered_tasks(request)
+        form, my_tasks, shared_tasks, filtered_archived_tasks = get_filtered_tasks(request)
 
         # Test that the form is valid
         self.assertEqual(form.is_valid(), True)
 
         # Test that there is only one task in my_tasks and 
-        # shared_tasks
+        # shared_tasks and none in archived tasks
         self.assertEqual(my_tasks.count(), 1)
         self.assertEqual(shared_tasks.count(), 1)
+        self.assertEqual(filtered_archived_tasks.count(), 0)
         
         # Check that task 1 and 2 were filtred, but task 3
-        # was not included
+        # was not included. Also check that archived task was not included
         self.assertTrue(self.task_1 in my_tasks)
         self.assertTrue(self.task_2 in shared_tasks)
         self.assertFalse(self.task_3 in my_tasks)
+        self.assertFalse(self.archived_task in filtered_archived_tasks)
+
+    '''
+    Test that archived tasks can be filtered
+    '''
+    def test_get_filtered_tasks_filter_archived(self):
+        factory = RequestFactory()
+        request = factory.get('/',{
+            'make-filter': 'true',
+            'user_category_filter': [self.category_personal.id]
+        })
+
+        request.user = self.user
+
+        form, my_tasks , shared_tasks, filtered_archived_tasks = get_filtered_tasks(request)
+
+        # Test that the form is valid
+        self.assertEqual(form.is_valid(), True)
+
+        # Test that there is one task in my_tasks and 
+        # none in shared_tasks, and one in archived tasks
+        self.assertEqual(my_tasks.count(), 1)
+        self.assertEqual(shared_tasks.count(), 0)
+        self.assertEqual(filtered_archived_tasks.count(), 1)
+        
+        # Check that the archived task was filtered
+        self.assertTrue(self.archived_task in filtered_archived_tasks)
 
 
 class PushNotificationViewsTests(TestCase):
