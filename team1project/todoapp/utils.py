@@ -31,10 +31,16 @@ class TaskCalendar(calendar.HTMLCalendar):
         day_tasks = self.tasks.get(day, [])
         snippets = []
         for t in day_tasks[:2]:
-            shared_flag = ' shared' if t.creator != self.user else ''
+            # if archived, flag “archived”; else if shared, flag “shared”
+            cls = []
+            if getattr(t, 'is_archived', False):
+                cls.append('archived')
+            elif t.creator != self.user:
+                cls.append('shared')
+            cls_str = ' ' + ' '.join(cls) if cls else ''
             snippets.append(
-                f'<div class="task{shared_flag}">{t.name[:7]}</div>'
-            )
+                f'<div class="task{cls_str}">{t.name[:7]}</div>'
+        )
         if len(day_tasks) > 2:
             snippets.append('<div class="task more">…</div>')
         task_html = ''.join(snippets)

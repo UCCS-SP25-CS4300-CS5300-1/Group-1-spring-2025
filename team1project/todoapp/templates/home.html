@@ -46,6 +46,23 @@
         border-radius: 4px;
     }
 
+  .calendar .task {
+    background: #eef;
+    color: #000;
+  }
+
+  /* brown for archived tasks on the calendar */
+  .calendar .task.archived {
+    background: brown !important;
+    color: white !important;
+  }
+
+  /* green for shared tasks on the calendar */
+  .calendar .task.shared {
+    background: green !important;
+    color: white !important;
+  }
+
     .calendar .holiday {
         font-size: 0.75em;
         margin-top: 2px;
@@ -66,7 +83,7 @@
 
     /* shared task: light purple */
     .task.shared {
-    background-color: #ecffa2;
+    background-color: #8efaae;
     }
 
     /* the “more…” indicator if >2 tasks */
@@ -74,6 +91,8 @@
     background-color: #ccc;
     color: #333;
     }
+
+
 
 
   </style>
@@ -125,6 +144,22 @@
           <div id="calendar-container">
             {{ calendar|safe }}
         </div>
+
+        <div class="calendar‑legend d-flex gap-3 align-items-center mt-3">
+          <div class="legend-item d-flex align-items-center">
+            <span class="legend-swatch me-1" style="width:16px; height:16px; background:brown; display:inline-block; border:1px solid #ccc;"></span>
+            Archived Task
+          </div>
+          <div class="legend-item d-flex align-items-center">
+            <span class="legend-swatch me-1" style="width:16px; height:16px; background:green; display:inline-block; border:1px solid #ccc;"></span>
+            Shared Task
+          </div>
+          <div class="legend-item d-flex align-items-center">
+            <span class="legend-swatch me-1" style="width:16px; height:16px; background:#eef; display:inline-block; border:1px solid #ccc;"></span>
+            Your Task
+          </div>
+        </div>
+        
         </div>
     </div>
         <!-- Optionally, list your tasks somewhere on the page -->
