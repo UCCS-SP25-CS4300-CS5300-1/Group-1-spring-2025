@@ -417,37 +417,6 @@ def save_info(user, subscription_data):
         defaults={'subscription_info': subscription_data}
     )
 
-
-@login_required(login_url='/')
-def calender_view(request, year=None, month=None):
-    if year is None or month is None:
-        today = datetime.today()
-        year = today.year
-        month = today.month
-    else:
-        year, month = int(year), int(month)
-    
-    # Fetch tasks for the month (using your due_date field)
-    tasks = Task.objects.filter(
-    creator=request.user,
-    due_date__year=year,
-    due_date__month=month
-    ).order_by('due_date')
-
-    
-    # Create a TaskCalendar instance and generate the HTML
-    cal = TaskCalendar(tasks, year, month)
-    html_calendar = cal.formatmonth(year, month)
-    
-    context = {
-        'calendar': html_calendar,
-        'tasks': tasks,
-        'year': year,
-        'month': month,
-    }
-    return render(request, 'home.html', context)
-
-
 @require_GET
 @csrf_exempt
 def service_worker(request):
@@ -463,10 +432,14 @@ def service_worker(request):
 def about(request):
     return render(request, 'about.html')
  
-
+@login_required(login_url='index')
+@require_GET
 @csrf_exempt
 def calender_view(request):
-    # 1) Get year/month from querystring (GET) or default to today
+    # A) Category‑filter form
+    form = FilterTasksForm(request.GET or None)
+
+    # B) Figure out year & month (GET or today)
     year  = request.GET.get('year')
     month = request.GET.get('month')
     if year and month:
@@ -475,26 +448,39 @@ def calender_view(request):
         today = datetime.today()
         year, month = today.year, today.month
 
-    # 2) Fetch tasks for the calendar and for the sidebar
+    # C) Base querysets
     monthly_tasks = Task.objects.filter(
         Q(creator=request.user) | Q(assigned_users=request.user),
         due_date__year=year,
         due_date__month=month,
-        is_completed=False
+        
+        
     ).distinct().order_by('due_date')
 
-    all_tasks = Task.objects.filter(
-        creator=request.user,
-        is_completed=False
-    ).order_by('due_date')
+    sidebar_tasks = Task.objects.filter(
+        Q(creator=request.user) | Q(assigned_users=request.user),
+        is_completed=False,
+        is_archived=False,
+    ).distinct().order_by('due_date')
 
-    # 3) Compute prev/next month pointers
+    # D) Apply category filter if submitted
+    if 'make-filter' in request.GET and form.is_valid():
+        cats = form.cleaned_data['user_category_filter']
+        if cats:
+            monthly_tasks = monthly_tasks.filter(
+                Q(categories__in=cats) | Q(categories=None)
+            ).distinct()
+            sidebar_tasks = sidebar_tasks.filter(
+                Q(categories__in=cats) | Q(categories=None)
+            ).distinct()
+
+    # E) Prev/next pointers
     prev_month = 12 if month == 1 else month - 1
     prev_year  = year - 1 if month == 1 else year
     next_month = 1  if month == 12 else month + 1
     next_year  = year + 1 if month == 12 else year
 
-    # 4) Build holiday dictionary for this month
+    # F) Holiday dict
     us_hols = holidays.CountryHoliday('US', years=[year])
     holiday_dict = {
         dt.day: name
@@ -502,21 +488,26 @@ def calender_view(request):
         if dt.month == month
     }
 
-    # 5) Generate the calendar HTML (including holidays)
-    cal = TaskCalendar(monthly_tasks, year, month, holidays=holiday_dict, user=request.user)
+    # G) Build calendar HTML
+    cal = TaskCalendar(
+        monthly_tasks,
+        year,
+        month,
+        holidays=holiday_dict,
+        user=request.user
+    )
     html_calendar = cal.formatmonth(year, month)
 
-    # 6) Render once, passing everything into the template
-    context = {
-        'calendar':    html_calendar,
-        'year':        year,
-        'month':       month,
-        'all_tasks':   all_tasks,
-        'prev_year':   prev_year,
-        'prev_month':  prev_month,
-        'next_year':   next_year,
-        'next_month':  next_month,
-        # if you need holiday_dict separately, you can pass it too:
+    # H) Render once with all context
+    return render(request, 'home.html', {
+        'calendar':     html_calendar,
+        'year':         year,
+        'month':        month,
+        'prev_year':    prev_year,
+        'prev_month':   prev_month,
+        'next_year':    next_year,
+        'next_month':   next_month,
+        'form':         form,           # your FilterTasksForm
+        'all_tasks':    sidebar_tasks,  # template loops over all_tasks
         'holiday_dict': holiday_dict,
-    }
-    return render(request, 'home.html', context)
+    })
