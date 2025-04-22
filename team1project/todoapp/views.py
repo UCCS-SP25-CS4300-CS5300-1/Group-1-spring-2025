@@ -41,6 +41,14 @@ def get_ai_task_suggestion(request):
 
     if 'generate-task' not in request.GET:
         return None
+        task_data = []
+        for task in tasks:
+            task_data.append({
+                'name': task.name,
+                'description': task.description,
+                'due_date': task.due_date,
+                'categories': [category.name for category in task.categories.all()]
+            })
 
     tasks = Task.objects.filter(creator=request.user)
     if not tasks.exists():
@@ -78,7 +86,6 @@ def get_ai_task_suggestion(request):
         return json.loads(content)
     except Exception as e:
         raise e
-
 
 def index(request):
     """This is a function to show tasks to an authenticated user"""
