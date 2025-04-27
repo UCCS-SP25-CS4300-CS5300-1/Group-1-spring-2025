@@ -14,6 +14,7 @@ from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
+from django.core.cache import cache
 import os
 from .forms import CustomUserCreationForm, TaskForm, TaskCollabForm, FilterTasksForm
 from .models import Task, TaskCollabRequest, Category, WebPushSubscription
@@ -170,6 +171,17 @@ def task_view(request):
     })
 
 def get_filtered_tasks(request):
+    '''
+    Return the form and filtered tasks for user
+
+    Parameters:
+    request: User request to check for a get request or None
+
+    Returns:
+    form for processing the request and filtered
+    tasks that are the user's, shared, or archived in that order
+    - form, my_filtered_tasks, shared_filtered_tasks, filtered_archived_tasks
+    '''
     form = FilterTasksForm(request.GET or None)
     my_filtered_tasks = Task.objects.filter(
         creator=request.user,
@@ -199,19 +211,34 @@ def get_filtered_tasks(request):
                 filtered_archived_tasks = filtered_archived_tasks.filter(
                     Q(categories__in=user_filter) | Q(categories=None)
                 ).distinct()
-            
+
     return form, my_filtered_tasks, shared_filtered_tasks, filtered_archived_tasks
 
 def show_quote():
+    '''
+    Return today's quote from ZenQuotes API
+
+    Returns:
+    string: Pre-formatted html quote
+    '''
+    # If quote is stashed, use that stashed quote
+    quote = cache.get('zenquote_today')
+
+    if quote:
+        return quote
+
     url = 'https://zenquotes.io/api/today/'
     try:
         response = requests.get(url)
         response.raise_for_status()
         data = response.json()
-        print(data[0]["h"])
-        return(data[0]["h"])
+        quote = data[0]["h"]
+
+        # Cache quote for ten minutes
+        cache.set('zenquote_today', quote, timeout=60 * 10)
+        return quote
     except requests.exceptions.RequestException as e:
-        return None
+        return "Could not fetch today's quote."
 
 
 @login_required(login_url='/')

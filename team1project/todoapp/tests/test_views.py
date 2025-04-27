@@ -4,6 +4,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.conf import settings
 from django.http import HttpResponse
+from django.core.cache import cache
 from todoapp.models import WebPushSubscription, Task, Category
 from todoapp.views import get_filtered_tasks, get_ai_task_suggestion
 from unittest.mock import patch, MagicMock
@@ -11,6 +12,7 @@ from datetime import timedelta
 
 import os
 import json
+import requests
 
 '''
 Test views dealing with user system and their http responses
@@ -344,3 +346,21 @@ class GetAITaskSuggestionTest(TestCase):
         result = get_ai_task_suggestion(request)
 
         self.assertIsNone(result)
+
+
+class GetTodayQuoteTest(TestCase):
+    def setUp(self):
+        self.zenquote_url = 'https://zenquotes.io/api/today/'
+
+    # Mock an api call to ZenQuotes to test it
+    @patch('todoapp.views.requests.get')
+    def test_get_today_quote(self, mock_get):
+        mock_response = mock_get.return_value
+        mock_response.status_code = 200
+
+        # Test the response and test if the quote was cached
+        response = requests.get(self.zenquote_url)
+        cached_quote = cache.get('zenquote_today')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNotNone(cached_quote)
