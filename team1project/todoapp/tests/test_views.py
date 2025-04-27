@@ -6,8 +6,8 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.core.cache import cache
 from todoapp.models import WebPushSubscription, Task, Category
-from todoapp.views import get_filtered_tasks, get_ai_task_suggestion
-from unittest.mock import patch, MagicMock
+from todoapp.views import get_filtered_tasks, get_ai_task_suggestion, show_quote
+from unittest.mock import patch, MagicMock, Mock
 from datetime import timedelta
 
 import os
@@ -351,16 +351,37 @@ class GetAITaskSuggestionTest(TestCase):
 class GetTodayQuoteTest(TestCase):
     def setUp(self):
         self.zenquote_url = 'https://zenquotes.io/api/today/'
+        cache.delete('zenquote_today')
+
+    def test_cached_quote(self):
+        # Cache quote to test function
+        my_quote = "To be or not to be, that is the question"
+        cache.set('zenquote_today', my_quote)
+
+        get_quote = show_quote()
+
+        # Check that the quote was cached
+        self.assertEqual(get_quote, my_quote)
 
     # Mock an api call to ZenQuotes to test it
     @patch('todoapp.views.requests.get')
     def test_get_today_quote(self, mock_get):
-        mock_response = mock_get.return_value
-        mock_response.status_code = 200
+        mock_response = Mock()
+        mock_response.json.return_value = [{"h": "<blockquote>New quote</blockquote>"}]
+        mock_get.return_value = mock_response
 
-        # Test the response and test if the quote was cached
-        response = requests.get(self.zenquote_url)
-        cached_quote = cache.get('zenquote_today')
+        # Test the response
+        response = show_quote()
 
-        self.assertEqual(response.status_code, 200)
-        self.assertIsNotNone(cached_quote)
+        mock_get.assert_called_once_with(self.zenquote_url)
+        self.assertEqual(response, "<blockquote>New quote</blockquote>")
+        self.assertEqual(cache.get('zenquote_today'), "<blockquote>New quote</blockquote>")
+
+    # Test that exception can be raised
+    @patch('todoapp.views.requests.get')
+    def test_get_today_quote_exception(self, mock_get):
+        mock_get.side_effect = requests.exceptions.RequestException()
+
+        result = show_quote()
+
+        self.assertEqual(result, "Could not fetch today's quote.")
