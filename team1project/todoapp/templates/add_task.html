@@ -76,6 +76,36 @@
                 {{ form.notifications_enabled }}
             </div>
 
+            <div id="notification-options" style="display: none;">
+                <div class="mb-3">
+                    <label><b>Notification Type:</b></label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="notification_type" id="push_notification" value="push" checked>
+                        <label class="form-check-label" for="push_notification">
+                            Push Notifications
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="notification_type" id="email_notification" value="email">
+                        <label class="form-check-label" for="email_notification">
+                            Email Notifications
+                        </label>
+                    </div>
+                </div>
+            
+                <div class="mb-3">
+                    <b>{{ form.notification_time.label_tag }}</b>
+                    <select class="form-select" name="notification_time" id="id_notification_time">
+                        {% for value, label in form.fields.notification_time.choices %}
+                            <option value="{{ value }}" {% if form.notification_time.value|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+            </div>
+
             <button type="submit" class="btn btn-secondary">
                 {{ edit_mode|default:False|yesno:"Update Task,Create Task" }}
             </button>
@@ -105,5 +135,23 @@
         });
     });
 </script>
-
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const notificationsCheckbox = document.getElementById("id_notifications_enabled");
+        const notificationOptions = document.getElementById("notification-options");
+    
+        function toggleNotificationOptions() {
+            if (notificationsCheckbox.checked) {
+                notificationOptions.style.display = "block";
+            } else {
+                notificationOptions.style.display = "none";
+            }
+        }
+    
+        notificationsCheckbox.addEventListener("change", toggleNotificationOptions);
+    
+        // Run it once in case the page is reloaded with it checked
+        toggleNotificationOptions();
+    });
+</script>
 {% endblock %}
