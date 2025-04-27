@@ -8,6 +8,7 @@ from django.http import HttpResponse
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET
+from django.views.decorators.cache import cache_page
 from django.conf import settings
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
@@ -23,7 +24,7 @@ import json
 import traceback
 from .forms import CustomAuthenticationForm
 import holidays
-
+import requests
 
 
 # Create your views here.
@@ -165,7 +166,7 @@ def task_view(request):
         'suggested_name': suggested_name,
         'suggested_description': suggested_description,
         'suggested_categories': suggested_categories,
-        'has_task': has_task
+        'has_task': has_task,
     })
 
 def get_filtered_tasks(request):
@@ -201,6 +202,16 @@ def get_filtered_tasks(request):
             
     return form, my_filtered_tasks, shared_filtered_tasks, filtered_archived_tasks
 
+def show_quote():
+    url = 'https://zenquotes.io/api/today/'
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        data = response.json()
+        print(data[0]["h"])
+        return(data[0]["h"])
+    except requests.exceptions.RequestException as e:
+        return None
 
 
 @login_required(login_url='/')
@@ -498,6 +509,7 @@ def calender_view(request):
     )
     html_calendar = cal.formatmonth(year, month)
 
+    today_quote = show_quote()
     # H) Render once with all context
     return render(request, 'home.html', {
         'calendar':     html_calendar,
@@ -510,4 +522,5 @@ def calender_view(request):
         'form':         form,           # your FilterTasksForm
         'all_tasks':    sidebar_tasks,  # template loops over all_tasks
         'holiday_dict': holiday_dict,
+        'today_quote': today_quote
     })

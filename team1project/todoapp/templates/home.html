@@ -93,7 +93,9 @@
   color: #333;
   }
 
-
+  .blockquote {
+  font-style: italic;
+  }
 
 
 </style>
@@ -114,6 +116,12 @@ function resetFilter(){
 <div class="alert alert-info alert-dismissible fade show d-flex justify-content-between align-items-center flex-wrap gap-2 border border-dark" style="background-color:white;" role="alert">
   <p class="mb-0">
   Welcome to the home page! Here, you will be able to view all your tasks for a given month on your personal calendar. The current day is highlighted in yellow, and the tasks for a selected day are listed on the right.</p>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+
+<div class="alert alert-info alert-dismissible fade show d-flex justify-content-between align-items-center flex-wrap gap-2 border border-dark" style="background-color:white;" role="alert">
+   <!-- Display quote of the day from ZenQuotes -->
+      {{ today_quote|safe }}
   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 </div>  
 
