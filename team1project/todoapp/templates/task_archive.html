@@ -26,7 +26,9 @@
                     {% endfor %}
                 </div>
                 <div class="d-flex gap-2">
-                    <button type="submit" name="make-filter" class="btn btn-secondary">Filter</button>
+                    <button type="submit" name="make-filter" title="Filter" class="btn btn-secondary">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M440-160q-17 0-28.5-11.5T400-200v-240L168-736q-15-20-4.5-42t36.5-22h560q26 0 36.5 22t-4.5 42L560-440v240q0 17-11.5 28.5T520-160h-80Zm40-308 198-252H282l198 252Zm0 0Z"/></svg>
+                    </button>
                     <button type="button" name="reset-filter" class="btn btn-secondary" onclick="resetFilter()">Reset</button>
                 </div>
             </form> 
@@ -66,8 +68,16 @@
                         {% endfor %}
                     </td>
                     <td>
-                        <a href="{% url 'restore_task' task.id %}" class="btn btn-primary btn-sm">Restore</a>
-                        <button class="btn btn-danger btn-sm" onclick="confirmDelete({{ task.id }})">Delete</button>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-light border border-dark dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <svg xmlns="http://www.w3.org/2000/svg" style="fill: black;" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M240-400q-33 0-56.5-23.5T160-480q0-33 23.5-56.5T240-560q33 0 56.5 23.5T320-480q0 33-23.5 56.5T240-400Zm240 0q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm240 0q-33 0-56.5-23.5T640-480q0-33 23.5-56.5T720-560q33 0 56.5 23.5T800-480q0 33-23.5 56.5T720-400Z"/></svg>
+                            </button>
+                            <div class="dropdown-menu">
+                              <a class="dropdown-item" href="{% url 'restore_task' task.id %}">Restore</a>
+                              <div class="dropdown-divider"></div>
+                              <a class="dropdown-item" onclick="confirmDelete({{ task.id }})">Delete</a>
+                            </div>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
