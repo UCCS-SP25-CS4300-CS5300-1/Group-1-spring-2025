@@ -82,7 +82,7 @@
             border-radius: 4px;
         } */
         .toggle-btn {
-            background-color: #5b8e85;
+            background-color: transparent;
             color: white;
             border: none;
             z-index: 2000; 
@@ -111,7 +111,7 @@
 <body class="m-3">
 
     <!-- Navbar -->
-    <nav class="navbar navbar-dark" style="height: 80px; background-color: #5b8e85;">
+    <nav class="navbar navbar-dark" style="height: 80px; ">
         <div class="container-fluid d-flex align-items-center">
             <button class="toggle-btn me-3" onclick="toggleSidebar()">☰</button>
             <a class="navbar-brand mb-0 h1" href="{% url 'home' %}" style="font-size: 2rem;">To-Do List &ensp; &ensp;</a>
@@ -134,7 +134,6 @@
             </li>
         </ul>
     </div>
-
 
     <!-- Main Content -->
     <div class="main-content" id="mainContent">
@@ -202,5 +201,39 @@
             return outputArray;
         }
     </script>
+    
+    <!-- script to load theme -->
+    <script>
+        function applyTheme(theme) {
+            document.documentElement.setAttribute('data-bs-theme', theme);
+            
+            // background image
+            if (theme === 'dark') {
+                document.body.style.backgroundImage = "url('{% static 'todolist-background-dark.png' %}')";
+            } else {
+                document.body.style.backgroundImage = "url('{% static 'todolist-background.png' %}')";
+            }
+    
+            // navbar 
+            const navbar = document.querySelector('.navbar');
+            if (navbar) {
+                navbar.classList.remove('navbar-light');
+                navbar.classList.add('navbar-dark'); 
+
+                if (theme === 'dark') {
+                    navbar.style.backgroundColor = "#0d2f33"; 
+                    sidebar.style.backgroundColor = "#0d2f33";
+                } else {
+                    navbar.style.backgroundColor = '#5b8e85';
+                    sidebar.style.backgroundColor = '#5b8e85'; 
+                }
+            }
+        }
+    
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            applyTheme(savedTheme);
+        });
+    </script>    
 </body>
 </html>
