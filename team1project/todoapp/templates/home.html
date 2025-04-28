@@ -113,7 +113,7 @@ function resetFilter(){
 }
 </script>
 
-<div class="alert alert-info alert-dismissible fade show d-flex justify-content-between align-items-center flex-wrap gap-2 border border-dark" style="background-color:white;" role="alert">
+<div class="alert alert-info alert-dismissible fade show d-flex justify-content-between align-items-center flex-wrap gap-2 border border-dark custom-alert" role="alert">
   <p class="mb-0">
   Welcome to the home page! Here, you will be able to view all your tasks for a given month on your personal calendar. The current day is highlighted in yellow, and the tasks for a selected day are listed on the right.</p>
   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -135,7 +135,7 @@ function resetFilter(){
   <style>
       table { width: 100%; border-collapse: collapse; }
       th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-      .noday { background-color: #f9f9f9; }
+      .noday { background-color: transparent; }
   </style>
   <div class="col-md-7">
       <div class="calendar">
@@ -190,7 +190,9 @@ function resetFilter(){
                         <label class="form-check-label">{{ checkbox.choice_label }}</label>
                     </div>
                 {% endfor %}
-                <button type="submit" name="make-filter" class="btn btn-secondary" style="margin-left:15px; margin-right:15px; margin-top:15px;">Filter</button>
+                <button type="submit" name="make-filter" class="btn btn-secondary" title="Filter" style="margin-left:15px; margin-right:15px; margin-top:15px;">
+                  <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M440-160q-17 0-28.5-11.5T400-200v-240L168-736q-15-20-4.5-42t36.5-22h560q26 0 36.5 22t-4.5 42L560-440v240q0 17-11.5 28.5T520-160h-80Zm40-308 198-252H282l198 252Zm0 0Z"/></svg>
+                </button>
                 <button type="button" name="reset-filter" class="btn btn-secondary" style="margin-top:15px;" onclick="resetFilter()">Reset</button>
             </div>
         </form> 
