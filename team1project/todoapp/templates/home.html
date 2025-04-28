@@ -119,9 +119,11 @@ function resetFilter(){
   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 </div>
 
-<div class="alert alert-info alert-dismissible fade show d-flex justify-content-between align-items-center flex-wrap gap-2 border border-dark" style="background-color:white;" role="alert">
-   <!-- Display quote of the day from ZenQuotes -->
-      {{ today_quote|safe }}
+<!-- Display quote of the day from ZenQuotes -->
+<div class="alert alert-info alert-dismissible fade show d-flex justify-content-center align-items-center border border-dark"  role="alert">
+  <div style="text-align: center;">
+    {{ today_quote|safe }}
+  </div>
   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 </div>  
 
