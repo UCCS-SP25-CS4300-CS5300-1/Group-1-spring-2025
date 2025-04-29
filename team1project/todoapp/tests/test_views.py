@@ -349,11 +349,13 @@ class GetAITaskSuggestionTest(TestCase):
 
 
 class GetTodayQuoteTest(TestCase):
+    '''Test and mock the zenquotes api responses in show_quote function'''
     def setUp(self):
         self.zenquote_url = 'https://zenquotes.io/api/today/'
         cache.delete('zenquote_today')
 
     def test_cached_quote(self):
+        '''Test if a cached quote is accessed when calling show_quote'''
         # Cache quote to test function
         my_quote = "To be or not to be, that is the question"
         cache.set('zenquote_today', my_quote)
@@ -363,9 +365,9 @@ class GetTodayQuoteTest(TestCase):
         # Check that the quote was cached
         self.assertEqual(get_quote, my_quote)
 
-    # Mock an api call to ZenQuotes to test it
     @patch('todoapp.views.requests.get')
     def test_get_today_quote(self, mock_get):
+        '''Mock api call to zenquote and check it responds'''
         mock_response = Mock()
         mock_response.json.return_value = [{"h": "<blockquote>New quote</blockquote>"}]
         mock_get.return_value = mock_response
@@ -380,6 +382,7 @@ class GetTodayQuoteTest(TestCase):
     # Test that exception can be raised
     @patch('todoapp.views.requests.get')
     def test_get_today_quote_exception(self, mock_get):
+        '''Mock an api call that returns an exception'''
         mock_get.side_effect = requests.exceptions.RequestException()
 
         result = show_quote()
