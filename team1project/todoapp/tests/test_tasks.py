@@ -66,7 +66,6 @@ class TaskTests(TestCase):
         task.save()
         self.assertTrue(task.is_completed)
 
-
 class TaskRequestsViews(TestCase):
     def setUp(self):
         # User to use for testing
@@ -77,12 +76,12 @@ class TaskRequestsViews(TestCase):
         # User to use for testing if a user received it
         self.username = "receiver12345"
         self.password = "Gl989bert48!"
-        self.receiver = User.objects.create_user(username=self.username, password=self.password) 
+        self.receiver = User.objects.create_user(username=self.username, password=self.password)
 
         # This user is shared with a task already
         self.username = "shared_receiver48!"
         self.password = "Gl989bert48!"
-        self.shared_receiver = User.objects.create_user(username=self.username, password=self.password) 
+        self.shared_receiver = User.objects.create_user(username=self.username, password=self.password)
 
         self.task = Task.objects.create(
             name="Complete Project",
@@ -96,9 +95,7 @@ class TaskRequestsViews(TestCase):
         self.task_view_url = reverse('task_view')
         self.share_task_url = reverse('share_task', args=[self.task.id])
 
-    '''
-    Test the GET operations of the share_task url
-    '''
+    # Test the GET operations of the share_task url
     def test_sharing_tasks_GET_view(self):
         self.client.login(username=self.sender.username, password="Gl989bert48!")
         response = self.client.get(self.share_task_url)
@@ -106,9 +103,7 @@ class TaskRequestsViews(TestCase):
         self.assertTemplateUsed(response, 'share_task.html')
         self.assertContains(response, '<form')
 
-    '''
-    Test if a user can share a task with another user
-    '''
+    # Test if a user can share a task with another user
     def test_sharing_tasks_POST_view_valid(self):
         self.client.login(username=self.sender.username, password="Gl989bert48!")
         form_field = {'to_user': self.receiver.id}
@@ -117,9 +112,7 @@ class TaskRequestsViews(TestCase):
         self.assertTrue(TaskCollabRequest.objects.filter(task=self.task, to_user=self.receiver).exists())
         self.assertRedirects(response, self.task_view_url)
 
-    '''
-    Test if a user cannot enter an invalid post
-    '''
+    # Test if a user cannot enter an invalid post
     def test_sharing_tasks_POST_view_invalid(self):
         collab_request = TaskCollabRequest.objects.create(
             task=self.task,
@@ -132,9 +125,7 @@ class TaskRequestsViews(TestCase):
 
         self.assertEqual(response.status_code, 200)
 
-    '''
-    Test if a user can accept a task
-    '''
+    # Test if a user can accept a task
     def test_accept_task_view(self):
         collab_request = TaskCollabRequest.objects.create(
             task=self.task,
@@ -154,9 +145,7 @@ class TaskRequestsViews(TestCase):
         self.assertRedirects(response, self.task_view_url)
         self.assertIn(self.receiver, self.task.assigned_users.all())
     
-    '''
-    Test if a user can decline a task
-    '''
+    # Test if a user can decline a task
     def test_send_tasks_decline_valid(self):
         # Test if a user can send a request and the receiver can decline it
         # Test if a shared user can share a task with another user
@@ -219,9 +208,7 @@ class TaskRequestsFormTests(TestCase):
 
         self.shared_task.assigned_users.add(self.shared_receiver)
 
-    '''
-    Test that a creator can send a task collab request to an unshared user
-    '''
+    # Test that a creator can send a task collab request to an unshared user
     def test_send_tasks_normal_valid(self):
         task_collab_data = {
             "task": self.task,
@@ -246,10 +233,7 @@ class TaskRequestsFormTests(TestCase):
             to_user=self.receiver
             ).exists())
 
-
-    '''
-    Test if a shared user can send the task to an unshared user
-    '''
+    # Test if a shared user can send the task to an unshared user
     def test_send_tasks_by_shared_user_valid(self):
         # Test if a form is valid if a shared user can send it to an unshared user
         task_collab_data = {
@@ -273,9 +257,7 @@ class TaskRequestsFormTests(TestCase):
             to_user=self.receiver
             ).exists())
 
-    '''
-    Test that a user cannot send a task back to themselves
-    '''
+    # Test that a user cannot send a task back to themselves
     def test_send_tasks_to_self_invalid(self):
         task_collab_data = {
             "task": self.shared_task,
@@ -288,10 +270,7 @@ class TaskRequestsFormTests(TestCase):
         self.assertIn("to_user", collab_form.errors)  # Check that 'to_user' has an error
         self.assertEqual(collab_form.errors["to_user"][0], "Select a valid choice. That choice is not one of the available choices.")
 
-    
-    '''
-    Test if a shared user can share a task to its creator
-    '''
+    # Test if a shared user can share a task to its creator
     def test_send_task_shared_to_creator_invalid(self):
         task_collab_data = {
             "task": self.shared_task,
@@ -304,10 +283,7 @@ class TaskRequestsFormTests(TestCase):
         self.assertIn("to_user", collab_form.errors)  # Check that 'to_user' has an error
         self.assertEqual(collab_form.errors["to_user"][0], "Select a valid choice. That choice is not one of the available choices.")
 
-
-    '''
-    Test if a user can share a task to a shared user
-    '''
+    # Test if a user can share a task to a shared user
     def test_send_task_user_to_shared_invalid(self):
         task_collab_data = {
             "task": self.shared_task,
@@ -320,10 +296,7 @@ class TaskRequestsFormTests(TestCase):
         self.assertIn("to_user", collab_form.errors)  # Check that 'to_user' has an error
         self.assertEqual(collab_form.errors["to_user"][0], "Select a valid choice. That choice is not one of the available choices.")
 
-
-    '''
-    Test if a user can send a task to a user that already has an outstanding request
-    '''
+    # Test if a user can send a task to a user that already has an outstanding request
     def test_send_task_exists_already_invalid(self):
         # Create an existing request
         outstanding_request = TaskCollabRequest.objects.create(
