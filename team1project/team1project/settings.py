@@ -178,12 +178,3 @@ SELECT2_CACHE_BACKEND = 'select2'
 # Used for task suggestions OPENAI API implementation 
 load_dotenv()
 OPENAI_TASK_SUGGESTION = os.getenv("OPENAI_TASK_SUGGESTION")
-
-# Pylint configuration
-"pylint.args": [
-    "--reports",
-    "12",
-    "--disable=C0114",
-    "--disable=C0115",
-    "--disable=C0116"
-]
