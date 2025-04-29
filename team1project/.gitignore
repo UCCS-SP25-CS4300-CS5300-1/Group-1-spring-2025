@@ -16,3 +16,5 @@ team1project/migrations/
 
 # Ignore environment settings
 *.env
+
+.pylintrc
