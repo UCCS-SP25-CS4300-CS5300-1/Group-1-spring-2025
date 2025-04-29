@@ -21,65 +21,68 @@ class TestUserViews(TestCase):
     def setUp(self):
         self.client = Client()
 
-        # Urls 
+        # Urls
         self.index_url = reverse('index')
         self.register_url = reverse('register')
         self.task_view_url = reverse('task_view')
         self.profile_settings_url = reverse('profile_settings')
-        
+
         # User to use for testing
         self.username = "test1"
         self.password = "Gl989bert48!"
         self.user = User.objects.create_user(username=self.username, password=self.password)
-    
+
     # Test if the index renders
-    def test_index_GET(self):
+    def test_index_get(self):
         response = self.client.get(self.index_url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'index.html')
 
     # Test if user can login with correct user information and redirects to tasks page
-    def test_login_index_valid_POST(self):
-        response = self.client.post(self.index_url, {"username": self.username, "password": self.password})
+    def test_login_index_valid_post(self):
+        response = self.client.post(self.index_url,
+            {"username": self.username, "password": self.password})
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, self.task_view_url)
 
     # Test if the index view will not allow users to enter with invalid credentials
-    def test_login_index_invalid_POST(self):
-        response = self.client.post(self.index_url, {"username": self.username, "password": "goober"})
+    def test_login_index_invalid_post(self):
+        response = self.client.post(self.index_url,
+            {"username": self.username, "password": "goober"})
         self.assertEqual(response.status_code, 200)
 
     # Test register view
     # Test if the register page can load
-    def test_register_GET(self):
+    def test_register_get(self):
         response = self.client.get(self.register_url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'register.html')
 
     # Test that a user can be created on the register page and redirects to the welcome page
-    def test_register_valid_POST(self):
-        response = self.client.post(self.register_url, 
+    def test_register_valid_post(self):
+        response = self.client.post(self.register_url,
             {"username": "newTest", "password1": "globertest48!", "password2": "globertest48!"})
         self.assertRedirects(response, self.index_url)
         self.assertTrue(User.objects.filter(username="newTest").exists())
 
     # Test for requests made on the profile settings page
     # Test if profile_settings page renders
-    def test_profile_settings_GET(self):
+    def test_profile_settings_get(self):
         self.client.login(username=self.username, password=self.password)
         response = self.client.get(self.profile_settings_url)
         self.assertEqual(response.status_code, 200)
 
     # Test that a user can logout from the profile_settings page and redirects to the welcome page
-    def test_profile_settings_logout_POST(self):
+    def test_profile_settings_logout_post(self):
         self.client.login(username=self.username, password=self.password)
         response = self.client.post(self.profile_settings_url, {"logout": True})
         self.assertRedirects(response, self.index_url)
 
 class EditProfileViewTest(TestCase):
     def setUp(self):
-        # create a test user 
-        self.user = User.objects.create_user(username="test", password="thisisatest123", email="testing@gmail.com")
+        # create a test user
+        self.user = User.objects.create_user(username="test",
+            password="thisisatest123", email="testing@gmail.com")
 
     def testEditProfileView(self):
         # log in
@@ -104,7 +107,8 @@ class FilterTasksViewTest(TestCase):
         # User to use for testing
         self.other_username = "test2"
         self.password = "Gl989bert48!"
-        self.other_user = User.objects.create_user(username=self.other_username, password=self.password)
+        self.other_user = User.objects.create_user(username=self.other_username,
+            password=self.password)
 
         self.category_work = Category.objects.create(name="Work")
         self.category_misc = Category.objects.create(name="Misc")
@@ -204,7 +208,7 @@ class FilterTasksViewTest(TestCase):
         self.assertEqual(my_tasks.count(), 1)
         self.assertEqual(shared_tasks.count(), 1)
         self.assertEqual(filtered_archived_tasks.count(), 0)
-        
+
         # Check that task 1 and 2 were filtred, but task 3
         # was not included. Also check that archived task was not included
         self.assertTrue(self.task_1 in my_tasks)
@@ -234,7 +238,7 @@ class FilterTasksViewTest(TestCase):
         self.assertEqual(my_tasks.count(), 1)
         self.assertEqual(shared_tasks.count(), 0)
         self.assertEqual(filtered_archived_tasks.count(), 1)
-        
+
         # Check that the archived task was filtered
         self.assertTrue(self.archived_task in filtered_archived_tasks)
 
@@ -279,7 +283,7 @@ class PushNotificationViewsTests(TestCase):
         self.assertIn("Invalid JSON", response.json()["error"])
 
 class GetAITaskSuggestionTest(TestCase):
-    # set up test user 
+    # set up test user
     def setUp(self):
         self.factory = RequestFactory()
         self.user = User.objects.create_user(username='testuser', password='test123')
@@ -287,7 +291,7 @@ class GetAITaskSuggestionTest(TestCase):
     # use a patch so we're not actually calling the OpenAI API
     @patch('todoapp.views.openai.OpenAI')
     def test_returns_suggestion_when_generate_task_in_get(self, mock_openai):
-        # create a test task for the user 
+        # create a test task for the user
         category = Category.objects.create(name='Personal')
         task = Task.objects.create(
             name='Some task',

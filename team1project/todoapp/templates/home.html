@@ -22,6 +22,7 @@
       table-layout: fixed;
       border-collapse: collapse;
   }
+
   .calendar th,
   .calendar td {
       border: 1px solid #ccc;
@@ -30,14 +31,21 @@
       aspect-ratio: 1 / 1; /* To maintain square cells */
       vertical-align: middle;
   }
+
   /* Style for days that are not in the current month */
   .noday {
       background-color: #f9f9f9;
   }
+
   /* Highlight the current day */
-  .today {
-      background-color: #ffd700;  /* For example, a gold background */
+  [data-bs-theme="light"] .today {
+    background-color: #ffd700;
   }
+  [data-bs-theme="dark"] .today {
+      background-color: #880C8D;
+      color: white;
+  }
+  
   /* Style for tasks inside each day */
   .task {
       font-size: 0.8em;
@@ -47,31 +55,31 @@
       border-radius: 4px;
   }
 
-.calendar .task {
-  background: #eef;
-  color: #000;
-}
+  .calendar .task {
+    background: #eef;
+    color: #000;
+  }
 
-/* brown for archived tasks on the calendar */
-.calendar .task.archived {
-  background: teal !important;
-  color: white !important;
-}
+  /* brown for archived tasks on the calendar */
+  .calendar .task.archived {
+    background: teal !important;
+    color: white !important;
+  }
 
-/* green for shared tasks on the calendar */
-.calendar .task.shared {
-  background: green !important;
-  color: white !important;
-}
+  /* green for shared tasks on the calendar */
+  .calendar .task.shared {
+    background: green !important;
+    color: white !important;
+  }
 
   .calendar .holiday {
-      font-size: 0.75em;
-      margin-top: 2px;
-      padding: 2px 4px;
-      background-color: #fdecea;   
-      color: #a94442;              
-      border-radius: 4px;
-      }
+    font-size: 0.75em;
+    margin-top: 2px;
+    padding: 2px 4px;
+    background-color: #fdecea;   
+    color: #a94442;              
+    border-radius: 4px;
+    }
 
   /* default user‑owned task */
   .task {
@@ -92,17 +100,10 @@
   background-color: #ccc;
   color: #333;
   }
-
-  .blockquote {
-  font-style: italic;
-  }
-
-
 </style>
 
 {% extends 'base.html' %}
 {% block content %}
-
 
 <script>
 function resetFilter(){
@@ -122,7 +123,9 @@ function resetFilter(){
 <!-- Display quote of the day from ZenQuotes -->
 <div class="alert alert-primary alert-dismissible fade show d-flex justify-content-center align-items-center border border-dark"  role="alert">
   <div style="text-align: center;">
+    <em>
     {{ today_quote|safe }}
+    </em>
   </div>
   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 </div>  
@@ -198,6 +201,7 @@ function resetFilter(){
         </form> 
     </div>
           <div class="card p-4 shadow">
+            <div class="table-responsive">
               <table class="table">
                   <thead>
                       <tr>
@@ -223,7 +227,8 @@ function resetFilter(){
                       {% endfor %}
                   </tbody>
               </table>
-              <a href="{% url 'task_view' %}" class="btn btn-light border border-dark" >Task Page</a>
+            </div>
+            <a href="{% url 'task_view' %}" class="custom-dark-button" >Task Page</a>
           </div>
       </div>
     </div>

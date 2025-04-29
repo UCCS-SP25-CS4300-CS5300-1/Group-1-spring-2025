@@ -22,9 +22,11 @@
             </div>
 
             <div class="mb-3">
-                <b>{{ form.description.label_tag }}</b>
-                <br>
-                {{ form.description }}
+                <div class="mb-3">
+                    <label for="id_description" class="form-label"><b>{{ form.description.label }}</b></label>
+                    <br>
+                    {{ form.description }}
+                </div>
             </div>
 
             <div class="mb-3">

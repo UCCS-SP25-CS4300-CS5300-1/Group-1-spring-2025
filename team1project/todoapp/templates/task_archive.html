@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="alert alert-info alert-dismissible fade show d-flex justify-content-between align-items-center flex-wrap gap-2 border border-dark custom-alert role="alert">
+<div class="alert alert-info alert-dismissible fade show d-flex justify-content-between align-items-center flex-wrap gap-2 border border-dark custom-alert" role=alert">
     <p class="mb-0">
       Welcome to the task archive page! Here, you will be able to view all tasks that either manually or automatically archived. Tasks that are fully completed and past their deadline will be automatically archived and added to this page. You may also manually archive a task from the task page. 
     </p>
@@ -17,7 +17,7 @@
             <form method="get" name="filter_tasks" class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                 {% csrf_token %}
                 <label class="form-label">{{ form.user_category_filter.label }}</label>
-                <div class="d-flex flex-row gap-3">
+                <div class="d-flex flex-row flex-wrap gap-3">
                     {% for checkbox in form.user_category_filter %}
                         <div class="form-check">
                             {{ checkbox.tag }}
@@ -35,54 +35,56 @@
         </div>
 
         <h2 class="mb-4">Task Archive</h2>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Description</th>
-                    <th>Due Date</th>
-                    <th>Progress</th>
-                    <th>Categories</th>
-                    <th>Creator</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for task in archived_tasks %}
-                <tr>
-                    <td>{{ task.name }}</td>
-                    <td>{{ task.description }}</td>
-                    <td>{{ task.due_date|date:"M d, Y H:i" }}</td>
-                    <td>{{ task.progress }}%</td>
-                    <td>
-                        {% for user in task.assigned_users.all %}
-                            <span class="badge bg-secondary">{{ user.username }}</span>
-                        {% empty %}
-                            <span class="text-muted">None</span>
-                        {% endfor %}
-                    </td>
-                    <td>
-                        {% for category in task.categories.all %}
-                            <span class="badge bg-secondary">{{ category.name }}</span>
-                        {% empty %}
-                            <span class="text-muted">None</span>
-                        {% endfor %}
-                    </td>
-                    <td>
-                        <div class="btn-group">
-                            <button type="button" class="btn btn-light border border-dark dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <svg xmlns="http://www.w3.org/2000/svg" style="fill: black;" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M240-400q-33 0-56.5-23.5T160-480q0-33 23.5-56.5T240-560q33 0 56.5 23.5T320-480q0 33-23.5 56.5T240-400Zm240 0q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm240 0q-33 0-56.5-23.5T640-480q0-33 23.5-56.5T720-560q33 0 56.5 23.5T800-480q0 33-23.5 56.5T720-400Z"/></svg>
-                            </button>
-                            <div class="dropdown-menu">
-                              <a class="dropdown-item" href="{% url 'restore_task' task.id %}">Restore</a>
-                              <div class="dropdown-divider"></div>
-                              <a class="dropdown-item" onclick="confirmDelete({{ task.id }})">Delete</a>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Due Date</th>
+                        <th>Progress</th>
+                        <th>Categories</th>
+                        <th>Creator</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for task in archived_tasks %}
+                    <tr>
+                        <td>{{ task.name }}</td>
+                        <td>{{ task.description }}</td>
+                        <td>{{ task.due_date|date:"M d, Y H:i" }}</td>
+                        <td>{{ task.progress }}%</td>
+                        <td>
+                            {% for user in task.assigned_users.all %}
+                                <span class="badge bg-secondary">{{ user.username }}</span>
+                            {% empty %}
+                                <span class="text-muted">None</span>
+                            {% endfor %}
+                        </td>
+                        <td>
+                            {% for category in task.categories.all %}
+                                <span class="badge bg-secondary">{{ category.name }}</span>
+                            {% empty %}
+                                <span class="text-muted">None</span>
+                            {% endfor %}
+                        </td>
+                        <td>
+                            <div class="btn-group">
+                                <button type="button" class="custom-dark-button dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <svg class="theme-icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"><path d="M240-400q-33 0-56.5-23.5T160-480q0-33 23.5-56.5T240-560q33 0 56.5 23.5T320-480q0 33-23.5 56.5T240-400Zm240 0q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm240 0q-33 0-56.5-23.5T640-480q0-33 23.5-56.5T720-560q33 0 56.5 23.5T800-480q0 33-23.5 56.5T720-400Z"/></svg>
+                                </button>
+                                <div class="dropdown-menu">
+                                <a class="dropdown-item" href="{% url 'restore_task' task.id %}">Restore</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" onclick="confirmDelete({{ task.id }})">Delete</a>
+                                </div>
                             </div>
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
