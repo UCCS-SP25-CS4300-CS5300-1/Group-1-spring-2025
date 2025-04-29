@@ -81,6 +81,7 @@
             padding: 8px 12px;
             border-radius: 4px;
         } */
+
         .toggle-btn {
             background-color: transparent;
             color: white;
@@ -112,15 +113,10 @@
                 overflow-x: auto;
                 -webkit-overflow-scrolling: touch;
             }
-
-
-
         }
-
-        
     </style>
 
-    <title>Base To-Do List</title>
+<title>Base To-Do List</title>
 </head>
 <body class="m-3">
 
@@ -247,6 +243,44 @@
                     sidebar.style.backgroundColor = '#5b8e85'; 
                 }
             }
+
+            // buttons 
+            const specialButtons = document.querySelectorAll('.custom-dark-button');
+
+            specialButtons.forEach(button => {
+                if (theme === 'dark') {
+                    button.classList.remove('btn-light', 'border-dark');
+                    button.classList.add('btn-dark', 'border', 'border-light', 'btn');
+                    
+                } else {
+                    button.classList.remove('btn-dark', 'border-light');
+                    button.classList.add('btn-light', 'border', 'border-dark', 'btn');
+                }
+            });
+
+            // alerts 
+            const specialAlerts = document.querySelectorAll('.custom-alert');
+
+            specialAlerts.forEach(alert => {
+                if (theme === 'dark') {
+                    alert.classList.add('bg-dark', 'text-white', 'border', 'border-light', 'p-3');
+                    alert.classList.remove('bg-light', 'text-dark', 'border-dark');
+                } else {
+                    alert.classList.add('bg-light', 'text-dark', 'border', 'border-dark', 'p-3');
+                    alert.classList.remove('bg-dark', 'text-white', 'border-light');
+                }
+            });
+
+            // button icons 
+            const icons = document.querySelectorAll('.theme-icon');
+
+            icons.forEach(icon => {
+                if (theme === 'dark') {
+                    icon.setAttribute('fill', '#ffffff');
+                } else {
+                    icon.setAttribute('fill', '#000000'); 
+                }
+            });
         }
     
         document.addEventListener('DOMContentLoaded', () => {

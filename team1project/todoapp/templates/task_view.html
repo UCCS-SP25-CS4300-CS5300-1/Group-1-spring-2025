@@ -39,12 +39,12 @@
 
         <!-- Button container floated right -->
         <div class="d-flex gap-2 ms-auto">
-            <a href="{% url 'add_task' %}?name={{ suggested_name|urlencode }}&description={{ suggested_description|urlencode }}{% for cat in suggested_categories %}&categories={{ cat|urlencode }}{% endfor %}" class="btn btn-light border border-dark">
+            <a href="{% url 'add_task' %}?name={{ suggested_name|urlencode }}&description={{ suggested_description|urlencode }}{% for cat in suggested_categories %}&categories={{ cat|urlencode }}{% endfor %}" class="custom-dark-button">
                 Add Task
             </a>
 
             <form method="get">
-                <button name="generate-task" type="submit" class="btn btn-light border border-dark">Generate Task</button>
+                <button name="generate-task" type="submit" class="custom-dark-button">Generate Task</button>
             </form>
         </div>
 
@@ -52,7 +52,7 @@
         <strong>˗ˏˋ ★ ˎˊ˗ &ensp; Generate a personalized task</strong>
 
         <form method="get" class="ms-auto">
-            <button name="generate-task" type="submit" class="btn btn-light border border-dark">Generate</button>
+            <button name="generate-task" type="submit" class="custom-dark-button">Generate</button>
         </form>
 
     {% else %}
@@ -90,7 +90,7 @@
         <div class="title-card d-flex justify-content-between align-items-center mt-4 mb-3" style="margin-top:20px;">
             <h2 class="mb-4">My Tasks</h2>
 
-            <a href="{% url 'add_task' %}" class="btn btn-light border border-dark">+ Create Task</a>
+            <a href="{% url 'add_task' %}" class="custom-dark-button">+ Create Task</a>
         </div>
         
         <div class="table-responsive">
@@ -127,8 +127,8 @@
                         </td>
                         <td>
                             <div class="btn-group">
-                                <button type="button" class="btn btn-light border border-dark dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <svg xmlns="http://www.w3.org/2000/svg" style="fill: black;" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M240-400q-33 0-56.5-23.5T160-480q0-33 23.5-56.5T240-560q33 0 56.5 23.5T320-480q0 33-23.5 56.5T240-400Zm240 0q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm240 0q-33 0-56.5-23.5T640-480q0-33 23.5-56.5T720-560q33 0 56.5 23.5T800-480q0 33-23.5 56.5T720-400Z"/></svg>
+                                <button type="button" class="custom-dark-button dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="theme-icon" height="24px" viewBox="0 -960 960 960" width="24px" ><path d="M240-400q-33 0-56.5-23.5T160-480q0-33 23.5-56.5T240-560q33 0 56.5 23.5T320-480q0 33-23.5 56.5T240-400Zm240 0q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm240 0q-33 0-56.5-23.5T640-480q0-33 23.5-56.5T720-560q33 0 56.5 23.5T800-480q0 33-23.5 56.5T720-400Z"/></svg>
                                 </button>
                                 <div class="dropdown-menu">
                                 <a class="dropdown-item" href="{% url 'share_task' task_id=task.id %}">Share</a>
