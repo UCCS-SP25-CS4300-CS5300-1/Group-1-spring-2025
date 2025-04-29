@@ -35,17 +35,22 @@ class TaskTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Test Task")
 
+
     def test_create_task(self):
-        """ Test creating a task through the form """
+        self.client.login(username='yourtestuser', password='yourpassword')
+
         response = self.client.post(reverse('add_task'), {
             'name': 'New Task',
             'description': 'Created from test',
             'due_date': '2025-04-01 14:00:00',
             'progress': 10,
-            'creator': self.user.id  # Include creator in task creation
+            'notification_type': 'email',
+            'notification_time': 1440,
         })
-        self.assertEqual(response.status_code, 302)  # Redirect after task creation
+
+        self.assertEqual(response.status_code, 302)  # Expect redirect after success
         self.assertTrue(Task.objects.filter(name="New Task").exists())
+
 
     def test_delete_task(self):
         """ Test deleting a task """
@@ -201,7 +206,7 @@ class TaskRequestsFormTests(TestCase):
             name="Complete Project",
             creator=self.sender,
             description="Finish the project by the deadline",
-            due_date=timezone.now() + timedelta(days=7),
+            due_date='2025-04-01 14:00:00',
             progress=50,
             is_completed=False,
             notifications_enabled=True
@@ -211,7 +216,7 @@ class TaskRequestsFormTests(TestCase):
             name="Complete Project",
             creator=self.sender,
             description="Finish the project by the deadline",
-            due_date=timezone.now() + timedelta(days=7),
+            due_date='2025-04-01 14:00:00',
             progress=50,
             is_completed=False,
             notifications_enabled=True,
