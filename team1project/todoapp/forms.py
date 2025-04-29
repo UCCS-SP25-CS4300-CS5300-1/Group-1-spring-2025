@@ -106,7 +106,11 @@ class TaskForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+<<<<<<< HEAD
         super().__init__(*args, **kwargs)
+=======
+        super(TaskForm, self).__init__(*args, **kwargs)
+>>>>>>> f8bef8e (Mobile view is now functional. The hamburger menu is fixed aswell as formatting on pages that displayed the tasks and the task filter. Also lined up boxes in add_task.html and profile_settings.)
         # Applys Bootstrap 'form-control'
         for field_name in ['name', 'description', 'due_date', 'progress']:
             if field_name in self.fields:
