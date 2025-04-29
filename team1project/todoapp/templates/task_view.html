@@ -9,6 +9,8 @@
         .select2-container {
             width: 300px !important;
         }
+
+
     </style>
     <script>
         function resetFilter(){
@@ -68,7 +70,7 @@
                 {% csrf_token %}
                 
                 <label class="form-label">{{ form.user_category_filter.label }}</label>
-                <div class="d-flex flex-row gap-3">
+                <div class="d-flex flex-row flex-wrap gap-3">
                     {% for checkbox in form.user_category_filter %}
                         <div class="form-check">
                             {{ checkbox.tag }}
@@ -91,138 +93,145 @@
             <a href="{% url 'add_task' %}" class="btn btn-light border border-dark">+ Create Task</a>
         </div>
         
-        <table class="table">
-            <tbody>
-                <tr>
-                    <th>Name</th>
-                    <th>Description</th>
-                    <th>Due Date</th>
-                    <th>Progress</th>
-                    <th>Shared Users</th>
-                    <th>Categories</th>
-                </tr>
+        <div class="table-responsive">
+            <table class="table">
+                <tbody>
+                    <tr>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Due Date</th>
+                        <th>Progress</th>
+                        <th>Shared Users</th>
+                        <th>Categories</th>
+                    </tr>
 
-                {% for task in my_tasks %}
-                <tr>
-                    <td>{{ task.name }}</td>
-                    <td>{{ task.description }}</td>
-                    <td>{{ task.due_date|date:"M d, Y H:i" }}</td>
-                    <td>{{ task.progress }}%</td>
-                    <td>
-                        {% for user in task.assigned_users.all %}
-                            <span class="badge bg-secondary">{{ user.username }}</span>
-                        {% empty %}
-                            <span class="text-muted">None</span>
-                        {% endfor %}
-                    </td>
-                    <td>
-                        {% for category in task.categories.all %}
-                            <span class="badge bg-secondary">{{ category.name }}</span>
-                        {% empty %}
-                            <span class="text-muted">None</span>
-                        {% endfor %}
-                    </td>
-                    <td>
-                        <div class="btn-group">
-                            <button type="button" class="btn btn-light border border-dark dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <svg xmlns="http://www.w3.org/2000/svg" style="fill: black;" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M240-400q-33 0-56.5-23.5T160-480q0-33 23.5-56.5T240-560q33 0 56.5 23.5T320-480q0 33-23.5 56.5T240-400Zm240 0q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm240 0q-33 0-56.5-23.5T640-480q0-33 23.5-56.5T720-560q33 0 56.5 23.5T800-480q0 33-23.5 56.5T720-400Z"/></svg>
-                            </button>
-                            <div class="dropdown-menu">
-                              <a class="dropdown-item" href="{% url 'share_task' task_id=task.id %}">Share</a>
-                              <a class="dropdown-item" href="{% url 'edit_task' task.id %}">Edit</a>
-                              <a class="dropdown-item" href="{% url 'archive_task' task.id %}">Archive</a>
-                              <div class="dropdown-divider"></div>
-                              <a class="dropdown-item" onclick="confirmDelete({{ task.id }})">Delete</a>
+                    {% for task in my_tasks %}
+                    <tr>
+                        <td>{{ task.name }}</td>
+                        <td>{{ task.description }}</td>
+                        <td>{{ task.due_date|date:"M d, Y H:i" }}</td>
+                        <td>{{ task.progress }}%</td>
+                        <td>
+                            {% for user in task.assigned_users.all %}
+                                <span class="badge bg-secondary">{{ user.username }}</span>
+                            {% empty %}
+                                <span class="text-muted">None</span>
+                            {% endfor %}
+                        </td>
+                        <td>
+                            {% for category in task.categories.all %}
+                                <span class="badge bg-secondary">{{ category.name }}</span>
+                            {% empty %}
+                                <span class="text-muted">None</span>
+                            {% endfor %}
+                        </td>
+                        <td>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-light border border-dark dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <svg xmlns="http://www.w3.org/2000/svg" style="fill: black;" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M240-400q-33 0-56.5-23.5T160-480q0-33 23.5-56.5T240-560q33 0 56.5 23.5T320-480q0 33-23.5 56.5T240-400Zm240 0q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm240 0q-33 0-56.5-23.5T640-480q0-33 23.5-56.5T720-560q33 0 56.5 23.5T800-480q0 33-23.5 56.5T720-400Z"/></svg>
+                                </button>
+                                <div class="dropdown-menu">
+                                <a class="dropdown-item" href="{% url 'share_task' task_id=task.id %}">Share</a>
+                                <a class="dropdown-item" href="{% url 'edit_task' task.id %}">Edit</a>
+                                <a class="dropdown-item" href="{% url 'archive_task' task.id %}">Archive</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" onclick="confirmDelete({{ task.id }})">Delete</a>
+                                </div>
                             </div>
-                        </div>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="5" class="text-center">No tasks available.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">No tasks available.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
         <div class="title-card">
             <h2 class="mb-4" style="margin-top:20px;">Tasks Shared with Me</h2>
         </div>
-        <table class="table">
-                <tr>
-                    <th>Name</th>
-                    <th>Description</th>
-                    <th>Due Date</th>
-                    <th>Progress</th>
-                    <th>Creator</th>
-                    <th>Categories</th>
-                </tr>
-                {% for task in shared_tasks %}
-                <tr>
-                    <td>{{ task.name }}</td>
-                    <td>{{ task.description }}</td>
-                    <td>{{ task.due_date|date:"M d, Y H:i" }}</td>
-                    <td>{{ task.progress }}%</td>
-                    <td>{{ task.creator }}</td>
-                    <td>
-                        {% for category in task.categories.all %}
-                            <span class="badge bg-secondary">{{ category.name }}</span>
-                        {% empty %}
-                            <span class="text-muted">None</span>
-                        {% endfor %}
-                    </td>
-                    <td>
-                        <div class="button-container">
-                            <a class="btn btn-primary btn-sm" href="{% url 'share_task' task_id=task.id %}">Share</a>
-                            <a href="{% url 'exit_task' task_id=task.id %}" class="btn btn-danger btn-sm">Exit</a>
-                        </div>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="5" class="text-center">No tasks shared.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        
+        <div class="table-responsive">
+            <table class="table">
+                    <tr>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Due Date</th>
+                        <th>Progress</th>
+                        <th>Creator</th>
+                        <th>Categories</th>
+                    </tr>
+                    {% for task in shared_tasks %}
+                    <tr>
+                        <td>{{ task.name }}</td>
+                        <td>{{ task.description }}</td>
+                        <td>{{ task.due_date|date:"M d, Y H:i" }}</td>
+                        <td>{{ task.progress }}%</td>
+                        <td>{{ task.creator }}</td>
+                        <td>
+                            {% for category in task.categories.all %}
+                                <span class="badge bg-secondary">{{ category.name }}</span>
+                            {% empty %}
+                                <span class="text-muted">None</span>
+                            {% endfor %}
+                        </td>
+                        <td>
+                            <div class="button-container">
+                                <a class="btn btn-primary btn-sm" href="{% url 'share_task' task_id=task.id %}">Share</a>
+                                <a href="{% url 'exit_task' task_id=task.id %}" class="btn btn-danger btn-sm">Exit</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">No tasks shared.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
         <div class="title-card">
             <h2 class="mb-4" style="margin-top: 20px;">Task Requests</h2>
         </div>
-        <table class="table">
-            <tbody>
-                {% if task_requests %}
-                <tr>
-                    <th>Name</th>
-                    <th>Description</th>
-                    <th>Due Date</th>
-                    <th>Progress</th>
-                    <th>Creator</th>
-                    <th>Actions</th>
-                </tr>
-                {% for request in task_requests %}
-                <tr>
-                    <td>{{ request.task.name }}</td>
-                    <td>{{ request.task.description }}</td>
-                    <td>{{ request.task.due_date|date:"M d, Y H:i" }}</td>
-                    <td>{{ request.task.progress }}</td>
-                    <td>Shared from user {{request.task.creator}}</td>
-                    <td>    
-                        <form method="post" action="{% url 'accept_task' request.id %}">
-                            {% csrf_token %}
-                            <button class="btn btn-primary btn-sm" name="accept_request">Accept</button>
-                            <button class="btn btn-danger btn-sm" name="decline_request">Decline</button>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
-                {% else %}
-                <tr>
-                    <td colspan="5" class="text-center">No requests available.</td>
-                </tr>
-                {% endif %}
-            </tbody>
-        </table>
+        <div class="table-responsive">
+            <table class="table">
+                <tbody>
+                    {% if task_requests %}
+                    <tr>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Due Date</th>
+                        <th>Progress</th>
+                        <th>Creator</th>
+                        <th>Actions</th>
+                    </tr>
+                    {% for request in task_requests %}
+                    <tr>
+                        <td>{{ request.task.name }}</td>
+                        <td>{{ request.task.description }}</td>
+                        <td>{{ request.task.due_date|date:"M d, Y H:i" }}</td>
+                        <td>{{ request.task.progress }}</td>
+                        <td>Shared from user {{request.task.creator}}</td>
+                        <td>    
+                            <form method="post" action="{% url 'accept_task' request.id %}">
+                                {% csrf_token %}
+                                <button class="btn btn-primary btn-sm" name="accept_request">Accept</button>
+                                <button class="btn btn-danger btn-sm" name="decline_request">Decline</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center">No requests available.</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 

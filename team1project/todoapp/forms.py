@@ -49,6 +49,14 @@ class TaskForm(forms.ModelForm):
             'progress': forms.NumberInput(attrs={'type': 'range', 'min': '0', 'max': '100', 'step': '1', 'oninput': 'updateProgressLabel(this.value)'}),
         }
 
+    def __init__(self, *args, **kwargs):
+        super(TaskForm, self).__init__(*args, **kwargs)
+        # Applys Bootstrap 'form-control'
+        for field_name in ['name', 'description', 'due_date', 'progress']:
+            if field_name in self.fields:
+                self.fields[field_name].widget.attrs.update({'class': 'form-control'})
+
+
 class TaskCollabForm(forms.ModelForm):
     # Prevent the current user from showing up in the queryset
     def __init__(self, *args, **kwargs):

@@ -32,16 +32,20 @@
                     {% csrf_token %}
 
                     <div class="profile-settings">
-                        <label for="username">Username:</label>
-                        <input style="margin-left: 10px; margin-top: 10px; margin-bottom: 10px;" type="text" name="username" class="form-control-6" value="{{user.username}}" disabled>
-                        <br>
-
-                        <label for="email">Email:</label>
-                        <input style="margin-left: 45px; margin-top: 10px; margin-bottom: 10px;" type="text" name="email" class="form-control-6" value="{{user.email}}" disabled>
-                        <br>
-
-                        <label for="password">Passsword:</label>
-                        <input style="margin-left: 5px; margin-top: 10px; margin-bottom: 10px;" type="text" name="password" class="form-control-6" value="************" disabled>
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username:</label>
+                            <input type="text" name="username" class="form-control" value="{{user.username}}" disabled>
+                        </div>
+                    
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email:</label>
+                            <input type="text" name="email" class="form-control" value="{{user.email}}" disabled>
+                        </div>
+                    
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password:</label>
+                            <input type="text" name="password" class="form-control" value="************" disabled>
+                        </div>                    
                     </div>
                     
                     <button href="{% url 'index' %}" name="logout" class="btn btn-light border border-dark"  style="margin-top:16px;">Logout</button>

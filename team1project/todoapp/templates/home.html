@@ -188,6 +188,7 @@ function resetFilter(){
         </form> 
     </div>
           <div class="card p-4 shadow">
+            <div class="table-responsive">
               <table class="table">
                   <thead>
                       <tr>
@@ -213,7 +214,8 @@ function resetFilter(){
                       {% endfor %}
                   </tbody>
               </table>
-              <a href="{% url 'task_view' %}" class="btn btn-light border border-dark" >Task Page</a>
+            </div>
+            <a href="{% url 'task_view' %}" class="btn btn-light border border-dark" >Task Page</a>
           </div>
       </div>
     </div>

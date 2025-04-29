@@ -103,7 +103,17 @@
             .main-content {
                 margin-left: 0;
             }
+
+            .table-responsive {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+
+
         }
+
+        
     </style>
 
     <title>Base To-Do List</title>
@@ -147,7 +157,12 @@
     <script>
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('collapsed');
+            if (window.innerWidth <= 768) {
+                sidebar.classList.toggle('active');
+            }else{
+                sidebar.classList.toggle('collapsed');
+
+            }
         }
     </script>
 
