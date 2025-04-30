@@ -96,8 +96,7 @@ class TaskForm(forms.ModelForm):
         '''
 
         model = Task
-        fields = ['name', 'description', 'due_date', 'progress', 'categories',
-        'notifications_enabled']
+        fields = ['name', 'description', 'due_date', 'progress', 'categories', 'notifications_enabled', 'notification_time', 'notification_type']
         widgets = {
             'due_date': forms.DateInput(attrs={'type': 'date'}),
             'progress': forms.NumberInput(attrs={'type': 'range',

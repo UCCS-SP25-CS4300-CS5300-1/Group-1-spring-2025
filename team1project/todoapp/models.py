@@ -21,6 +21,23 @@ class Task(models.Model):
     categories = models.ManyToManyField(Category, related_name="tasks", blank=True)
     assigned_users = models.ManyToManyField(User, related_name="assigned_tasks")
     notifications_enabled = models.BooleanField(default=False) 
+    NOTIFICATION_TIMES = [
+        (10, '10 minutes before'),
+        (60, '1 hour before'),
+        (1440, '1 day before'),
+    ]
+
+    NOTIFICATION_TYPES = [
+        ('push', 'Push Notification'),
+        ('email', 'Email Notification'),
+    ]
+
+    notification_time = models.IntegerField(choices=NOTIFICATION_TIMES, default=60)
+    notification_type = models.CharField(
+        max_length=10,
+        choices=NOTIFICATION_TYPES,
+        default='push'
+    )
 
     def save(self, *args, **kwargs):
         if self.progress == 100:

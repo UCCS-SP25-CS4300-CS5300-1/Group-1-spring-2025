@@ -240,7 +240,6 @@ def show_quote():
     except requests.exceptions.RequestException as e:
         return "Could not fetch today's quote."
 
-
 @login_required(login_url='/')
 def add_task(request):
     if request.method == "POST":
@@ -248,17 +247,22 @@ def add_task(request):
         if form.is_valid():
             task = form.save(commit=False)
             task.creator = request.user
+
+            # Handle notification type manually (since we customized it in the template)
+            notification_type = request.POST.get('notification_type')
+            if notification_type in dict(Task.NOTIFICATION_TYPES):  # safe check
+                task.notification_type = notification_type
+
             task.save()
             form.save_m2m()
             return redirect('task_view')
     else:
+        # Pre-fill form if suggestions were passed
         name = request.GET.get('name')
         description = request.GET.get('description')
         categories = request.GET.getlist('categories')
         due_date = request.GET.get('due_date')
-        # print("Due date for task:", due_date)
-        
-        form = TaskForm()
+
         initial = {}
 
         if name:
@@ -268,11 +272,15 @@ def add_task(request):
         if categories:
             initial['categories'] = list(Category.objects.filter(name__in=categories).values_list('id', flat=True))
         if due_date:
-            initial['due_date'] = datetime.strptime(due_date, "%Y-%m-%d").date()
+            try:
+                initial['due_date'] = datetime.strptime(due_date, "%Y-%m-%d").date()
+            except ValueError:
+                pass  # ignore bad format safely
 
-        form.initial = initial
+        form = TaskForm(initial=initial)
 
     return render(request, 'add_task.html', {'form': form})
+
 
 @login_required(login_url='/')
 def delete_task(request, task_id):
