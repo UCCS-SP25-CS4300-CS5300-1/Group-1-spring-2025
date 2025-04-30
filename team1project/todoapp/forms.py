@@ -1,17 +1,40 @@
+'''
+This module contains forms for user creation, task creation,
+requests, and filtering tasks
+'''
+
 from django import forms
 from django.contrib.auth.models import User
-from django.core.exceptions import ValidationError
-from django.contrib.auth.forms import UserCreationForm, UserChangeForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django_select2.forms import ModelSelect2Widget
 from .models import Task, Category, TaskCollabRequest
-from django_select2.forms import ModelSelect2Widget, ModelSelect2MultipleWidget
-from django.contrib.auth.forms import AuthenticationForm
-'''
-Allows user to create their accounts with email as optional
-'''
+
+
+# pylint: disable=E1101
+# pylint: disable=R0903
+# pylint: disable=R0901
+
 class CustomUserCreationForm(UserCreationForm):
+    '''
+    Form for processing users with an email
+
+    Attributes: 
+        email: an optional EmailField for users
+    '''
+
     email = forms.EmailField(required=False, help_text="(Optional)")
 
     class Meta:
+        '''
+        House metadata for user creation
+
+        Model: user
+        fields:
+            username: Username configuration
+            email: email to use for email notifications
+            password1: password use
+            password2: password for confirmation
+        '''
         model = User
         fields = ['username', 'email', 'password1', 'password2']
         widgets = {
@@ -26,6 +49,14 @@ class CustomUserCreationForm(UserCreationForm):
 
 
 class CustomAuthenticationForm(AuthenticationForm):
+    '''
+    Custom form for processing users
+
+    Attributes: 
+        username: TextInput for user to enter username
+        password: TextInput for user to enter password
+    '''
+
     username = forms.CharField(
         widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Username'})
     )
@@ -35,6 +66,15 @@ class CustomAuthenticationForm(AuthenticationForm):
 
 
 class TaskForm(forms.ModelForm):
+    '''
+    Form for users to enter information on task
+
+    Attributes: 
+        categories: users can select multiple categories
+        fields: name, description, due_date, progress, categories,
+        and notifactions enabled button for creating or editing a task
+    '''
+
     categories = forms.ModelMultipleChoiceField(
         queryset=Category.objects.all(),
         widget=forms.CheckboxSelectMultiple,
@@ -42,15 +82,29 @@ class TaskForm(forms.ModelForm):
     )
 
     class Meta:
+        '''
+        House metadata for task creation
+
+        Model: user
+        fields:
+            name: Name of task
+            description: Details of task
+            due_date: Date where task is due by
+            progress: Progress bar for tracking
+            categories: Choose which category tasks is under
+            notifications_enabled: Select which notifications to use
+        '''
+
         model = Task
         fields = ['name', 'description', 'due_date', 'progress', 'categories', 'notifications_enabled', 'notification_time', 'notification_type']
         widgets = {
             'due_date': forms.DateInput(attrs={'type': 'date'}),
-            'progress': forms.NumberInput(attrs={'type': 'range', 'min': '0', 'max': '100', 'step': '1', 'oninput': 'updateProgressLabel(this.value)'}),
+            'progress': forms.NumberInput(attrs={'type': 'range',
+            'min': '0', 'max': '100', 'step': '1', 'oninput': 'updateProgressLabel(this.value)'}),
         }
 
     def __init__(self, *args, **kwargs):
-        super(TaskForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         # Applys Bootstrap 'form-control'
         for field_name in ['name', 'description', 'due_date', 'progress']:
             if field_name in self.fields:
@@ -58,6 +112,15 @@ class TaskForm(forms.ModelForm):
 
 
 class TaskCollabForm(forms.ModelForm):
+    '''
+    Form for users to search users to share a task with
+
+    Attributes: 
+        user: the user sending the request
+        task: the task that is being shared through a request
+        to_user: the user that is sent request
+    '''
+
     # Prevent the current user from showing up in the queryset
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)
@@ -84,13 +147,29 @@ class TaskCollabForm(forms.ModelForm):
         self.fields['to_user'].queryset = user_queryset
 
     class Meta:
+        '''
+        House metadata for task collboration request
+
+        Model: TaskCollabRequest
+        fields:
+            to_user: To whom the request is being sent to
+        '''
+
         model = TaskCollabRequest
         fields = ['to_user']
         widgets = {'to_user': ModelSelect2Widget(model=User, search_fields=['username__icontains'])}
 
 
-# Return a filter to be used to filter based on task
-class FilterTasksForm(forms.Form): 
+
+class FilterTasksForm(forms.Form):
+    '''
+    Form for filtering tasks based on categories selected
+
+    Attributes: 
+        user_category_filter: categories that user selected
+            to filter tasks based on
+    '''
+
     user_category_filter = forms.ModelMultipleChoiceField(
         queryset=Category.objects.all(),
         widget=forms.CheckboxSelectMultiple,
