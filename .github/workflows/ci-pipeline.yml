@@ -250,12 +250,10 @@ jobs:
           git pull origin dev-branch
 
           # ensure .env contains up to date keys
-          if [! -f .env ]; then
-            echo "OPENAI_TASK_SUGGESTION"=${{ secrets.OPENAI_TASK_SUGGESTION }}" > .env
-            echo "WEBPUSH_SETTINGS"=${{ secrets.WEBPUSH_SETTINGS }}" >> .env
-            echo "VAPID_PUBLIC_KEY"=${{ secrets.VAPID_PUBLIC_KEY }}" >> .env
-            echo "EMAIL_HOST_PASSWORD"=${{ secrets.EMAIL_HOST_PASSWORD }}" >> .env
-          fi
+          echo "OPENAI_TASK_SUGGESTION=${{ secrets.OPENAI_TASK_SUGGESTION }}" > .env
+          echo "WEBPUSH_SETTINGS=${{ secrets.WEBPUSH_SETTINGS }}" >> .env
+          echo "VAPID_PUBLIC_KEY=${{ secrets.VAPID_PUBLIC_KEY }}" >> .env
+          echo "EMAIL_HOST_PASSWORD=${{ secrets.EMAIL_HOST_PASSWORD }}" >> .env
           
           pip install --upgrade pip  
           
