@@ -32,11 +32,9 @@ from openai import OpenAI
 
 # Retrieves user data and sends to OpenAI API to facilitate task suggestions
 def get_ai_task_suggestion(request):
-    """
-    Pure helper: if ?generate-task= in the URL, call GPT-4 and
-    return {'name':…, 'description':…, 'categories':[…], 'due_date':…}
-    else return None.
-    """
+    """ Helper view for task_view: if ?generate-task= in the URL, call GPT-4 and
+    return {'name':…, 'description':…, 'categories':[…], 'due_date':…} else return None. """
+    
     if 'generate-task' not in request.GET:
         return None
 
@@ -54,12 +52,12 @@ def get_ai_task_suggestion(request):
     )
 
     prompt = f"""
-Based on the user's previous tasks and patterns, suggest a new task.
-Return **only** a JSON object with keys: name, description, due_date, categories.
+    Based on the user's previous tasks and patterns, suggest a new task.
+    Return **only** a JSON object with keys: name, description, due_date, categories.
 
-User's Tasks:
-{task_data_str}
-"""
+    User's Tasks:
+    {task_data_str}
+    """
 
     client = OpenAI(api_key=settings.OPENAI_TASK_SUGGESTION)
     try:
