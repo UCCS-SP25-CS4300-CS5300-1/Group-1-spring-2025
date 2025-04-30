@@ -239,7 +239,7 @@ jobs:
    
       - name: Run Deploy Commands via ssh
         run: |
-          ssh -i "$GITHUB_WORKSPACE/ssh_key/id_rsa" -o StrictHostKeyChecking=no -p 22 root@todolist.mooo.com << 'EOF'
+          ssh -i "$GITHUB_WORKSPACE/ssh_key/id_rsa" -o StrictHostKeyChecking=no -p 22 root@todolist.mooo.com << EOF
           cd /var/www/django_app
           source djangoenv/bin/activate
           pip install -r requirements.txt
