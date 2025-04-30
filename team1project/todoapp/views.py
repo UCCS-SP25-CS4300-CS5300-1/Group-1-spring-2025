@@ -26,53 +26,57 @@ import traceback
 from .forms import CustomAuthenticationForm
 import holidays
 import requests
-
+from openai import OpenAI
 
 # Create your views here.
 
 # Retrieves user data and sends to OpenAI API to facilitate task suggestions
 def get_ai_task_suggestion(request):
-    if 'generate-task' in request.GET:
-        tasks = Task.objects.filter(creator=request.user)
+    """
+    Pure helper: if ?generate-task= in the URL, call GPT-4 and
+    return {'name':…, 'description':…, 'categories':[…], 'due_date':…}
+    else return None.
+    """
+    if 'generate-task' not in request.GET:
+        return None
 
-        task_data = []
-        for task in tasks:
-            task_data.append({
-                'name': task.name,
-                'description': task.description,
-                'due_date': task.due_date,
-                'categories': [category.name for category in task.categories.all()]
-            })
+    tasks = Task.objects.filter(creator=request.user)
+    if not tasks.exists():
+        return None
 
-        task_data_str = "\n".join([
-            f"Task: {task['name']}\nDescription: {task['description']}\nDue Date: {task['due_date']}\nCategories: {', '.join(task['categories'])}"
-            for task in task_data
-        ])
+    # build the prompt
+    task_data_str = "\n".join(
+        f"Task: {t.name}\n"
+        f"Description: {t.description}\n"
+        f"Due Date: {t.due_date.isoformat() if t.due_date else None}\n"
+        f"Categories: {', '.join(c.name for c in t.categories.all())}"
+        for t in tasks
+    )
 
-        prompt = f"""
-        Based on the user's previous tasks and patterns, suggest a new task for the user. Try to predict what task the user wants to complete next, or what task they may have forgotten to create. Make sure the task is relevant. Return the response in JSON format with the following keys: name, description, due date, and categories.
+    prompt = f"""
+Based on the user's previous tasks and patterns, suggest a new task.
+Return **only** a JSON object with keys: name, description, due_date, categories.
 
-        User's Tasks:
-        {task_data_str}
+User's Tasks:
+{task_data_str}
+"""
 
-        Respond only with the JSON object.
-        """
-
-        client = openai.OpenAI(api_key=settings.OPENAI_TASK_SUGGESTION)
-
-        response = client.completions.create(
-            model="gpt-3.5-turbo-instruct",
-            prompt=prompt,
-            max_tokens=100,
+    client = OpenAI(api_key=settings.OPENAI_TASK_SUGGESTION)
+    try:
+        resp = client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role":"system","content":"You are an intelligent task suggestion assistant."},
+                {"role":"user","content":prompt}
+            ],
+            max_tokens=300,
             temperature=0.7,
         )
-
-        try:
-            return json.loads(response.choices[0].text.strip())
-        except json.JSONDecodeError:
-            return None
-
-
+        content = resp.choices[0].message.content.strip()
+        return json.loads(content)
+    except Exception:
+        return None
+    
 def index(request):
     form = CustomAuthenticationForm()
     if request.method == 'POST':
@@ -83,7 +87,6 @@ def index(request):
             return redirect("task_view")
 
     return render(request, 'index.html', {'form': form})
-
 
 def register(request):
     form = CustomUserCreationForm()
@@ -153,21 +156,20 @@ def task_view(request):
 
     form, filtered_tasks, shared_filtered_tasks, _ = get_filtered_tasks(request)
     
-    task_suggestion = get_ai_task_suggestion(request)
-    suggested_name = task_suggestion.get('name', '') if task_suggestion else ''
-    suggested_description = task_suggestion.get('description', '') if task_suggestion else ''
-    suggested_categories = task_suggestion.get('categories', []) if task_suggestion else []
+    suggestion = get_ai_task_suggestion(request)
+    suggested_name        = suggestion.get('name','')        if suggestion else ''
+    suggested_description = suggestion.get('description','') if suggestion else ''
+    suggested_categories  = suggestion.get('categories',[])  if suggestion else []
 
     return render(request, 'task_view.html', {
-        'my_tasks': filtered_tasks, 
-        'task_requests': task_requests, 
-        'shared_tasks': shared_filtered_tasks, 
-        'vapid_key': settings.WEBPUSH_SETTINGS['VAPID_PUBLIC_KEY'],
-		'form': form,
-        'suggested_name': suggested_name,
-        'suggested_description': suggested_description,
+        'my_tasks':             tasks,
+        'shared_tasks':         shared_tasks,
+        'task_requests':        task_requests,
+        'form':                 form,
+        'has_task':             has_task,
+        'suggested_name':       suggested_name,
+        'suggested_description':suggested_description,
         'suggested_categories': suggested_categories,
-        'has_task': has_task,
     })
 
 def get_filtered_tasks(request):
