@@ -25,6 +25,16 @@ class CustomUserCreationForm(UserCreationForm):
     email = forms.EmailField(required=False, help_text="(Optional)")
 
     class Meta:
+        '''
+        House metadata for user creation
+
+        Model: user
+        fields:
+            username: Username configuration
+            email: email to use for email notifications
+            password1: password use
+            password2: password for confirmation
+        '''
         model = User
         fields = ['username', 'email', 'password1', 'password2']
         widgets = {
@@ -72,6 +82,19 @@ class TaskForm(forms.ModelForm):
     )
 
     class Meta:
+        '''
+        House metadata for task creation
+
+        Model: user
+        fields:
+            name: Name of task
+            description: Details of task
+            due_date: Date where task is due by
+            progress: Progress bar for tracking
+            categories: Choose which category tasks is under
+            notifications_enabled: Select which notifications to use
+        '''
+
         model = Task
         fields = ['name', 'description', 'due_date', 'progress', 'categories',
         'notifications_enabled']
@@ -82,7 +105,7 @@ class TaskForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        super(TaskForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         # Applys Bootstrap 'form-control'
         for field_name in ['name', 'description', 'due_date', 'progress']:
             if field_name in self.fields:
@@ -125,6 +148,14 @@ class TaskCollabForm(forms.ModelForm):
         self.fields['to_user'].queryset = user_queryset
 
     class Meta:
+        '''
+        House metadata for task collboration request
+
+        Model: TaskCollabRequest
+        fields:
+            to_user: To whom the request is being sent to
+        '''
+
         model = TaskCollabRequest
         fields = ['to_user']
         widgets = {'to_user': ModelSelect2Widget(model=User, search_fields=['username__icontains'])}
