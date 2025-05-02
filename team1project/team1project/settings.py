@@ -13,6 +13,9 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+load_dotenv()
+
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
     'editor-jhayescs4300-5.devedu.io', 
@@ -144,15 +147,15 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
 WEBPUSH_SETTINGS = {
-    "VAPID_PUBLIC_KEY": "BBiZBGqqJD6mKor9xOGrGh08LRpzaKyg4l0JspaEU6SewYJr3AkbHwSsIibZPT7ONhfQTJVNYTy90WCY0TZHjZ4=",
-    "VAPID_PRIVATE_KEY": "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgYUfUxUOC1z6aYUqLm4T_OUJ9Hz4KtoVNo5Edx2hsDYmhRANCAAQYmQRqqiQ-piqK_cThqxodPC0ac2isoOJdCbKWhFOknsGCa9wJGx8ErCIm2T0-zjYX0EyVTWE8vdFgmNE2R42e",
+    "VAPID_PUBLIC_KEY": "BNrf6S4CLwo3T8zaubL7vAcHrC4FAIMeAoA4gYNGq-TqgVlfaubMXqkqZQ8zsxAmmEDyWg-SZaEkxfXlbKON7M0=",
+    "VAPID_PRIVATE_KEY": os.getenv("VAPID_PRIVATE_KEY"),
     "VAPID_ADMIN_EMAIL": "mailto:team1todo@gmail.com",
 }
 
-VAPID_PUBLIC_KEY = "BBiZBGqqJD6mKor9xOGrGh08LRpzaKyg4l0JspaEU6SewYJr3AkbHwSsIibZPT7ONhfQTJVNYTy90WCY0TZHjZ4="
+VAPID_PUBLIC_KEY = "BNrf6S4CLwo3T8zaubL7vAcHrC4FAIMeAoA4gYNGq-TqgVlfaubMXqkqZQ8zsxAmmEDyWg-SZaEkxfXlbKON7M0="
 
 EMAIL_HOST_USER = 'team1todo@gmail.com'
-EMAIL_HOST_PASSWORD = 'nurp publ jksb bbda'
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = 'team1todo@gmail.com'
 
 # Default primary key field type
@@ -173,5 +176,4 @@ CACHES = {
 SELECT2_CACHE_BACKEND = 'select2'
 
 # Used for task suggestions OPENAI API implementation 
-load_dotenv()
 OPENAI_TASK_SUGGESTION = os.getenv("OPENAI_TASK_SUGGESTION")
