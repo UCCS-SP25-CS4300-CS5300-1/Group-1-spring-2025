@@ -72,9 +72,9 @@ def get_ai_task_suggestion(request):
         )
         content = resp.choices[0].message.content.strip()
         return json.loads(content)
-    except Exception:
-        return None
-    
+    except Exception as e:
+        raise e
+
 def index(request):
     form = CustomAuthenticationForm()
     if request.method == 'POST':
