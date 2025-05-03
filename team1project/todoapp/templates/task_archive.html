@@ -75,6 +75,7 @@
                                 </button>
                                 <div class="dropdown-menu">
                                 <a class="dropdown-item" href="{% url 'restore_task' task.id %}">Restore</a>
+                                <a class="dropdown-item" href="{% url 'edit_task' task.id %}">Edit </a>
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item" onclick="confirmDelete({{ task.id }})">Delete</a>
                                 </div>

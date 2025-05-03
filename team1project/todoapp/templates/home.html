@@ -32,6 +32,18 @@
       vertical-align: middle;
   }
 
+  @media (max-width: 768px) {
+
+
+    .calendar th,
+    .calendar td {
+      font-size: 10px;
+      padding: 4px;
+      min-width: 60px;
+      min-height: 20px;
+    }
+  }
+
   /* Style for days that are not in the current month */
   .noday {
       background-color: #f9f9f9;
@@ -176,29 +188,29 @@ function resetFilter(){
       
       </div>
   </div>
-      <!-- Optionally, list your tasks somewhere on the page -->
+
   <div class="col-md-5">
-      <h2 style="margin-bottom: 20px; margin-left: 200px;">Tasks</h2>
-      <hr>
-      <!-- Filter tasks form -->
-      <div class="filter-form">
-        <form method="get" title="Select a category to filter all tasks based on their category assignment." name="filter_tasks" class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-            {% csrf_token %}
-            
-            <label class="form-label">{{ form.user_category_filter.label }}</label>
-            <div class="d-flex flex-row flex-wrap align-items-center">
-                {% for checkbox in form.user_category_filter %}
-                    <div class="form-check">
-                        {{ checkbox.tag }}
-                        <label class="form-check-label">{{ checkbox.choice_label }}</label>
-                    </div>
-                {% endfor %}
-                <button type="submit" name="make-filter" class="btn btn-secondary" title="Filter" style="margin-left:15px; margin-right:15px; margin-top:15px;">
-                  <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M440-160q-17 0-28.5-11.5T400-200v-240L168-736q-15-20-4.5-42t36.5-22h560q26 0 36.5 22t-4.5 42L560-440v240q0 17-11.5 28.5T520-160h-80Zm40-308 198-252H282l198 252Zm0 0Z"/></svg>
-                </button>
-                <button type="button" name="reset-filter" class="btn btn-secondary" style="margin-top:15px;" onclick="resetFilter()">Reset</button>
-            </div>
-        </form> 
+    <h2 class="text-center mb-4">Tasks</h2>
+    <hr>
+    <!-- Filter tasks form -->
+    <div class="filter-form">
+      <form method="get" title="Select a category to filter all tasks based on their category assignment." name="filter_tasks" class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+          {% csrf_token %}
+          
+          <label class="form-label">{{ form.user_category_filter.label }}</label>
+          <div class="d-flex flex-row flex-wrap align-items-center">
+              {% for checkbox in form.user_category_filter %}
+                  <div class="form-check">
+                      {{ checkbox.tag }}
+                      <label class="form-check-label">{{ checkbox.choice_label }}</label>
+                  </div>
+              {% endfor %}
+              <button type="submit" name="make-filter" class="btn btn-secondary" title="Filter" style="margin-left:15px; margin-right:15px; margin-top:15px;">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M440-160q-17 0-28.5-11.5T400-200v-240L168-736q-15-20-4.5-42t36.5-22h560q26 0 36.5 22t-4.5 42L560-440v240q0 17-11.5 28.5T520-160h-80Zm40-308 198-252H282l198 252Zm0 0Z"/></svg>
+              </button>
+              <button type="button" name="reset-filter" class="btn btn-secondary" style="margin-top:15px;" onclick="resetFilter()">Reset</button>
+          </div>
+      </form> 
     </div>
           <div class="card p-4 shadow">
             <div class="table-responsive">
