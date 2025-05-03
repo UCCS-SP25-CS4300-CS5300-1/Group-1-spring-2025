@@ -308,7 +308,7 @@ jobs:
             for module in */; do 
               module=${module%/}
               echo "Now linting $module..."
-              pylint "$module" --rcfile=../.pylintrc --load-plugins=pylint_django --output-format=parseable > "../linting_reports/pylint_${module}_${TIMESTAMP}.txt" || true
+              pylint "$module" --rcfile=team1project/.pylintrc --load-plugins=pylint_django --output-format=parseable > "../linting_reports/pylint_${module}_${TIMESTAMP}.txt" || true
 
               # Print Linting Reports to Step Summary
               echo "## PyLint Report for $module" >> $GITHUB_STEP_SUMMARY
