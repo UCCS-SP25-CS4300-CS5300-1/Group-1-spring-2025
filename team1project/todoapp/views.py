@@ -241,7 +241,7 @@ def show_quote():
 
     url = 'https://zenquotes.io/api/today/'
     try:
-        response = requests.get(url)
+        response = requests.get(url, timeout=5)
         response.raise_for_status()
         data = response.json()
         quote = data[0]["h"]
