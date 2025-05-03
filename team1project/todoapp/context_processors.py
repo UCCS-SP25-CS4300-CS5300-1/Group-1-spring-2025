@@ -1,7 +1,4 @@
-'''
-Configure WebPush Notifications
-'''
-
+"""Configure WebPush Notifications"""
 from django.conf import settings
 
 def vapid_key(request):

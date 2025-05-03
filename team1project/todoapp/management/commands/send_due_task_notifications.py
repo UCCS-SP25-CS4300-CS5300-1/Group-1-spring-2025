@@ -1,17 +1,17 @@
 """This module contains a Command class that sends push notifications to all users
 that have tasks due."""
 # disabling django specific errors such as class has no "object" member
-# pylint: disable=E1101, W0613, W0611, W0718
+# pylint: disable=E1101, E5142, W0613, W0611, W0718, R0801
 import json
 from datetime import timedelta
 
-from todoapp.models import Task
 from webpush import send_user_notification
 
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from django.contrib.auth.models import User
 
+from todoapp.models import Task
 
 class Command(BaseCommand):
     """"Send push notifications to all users that have tasks due withing the chosen time."""

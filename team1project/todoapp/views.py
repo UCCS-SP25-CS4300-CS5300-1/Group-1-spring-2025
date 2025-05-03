@@ -1,3 +1,11 @@
+"""This is a module that contains web requests and returns responses"""
+# disabling django specific stuff and ambiguous suggestions
+# pylint: disable=E1101,W0611,R1710,W0613,W0718,R0914,R1705
+import os
+from datetime import datetime
+import json
+import traceback
+
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
@@ -15,26 +23,22 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
 from django.core.cache import cache
-import os
-from .forms import CustomUserCreationForm, TaskForm, TaskCollabForm, FilterTasksForm
-from .models import Task, TaskCollabRequest, Category, WebPushSubscription
-from .utils import TaskCalendar
-from datetime import datetime
+
 import openai
-import json
-import traceback
-from .forms import CustomAuthenticationForm
 import holidays
 import requests
 from openai import OpenAI
 
-# Create your views here.
+from .forms import CustomUserCreationForm, TaskForm, TaskCollabForm, FilterTasksForm
+from .models import Task, TaskCollabRequest, Category, WebPushSubscription
+from .utils import TaskCalendar
+from .forms import CustomAuthenticationForm
 
 # Retrieves user data and sends to OpenAI API to facilitate task suggestions
 def get_ai_task_suggestion(request):
     """ Helper view for task_view: if ?generate-task= in the URL, call GPT-4 and
     return {'name':…, 'description':…, 'categories':[…], 'due_date':…} else return None. """
-    
+
     if 'generate-task' not in request.GET:
         return None
 
@@ -76,6 +80,7 @@ def get_ai_task_suggestion(request):
         raise e
 
 def index(request):
+    """This is a function to show tasks to an authenticated user"""
     form = CustomAuthenticationForm()
     if request.method == 'POST':
         form = CustomAuthenticationForm(request, data=request.POST)
@@ -87,39 +92,47 @@ def index(request):
     return render(request, 'index.html', {'form': form})
 
 def register(request):
+    """Function to register a user and store info in the DB"""
     form = CustomUserCreationForm()
-    
+
     if request.method == "POST":
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
             login(request, user)
             return redirect('index')
-    
+
     return render(request, "register.html", {"form": form} )
+
 
 # Index class for handling the forms on profile settings
 class ProfileSettings(LoginRequiredMixin, View):
-	login_url = '/'
-
-	def get(self, request):
-		return render(request, "profile_settings.html")
-
-
-	def post(self, request):
-		print("Logging out")
-		if "logout" in request.POST:
-				logout(request)
-				messages.success(request, "You have been logged out.")
-				return redirect("index")
-
-class EditProfile(LoginRequiredMixin, View):
+    """Class that contains the settings page and login information"""
     login_url = '/'
 
     def get(self, request):
+        """Getter function to render a page"""
+        return render(request, "profile_settings.html")
+
+
+    def post(self, request):
+        """Function to log out the user"""
+        print("Logging out")
+        if "logout" in request.POST:
+            logout(request)
+            messages.success(request, "You have been logged out.")
+            return redirect("index")
+
+class EditProfile(LoginRequiredMixin, View):
+    """Class that contains settings to change password, email, dark/light mode"""
+    login_url = '/'
+
+    def get(self, request):
+        """Getter function to render a page to edit the profile"""
         return render(request, "edit_profile.html")
 
     def post(self, request):
+        """Function to store edits to the profile in the DB"""
         # get data from POST request
         username = request.POST.get("username")
         email = request.POST.get("email")
@@ -142,6 +155,10 @@ class EditProfile(LoginRequiredMixin, View):
 
 @login_required(login_url='/')
 def task_view(request):
+    """Function that returns tasks that were creted by the user.
+
+    Returns:
+        tasks with the user ID, form, suggested tasks."""
     task_requests = TaskCollabRequest.objects.filter(to_user=request.user)
 
     has_task = Task.objects.filter(creator=request.user).exists()
@@ -232,11 +249,16 @@ def show_quote():
         # Cache quote for ten minutes
         cache.set('zenquote_today', quote, timeout=60 * 10)
         return quote
-    except requests.exceptions.RequestException as e:
+    except requests.exceptions.RequestException as _:
         return "Could not fetch today's quote."
 
 @login_required(login_url='/')
 def add_task(request):
+    """Function to add the tast for a logged in user and store it in
+    the DB.
+
+    Returns:
+        task and task form."""
     if request.method == "POST":
         form = TaskForm(request.POST)
         if form.is_valid():
@@ -265,7 +287,8 @@ def add_task(request):
         if description:
             initial['description'] = description
         if categories:
-            initial['categories'] = list(Category.objects.filter(name__in=categories).values_list('id', flat=True))
+            initial['categories'] = list(
+                Category.objects.filter(name__in=categories).values_list('id', flat=True))
         if due_date:
             try:
                 initial['due_date'] = datetime.strptime(due_date, "%Y-%m-%d").date()
@@ -279,6 +302,7 @@ def add_task(request):
 
 @login_required(login_url='/')
 def delete_task(request, task_id):
+    """Function to deleted a task from the DB for a logged in user."""
     task = get_object_or_404(Task, id=task_id)
 
     task.delete()
@@ -287,6 +311,7 @@ def delete_task(request, task_id):
 
 @login_required(login_url = '/')
 def edit_task(request, task_id):
+    """Function to edit the task info and store updates in the DB."""
     task = get_object_or_404(Task, id=task_id)
 
     if request.method == 'POST':
@@ -304,6 +329,10 @@ def edit_task(request, task_id):
 
 @login_required(login_url='/')
 def share_task(request, task_id):
+    """Function to share a task with other users.
+
+    Returns:
+        task url, task form"""
     task = get_object_or_404(Task, id=task_id)
     share_url = f"{request.get_host()}/shared_task/{task_id}"
 
@@ -312,7 +341,7 @@ def share_task(request, task_id):
         if form.is_valid():
             from_user = request.user
             task_collab_obj = form.save(commit=False)
-            
+
             # Filter requests for user, prevent another request from being made
             # if a request was already made
             request_filter = TaskCollabRequest.objects.filter(task_id=task.id, to_user=request.user)
@@ -326,7 +355,7 @@ def share_task(request, task_id):
                 return redirect('task_view')
             else:
                 return HttpResponse('Request was already sent')
-    
+
     else:
         task = get_object_or_404(Task, id=task_id)
         form = TaskCollabForm(user=request.user, task=task)
@@ -335,6 +364,10 @@ def share_task(request, task_id):
 
 @login_required(login_url='/')
 def accept_task(request, request_id):
+    """Function to accept a shared task from a task page.
+
+    Returns:
+        task page render."""
     if request.method == 'POST':
         collab_request = get_object_or_404(TaskCollabRequest, id=request_id)
         if 'accept_request' in request.POST:
@@ -345,89 +378,102 @@ def accept_task(request, request_id):
         elif 'decline_request' in request.POST:
             collab_request.delete()
             messages.success(request, 'Task collaboration request not accepted')
-        
+
         return redirect('task_view')
 
 def shared_task_view(request, task_id):
-	'''
-	This function allows users to view shared task and accept it without creating a request object
+    '''
+    This function allows users to view shared task and accept it without creating a request object
 
-	Args: 
-		request: Detect type of request.
-		task_id: Pass the shared task id with other users
-	
-	Returns: 
-		If successful, redirects user back to task view page
-	'''
-	task = get_object_or_404(Task, id=task_id)
-	no_requests = True
-	if request.user.is_authenticated:
-		task_collab_filter = TaskCollabRequest.objects.filter(task_id = task_id, to_user=request.user)
-		if task_collab_filter.exists():
-			no_requests = False
+    Args: 
+        request: Detect type of request.
+        task_id: Pass the shared task id with other users
 
-	can_accept = (
-		request.user.is_authenticated and 
-		request.user.username != task.creator.username and 
-		request.user not in task.assigned_users.all() 
+    Returns: 
+        If successful, redirects user back to task view page
+    '''
+    task = get_object_or_404(Task, id=task_id)
+    no_requests = True
+    if request.user.is_authenticated:
+        task_collab_filter = TaskCollabRequest.objects.filter(
+            task_id = task_id, to_user=request.user)
+        if task_collab_filter.exists():
+            no_requests = False
+
+    can_accept = (
+        request.user.is_authenticated and
+		request.user.username != task.creator.username and
+		request.user not in task.assigned_users.all()
 		and no_requests
 		)
-	context = {
+    context = {
 		"task": task,
 		"show_button": can_accept
 	}
 
-	return render(request, 'shared_task_view.html', context)
+    return render(request, 'shared_task_view.html', context)
 
 @login_required(login_url='/')
 def accept_task_link(request, task_id):
-	task = get_object_or_404(Task, id=task_id)
-	task_collab_filter = TaskCollabRequest.objects.filter(task_id = task_id, to_user=request.user)
-	
-	# anonymous users do not have requests, but check if authenticated users have an outstanding request
-	no_requests = True
-	if request.user.is_authenticated:
-		task_collab_filter = TaskCollabRequest.objects.filter(task_id = task_id, to_user=request.user)
-		if task_collab_filter.exists():
-			no_requests = False
+    """Function that allows the user to accept a shred task using only a link."""
+    task = get_object_or_404(Task, id=task_id)
+    task_collab_filter = TaskCollabRequest.objects.filter(task_id = task_id, to_user=request.user)
 
-	can_accept = (
-		request.user.is_authenticated and 
-		request.user.username != task.creator.username and 
-		request.user not in task.assigned_users.all() 
+	# anonymous users do not have requests,
+    # but check if authenticated users have an outstanding request
+    no_requests = True
+    if request.user.is_authenticated:
+        task_collab_filter = TaskCollabRequest.objects.filter(
+            task_id = task_id, to_user=request.user)
+        if task_collab_filter.exists():
+            no_requests = False
+
+    can_accept = (
+		request.user.is_authenticated and
+		request.user.username != task.creator.username and
+		request.user not in task.assigned_users.all()
 		and no_requests
 		)
-	
+
 	# Check if user is valid for accepting the task
-	if request.method =='POST' and 'accept_task_link' in request.POST:
-		if can_accept:	
-			task.assigned_users.add(request.user)
-			return redirect('task_view')
-	return redirect('shared_task_view', task_id=task.id)
+    if request.method =='POST' and 'accept_task_link' in request.POST:
+        if can_accept:
+            task.assigned_users.add(request.user)
+            return redirect('task_view')
+    return redirect('shared_task_view', task_id=task.id)
 
 @login_required(login_url='/')
 def exit_task(request, task_id):
+    """Function t exit a task if the users doesn't want to add a shared task
+        to their tasks.
+
+    Returns:
+        task view page."""
     task = get_object_or_404(Task, id=task_id)
     task.assigned_users.remove(request.user)
     return redirect('task_view')
 
+
 def archive_task(request, task_id):
+    """Function to archive a task."""
     task = get_object_or_404(Task, id=task_id)
     task.is_archived = True
     task.save()
-    return redirect('task_view')  
+    return redirect('task_view')
+
 
 def restore_task(request, task_id):
+    """Function to restore a page from a task archive."""
     task = get_object_or_404(Task, id=task_id)
     if task.creator == request.user or request.user in task.assigned_users.all():
         task.is_archived = False
         task.save()
     return redirect('task_archive')
 
+
 def task_archive(request):
+    """Function to render a task archive page."""
     form, _, _, filtered_archived_tasks = get_filtered_tasks(request)
-
-
 
     return render(request, 'task_archive.html', {
         'archived_tasks': filtered_archived_tasks,
@@ -437,6 +483,10 @@ def task_archive(request):
 
 @csrf_exempt
 def save_subscription(request):
+    """Function to save a push subscription for a register user to the DB.
+
+    Returns:
+        JsonResponse with a status."""
     if request.method == 'POST':
         if not request.user.is_authenticated:
             return JsonResponse({'success': False, 'error': 'User not authenticated'}, status=403)
@@ -453,15 +503,20 @@ def save_subscription(request):
 
 
 def save_info(user, subscription_data):
+    """Function to save the push subscription for a user."""
     WebPushSubscription.objects.update_or_create(
         user=user,
         defaults={'subscription_info': subscription_data}
     )
 
+
 @require_GET
 @csrf_exempt
 def service_worker(request):
-    # Path to your static webpush-sw.js file
+    """Function to handle service worker.
+
+    Returns:
+        HttpResponse with subscription."""
     file_path = os.path.join(settings.BASE_DIR, 'todoapp', 'static', 'webpush-sw.js')
 
     with open(file_path, 'r', encoding='utf-8') as f:
@@ -471,12 +526,15 @@ def service_worker(request):
 
 
 def about(request):
+    """Function to render an about page"""
     return render(request, 'about.html')
- 
+
+
 @login_required(login_url='index')
 @require_GET
 @csrf_exempt
 def calender_view(request):
+    """Function to show tasks on the calendar on the calendar page."""
     # A) Category‑filter form
     form = FilterTasksForm(request.GET or None)
 
@@ -494,8 +552,6 @@ def calender_view(request):
         Q(creator=request.user) | Q(assigned_users=request.user),
         due_date__year=year,
         due_date__month=month,
-        
-        
     ).distinct().order_by('due_date')
 
     sidebar_tasks = Task.objects.filter(

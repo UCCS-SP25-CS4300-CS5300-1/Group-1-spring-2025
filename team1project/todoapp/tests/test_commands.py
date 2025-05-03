@@ -11,7 +11,7 @@ from django.utils.timezone import localtime
 
 from todoapp.models import Task
 
-# pylint: disable=W0612,E1101
+# pylint: disable=W0612,E1101,E5142
 class SendTaskRemindersCommandTest(TestCase):
     """This is a class to set up and run tests for commands"""
     def setUp(self):
