@@ -380,7 +380,7 @@ class GetTodayQuoteTest(TestCase):
         # Test the response
         response = show_quote()
 
-        mock_get.assert_called_once_with(self.zenquote_url)
+        mock_get.assert_called_once_with(self.zenquote_url, timeout=5)
         self.assertEqual(response, "<blockquote>New quote</blockquote>")
         self.assertEqual(cache.get('zenquote_today'), "<blockquote>New quote</blockquote>")
 
