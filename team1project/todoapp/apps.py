@@ -1,3 +1,7 @@
+'''
+Configure todoapp
+'''
+
 from django.apps import AppConfig
 
 class TodoappConfig(AppConfig):

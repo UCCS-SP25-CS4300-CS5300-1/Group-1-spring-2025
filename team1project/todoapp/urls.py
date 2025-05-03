@@ -1,6 +1,10 @@
+'''
+Configure available urls in todoapp and their respective views
+'''
+
 from django.urls import path, include
-from .views import index, ProfileSettings, EditProfile, register, task_archive
 from django.contrib.auth.views import LogoutView
+from .views import index, ProfileSettings, EditProfile, register, task_archive
 from . import views
 
 
@@ -19,7 +23,8 @@ urlpatterns = [
 	path('tasks/edit/<int:task_id>/', views.edit_task, name='edit_task'),
 	path('tasks/share/<int:task_id>', views.share_task, name='share_task'),
 	path('shared_task/<int:task_id>', views.shared_task_view, name='shared_task_view'),
-	path('shared_task/accept_request_link/<int:task_id>', views.accept_task_link, name='accept_request_link'),
+	path('shared_task/accept_request_link/<int:task_id>',
+		views.accept_task_link, name='accept_request_link'),
 	path('tasks/accept/<int:request_id>/', views.accept_task, name='accept_task'),
 	path('tasks/exit/<int:task_id>/', views.exit_task, name='exit_task'),
 	path('webpush/', include('webpush.urls')),

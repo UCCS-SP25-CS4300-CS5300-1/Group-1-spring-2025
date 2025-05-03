@@ -4,7 +4,8 @@ requests, and filtering tasks
 '''
 
 from django import forms
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+User = get_user_model()
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django_select2.forms import ModelSelect2Widget
 from .models import Task, Category, TaskCollabRequest
@@ -96,7 +97,8 @@ class TaskForm(forms.ModelForm):
         '''
 
         model = Task
-        fields = ['name', 'description', 'due_date', 'progress', 'categories', 'notifications_enabled', 'notification_time', 'notification_type']
+        fields = ['name', 'description', 'due_date', 'progress', 'categories', 
+        'notifications_enabled', 'notification_time', 'notification_type']
         widgets = {
             'due_date': forms.DateInput(attrs={'type': 'date'}),
             'progress': forms.NumberInput(attrs={'type': 'range',

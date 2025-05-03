@@ -147,12 +147,14 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
 WEBPUSH_SETTINGS = {
-    "VAPID_PUBLIC_KEY": "BNrf6S4CLwo3T8zaubL7vAcHrC4FAIMeAoA4gYNGq-TqgVlfaubMXqkqZQ8zsxAmmEDyWg-SZaEkxfXlbKON7M0=",
+    "VAPID_PUBLIC_KEY": "BNrf6S4CLwo3T8zaubL7vAcHrC4FAIMeAoA4gYNGq-TqgVlfaubMXqkqZQ8zsxAmmEDyWg"
+    "-SZaEkxfXlbKON7M0=",
     "VAPID_PRIVATE_KEY": os.getenv("VAPID_PRIVATE_KEY"),
     "VAPID_ADMIN_EMAIL": "mailto:team1todo@gmail.com",
 }
 
-VAPID_PUBLIC_KEY = "BNrf6S4CLwo3T8zaubL7vAcHrC4FAIMeAoA4gYNGq-TqgVlfaubMXqkqZQ8zsxAmmEDyWg-SZaEkxfXlbKON7M0="
+VAPID_PUBLIC_KEY = "BNrf6S4CLwo3T8zaubL7vAcHrC4FAIMeAoA4gYNGq-"
+"TqgVlfaubMXqkqZQ8zsxAmmEDyWg-SZaEkxfXlbKON7M0="
 
 EMAIL_HOST_USER = 'team1todo@gmail.com'
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
@@ -175,5 +177,5 @@ CACHES = {
 
 SELECT2_CACHE_BACKEND = 'select2'
 
-# Used for task suggestions OPENAI API implementation 
+# Used for task suggestions OPENAI API implementation
 OPENAI_TASK_SUGGESTION = os.getenv("OPENAI_TASK_SUGGESTION")

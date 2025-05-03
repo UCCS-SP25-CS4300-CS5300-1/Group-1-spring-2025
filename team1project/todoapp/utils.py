@@ -53,7 +53,7 @@ class TaskCalendar(calendar.HTMLCalendar):
                 f'{task_html}{hol_html}'
                 f'</td>')
 
-                
+
     def formatmonth(self, year, month, withyear=True):
         self.year, self.month = year, month
         return super().formatmonth(year, month, withyear=withyear)
