@@ -142,26 +142,21 @@ class EditProfile(LoginRequiredMixin, View):
 
 @login_required(login_url='/')
 def task_view(request):
-    tasks = Task.objects.filter(
-        Q(creator=request.user) | Q(assigned_users=request.user),
-        Q(is_archived=False)
-    ).distinct()
-
     task_requests = TaskCollabRequest.objects.filter(to_user=request.user)
-    shared_tasks = Task.objects.filter(assigned_users=request.user) 
-    
+
     has_task = Task.objects.filter(creator=request.user).exists()
 
+    # Render the tasks based on current filters set
     form, filtered_tasks, shared_filtered_tasks, _ = get_filtered_tasks(request)
-    
+
     suggestion = get_ai_task_suggestion(request)
     suggested_name        = suggestion.get('name','')        if suggestion else ''
     suggested_description = suggestion.get('description','') if suggestion else ''
     suggested_categories  = suggestion.get('categories',[])  if suggestion else []
 
     return render(request, 'task_view.html', {
-        'my_tasks':             tasks,
-        'shared_tasks':         shared_tasks,
+        'my_tasks':             filtered_tasks,
+        'shared_tasks':         shared_filtered_tasks,
         'task_requests':        task_requests,
         'form':                 form,
         'has_task':             has_task,
