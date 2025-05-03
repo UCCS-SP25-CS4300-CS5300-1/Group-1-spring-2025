@@ -1,0 +1,3 @@
+[MASTER]
+ignore=migrations
+ignore-patterns=__init__.py
