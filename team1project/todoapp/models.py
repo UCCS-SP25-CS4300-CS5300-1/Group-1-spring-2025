@@ -1,8 +1,9 @@
 """Module that contains task objects models stored in the DB for the taskapp."""
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.utils import timezone
 
+User = get_user_model()
 
 class Category(models.Model):
     """
@@ -65,9 +66,8 @@ class Task(models.Model):
     )
 
     def save(self, *args, **kwargs):
-        self.is_completed = (self.progress == 100)
+        self.is_completed = self.progress == 100
 
-        
         if self.ignore_archive:
             pass
         elif self.is_archived:
