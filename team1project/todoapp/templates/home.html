@@ -132,6 +132,23 @@ function resetFilter(){
         <div id="calendar-container">
           {{ calendar|safe }}
       </div>
+      <script>
+        document.addEventListener('DOMContentLoaded', () => {
+          document.querySelectorAll('#calendar-container td').forEach(td => {
+            if (td.classList.contains('noday')) return;
+            td.style.cursor = 'pointer';
+            td.addEventListener('click', () => {
+              const span = td.querySelector('span.date');
+              if (!span) return;
+              const day = span.textContent.trim();
+              const params = new URLSearchParams(window.location.search);
+              params.set('day', day);
+              window.location.search = params.toString();
+            });
+          });
+        });
+        </script>
+
 
       <div class="calendar‑legend d-flex gap-3 align-items-center mt-3">
         <div class="legend-item d-flex align-items-center">

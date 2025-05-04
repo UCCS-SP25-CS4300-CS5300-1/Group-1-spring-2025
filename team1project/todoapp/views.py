@@ -568,6 +568,10 @@ def calender_view(request):
         is_archived=False,
     ).distinct().order_by('due_date')
 
+    selected_day = request.GET.get('day')
+    if selected_day and selected_day.isdigit():
+        sidebar_tasks = sidebar_tasks.filter(due_date__day=int(selected_day))
+
     # D) Apply category filter if submitted
     if 'make-filter' in request.GET and form.is_valid():
         cats = form.cleaned_data['user_category_filter']
