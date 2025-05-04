@@ -1,40 +1,23 @@
 
 <style>
-  /* Ensure the table stretches and cells share equal widths */
+  /* Calendar table */
   .calendar table {
     width: 100%;
     table-layout: fixed;
+    border-collapse: collapse;
   }
 
-  /* Make all cells square */
+  /* All cells square & styled */
   .calendar th,
   .calendar td {
     border: 1px solid #ccc;
-    text-align: center;
     padding: 8px;
-    width: 100px;
-    height: 100px;
+    text-align: center;
     vertical-align: middle;
-  }
-
-  .calendar table {
-      width: 100%;
-      table-layout: fixed;
-      border-collapse: collapse;
-  }
-
-  .calendar th,
-  .calendar td {
-      border: 1px solid #ccc;
-      padding: 8px;
-      text-align: center;
-      aspect-ratio: 1 / 1; /* To maintain square cells */
-      vertical-align: middle;
+    aspect-ratio: 1 / 1;  /* maintain square cells */
   }
 
   @media (max-width: 768px) {
-
-
     .calendar th,
     .calendar td {
       font-size: 10px;
@@ -44,75 +27,59 @@
     }
   }
 
-  /* Style for days that are not in the current month */
+  /* Non‐month days */
   .noday {
-      background-color: #f9f9f9;
+    background-color: #f9f9f9;
   }
 
-  /* Highlight the current day */
+  /* Highlight today */
   [data-bs-theme="light"] .today {
     background-color: #ffd700;
   }
   [data-bs-theme="dark"] .today {
-      background-color: #880C8D;
-      color: white;
-  }
-  
-  /* Style for tasks inside each day */
-  .task {
-      font-size: 0.8em;
-      margin-top: 4px;
-      padding: 2px;
-      background-color: #eef;
-      border-radius: 4px;
+    background-color: #880C8D;
+    color: white;
   }
 
+  /* Tasks */
   .calendar .task {
-    background: #eef;
+    font-size: 0.8em;
+    margin-top: 4px;
+    padding: 2px;
+    background-color: #eef;
+    border-radius: 4px;
     color: #000;
   }
 
-/* brown for archived tasks on the calendar */
-.calendar .task.archived {
-  background: teal !important;
-  color: white !important;
-}
-
-  /* green for shared tasks on the calendar */
-  .calendar .task.shared {
-    background: green !important;
+  /* Archived tasks */
+  .calendar .task.archived {
+    background-color: teal !important;
     color: white !important;
   }
 
+  /* Shared tasks */
+  .calendar .task.shared {
+    background-color: green !important;
+    color: white !important;
+  }
+
+  /* “More…” indicator when >2 tasks */
+  .calendar .task.more {
+    background-color: #ccc;
+    color: #333;
+  }
+
+  /* Holidays */
   .calendar .holiday {
     font-size: 0.75em;
     margin-top: 2px;
     padding: 2px 4px;
-    background-color: #fdecea;   
-    color: #a94442;              
+    background-color: #fdecea;
+    color: #a94442;
     border-radius: 4px;
-    }
-
-  /* default user‑owned task */
-  .task {
-  font-size: 0.8em;
-  margin-top: 4px;
-  padding: 2px;
-  background-color: #eef;
-  border-radius: 4px;
-  }
-
-  /* shared task: light purple */
-  .task.shared {
-  background-color: #8efaae;
-  }
-
-  /* the “more…” indicator if >2 tasks */
-  .task.more {
-  background-color: #ccc;
-  color: #333;
   }
 </style>
+
 
 {% extends 'base.html' %}
 {% block content %}
@@ -147,11 +114,6 @@ function resetFilter(){
   <div class="container mt-4">
       <div class="row">
   <title>Calendar - {{ month }}/{{ year }}</title>
-  <style>
-      table { width: 100%; border-collapse: collapse; }
-      th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-      .noday { background-color: transparent; }
-  </style>
   <div class="col-md-7">
       <div class="calendar">
         <div class="d-flex justify-content-between align-items-center mb-3">
