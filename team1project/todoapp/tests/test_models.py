@@ -6,10 +6,12 @@ It tests the creation of each model here
 
 from datetime import timedelta
 from django.test import TestCase
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.utils import timezone
 
 from todoapp.models import Category, Task, SubTask, TaskProgress
+
+User = get_user_model()
 
 # pylint: disable=E1101
 class ModelsTestCase(TestCase):

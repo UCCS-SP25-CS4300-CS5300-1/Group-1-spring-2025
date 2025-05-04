@@ -1,7 +1,9 @@
 """Module to test if settings are created and saved"""
 from django.test import TestCase
 from django.urls import reverse
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 class EditProfileUpdateTest(TestCase):
     """Class to create objects for testing"""
