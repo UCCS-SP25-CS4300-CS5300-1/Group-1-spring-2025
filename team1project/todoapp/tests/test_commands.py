@@ -6,12 +6,14 @@ from unittest.mock import patch
 from django.test import TestCase
 from django.core.management import call_command
 from django.utils import timezone
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.utils.timezone import localtime
 
 from todoapp.models import Task
 
-# pylint: disable=W0612,E1101,E5142
+User = get_user_model()
+
+# pylint: disable = W0612,E1101
 class SendTaskRemindersCommandTest(TestCase):
     """This is a class to set up and run tests for commands"""
     def setUp(self):

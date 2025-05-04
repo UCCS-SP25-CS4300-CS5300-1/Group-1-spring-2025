@@ -7,8 +7,6 @@ import json
 import traceback
 
 from django.contrib.auth import get_user_model
-User = get_user_model()
-
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib import messages
@@ -35,6 +33,8 @@ from .forms import CustomUserCreationForm, TaskForm, TaskCollabForm, FilterTasks
 from .models import Task, TaskCollabRequest, Category, WebPushSubscription
 from .utils import TaskCalendar
 from .forms import CustomAuthenticationForm
+
+User = get_user_model()
 
 # Retrieves user data and sends to OpenAI API to facilitate task suggestions
 def get_ai_task_suggestion(request):
