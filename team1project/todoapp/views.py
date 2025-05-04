@@ -597,8 +597,8 @@ def calender_view(request):
     # G) Build calendar HTML
     cal = TaskCalendar(
         monthly_tasks,
-        year,
-        month,
+        year=year,
+        month=month,
         holidays=holiday_dict,
         user=request.user
     )
