@@ -7,6 +7,11 @@
     border-collapse: collapse;
   }
 
+  .calendar tr {
+    display: grid;
+    grid-template-columns: repeat(7,1fr);
+  }
+
   /* All cells square & styled */
   .calendar th,
   .calendar td {
@@ -15,6 +20,9 @@
     text-align: center;
     vertical-align: middle;
     aspect-ratio: 1 / 1;  /* maintain square cells */
+    overflow: hidden;
+    position: relative;
+
   }
 
   @media (max-width: 768px) {
@@ -43,7 +51,6 @@
 
   /* Tasks */
   .calendar .task {
-    font-size: 0.8em;
     margin-top: 4px;
     padding: 2px;
     background-color: #eef;
