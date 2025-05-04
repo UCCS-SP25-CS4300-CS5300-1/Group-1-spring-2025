@@ -28,11 +28,11 @@ class ModelsTestCase(TestCase):
             )
         self.category = Category.objects.create(name="Work")
         self.task = Task.objects.create(
-            name="Complete Project",
+            name="Pay Bills",
             creator=self.user1,
-            description="Finish the project by the deadline",
+            description="Pay utility bills",
             due_date=timezone.now() + timedelta(days=7),
-            progress=50,
+            progress=11,
             is_completed=False,
             notifications_enabled=True
         )
@@ -58,9 +58,9 @@ class ModelsTestCase(TestCase):
 
     def test_task_creation(self):
         '''Test the creation of tasks in database'''
-        self.assertEqual(str(self.task), "Complete Project")
+        self.assertEqual(str(self.task), "Pay Bills")
         self.assertEqual(self.task.creator, self.user1)
-        self.assertEqual(self.task.progress, 50)
+        self.assertEqual(self.task.progress, 11)
         self.assertFalse(self.task.is_completed)
         self.assertTrue(self.task.notifications_enabled)
         self.assertIn(self.category, self.task.categories.all())
