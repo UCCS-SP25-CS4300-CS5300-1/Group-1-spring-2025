@@ -42,6 +42,7 @@ class Task(models.Model):
     progress = models.IntegerField(default=0)
     is_completed = models.BooleanField(default=False)
     is_archived = models.BooleanField(default=False)
+    ignore_archive = models.BooleanField(default=False)
     categories = models.ManyToManyField(Category, related_name="tasks", blank=True)
     assigned_users = models.ManyToManyField(User, related_name="assigned_tasks")
     notifications_enabled = models.BooleanField(default=False)
@@ -64,10 +65,17 @@ class Task(models.Model):
     )
 
     def save(self, *args, **kwargs):
-        if self.progress == 100:
-            self.is_completed = True
-        if self.is_completed and self.due_date < timezone.now():
+        self.is_completed = (self.progress == 100)
+
+        
+        if self.ignore_archive:
+            pass
+        elif self.is_archived:
+            pass
+        elif self.is_completed and self.due_date < timezone.now():
             self.is_archived = True
+        else:
+            self.is_archived = False
         super().save(*args, **kwargs)
 
     def __str__(self):
