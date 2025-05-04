@@ -1,11 +1,20 @@
 # your_app/tests.py
+"""
+Tests for the calendar view in todoapp.
+"""
+from datetime import datetime
+
 from django.test import TestCase
 from django.urls import reverse
-from django.contrib.auth.models import User
-from datetime import datetime
+from django.contrib.auth import get_user_model
+
 from todoapp.models import Task
 
+User = get_user_model()
+
 class CalendarViewTests(TestCase):
+    """Test cases for the Calendar view."""
+
     def setUp(self):
         # 1) Create & log in a user
         self.user = User.objects.create_user(
@@ -17,14 +26,14 @@ class CalendarViewTests(TestCase):
         #    Note: TaskCalendar shows only first 7 chars of name
         self.t1 = Task.objects.create(
             creator=self.user,
-            name='TestTaskOne',                  # truncated => 'TestTas'
-            description='x', 
+            name='TestTaskOne',# truncated => 'TestTas'
+            description='x',
             due_date=datetime(2025, 3, 15, 12, 0),
             is_completed=False
         )
         self.t2 = Task.objects.create(
             creator=self.user,
-            name='AnotherTaskTooLong',           # truncated => 'Another'
+            name='AnotherTaskTooLong',# truncated => 'Another'
             description='y',
             due_date=datetime(2025, 3, 1, 9, 0),
             is_completed=False

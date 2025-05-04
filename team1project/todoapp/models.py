@@ -11,6 +11,7 @@ class Category(models.Model):
     Fields:
         name (CharField): The name of the category."""
     name = models.CharField(max_length=50)
+    objects = models.Manager()
 
     def __str__(self):
         return str(self.name or "")
@@ -34,6 +35,7 @@ class Task(models.Model):
         notification_time (IntegerField):When to send the notification(in minutes before due date).
         notification_type (CharField): Type of notification to send (push or email)."""
     name = models.CharField(max_length=255)
+    objects = models.Manager()
     creator = models.ForeignKey(User, on_delete=models.CASCADE)
     description = models.TextField()
     due_date = models.DateTimeField()
@@ -89,6 +91,7 @@ class SubTask(models.Model):
         is_completed (BooleanField): Whether the subtask is marked as complete.
         assigned_users (ManyToManyField): Users assigned to this subtask."""
     name = models.CharField(max_length=255)
+    objects = models.Manager()
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="subtasks")
     is_completed = models.BooleanField(default=False)
     assigned_users = models.ManyToManyField(User, related_name="assigned_subtasks")
@@ -104,6 +107,7 @@ class TaskProgress(models.Model):
         update_time (DateTimeField): Timestamp when the progress was last updated."""
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="progress_update")
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    objects = models.Manager()
     progress = models.IntegerField(default=0)
     update_time = models.DateTimeField(auto_now=True)
 
@@ -116,6 +120,7 @@ class TaskCollabRequest(models.Model):
         from_user (ForeignKey): The user sending the collaboration request.
         to_user (ForeignKey): The user receiving the collaboration request."""
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
+    objects = models.Manager()
     from_user = models.ForeignKey(User, related_name="from_user", on_delete=models.CASCADE)
     to_user = models.ForeignKey(User, related_name="to_user", on_delete=models.CASCADE)
 
@@ -129,5 +134,6 @@ class WebPushSubscription(models.Model):
         web push notifications.
         created_at (DateTimeField): Timestamp when the subscription was created."""
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    objects = models.Manager()
     subscription_info = models.JSONField()  # If you're using Django 3.1+
     created_at = models.DateTimeField(auto_now_add=True)

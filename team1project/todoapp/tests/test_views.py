@@ -1,23 +1,24 @@
-from django.contrib.auth.models import User
-from django.test import TestCase, Client, RequestFactory
-from django.urls import reverse
-from django.utils import timezone
-from django.conf import settings
-from django.http import HttpResponse
-from django.core.cache import cache
-from todoapp.models import WebPushSubscription, Task, Category
-from todoapp.views import get_filtered_tasks, get_ai_task_suggestion, show_quote
-from unittest.mock import patch, MagicMock, Mock
-from datetime import timedelta
+"""Tests for all the user-facing views in todoapp (index, auth, profile, task APIs)."""
 
-import os
 import json
+from datetime import timedelta
+from unittest.mock import patch, Mock
+
 import requests
 
-'''
-Test views dealing with user system and their http responses
-'''
-class TestUserViews(TestCase):
+from django.contrib.auth import get_user_model
+from django.core.cache import cache
+from django.test import Client, RequestFactory, TestCase
+from django.urls import reverse
+from django.utils import timezone
+
+from todoapp.models import Category, Task
+from todoapp.views import get_filtered_tasks, show_quote
+
+User = get_user_model()
+
+class TestUserViews(TestCase): # pylint: disable=R0902
+    """Tests for index, login, register and profile views."""
     def setUp(self):
         self.client = Client()
 
@@ -34,12 +35,14 @@ class TestUserViews(TestCase):
 
     # Test if the index renders
     def test_index_get(self):
+        '''Set up to get index'''
         response = self.client.get(self.index_url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'index.html')
 
     # Test if user can login with correct user information and redirects to tasks page
     def test_login_index_valid_post(self):
+        '''testing the login index'''
         response = self.client.post(self.index_url,
             {"username": self.username, "password": self.password})
         self.assertEqual(response.status_code, 302)
@@ -47,6 +50,7 @@ class TestUserViews(TestCase):
 
     # Test if the index view will not allow users to enter with invalid credentials
     def test_login_index_invalid_post(self):
+        '''Testing login index for an invalid post'''
         response = self.client.post(self.index_url,
             {"username": self.username, "password": "goober"})
         self.assertEqual(response.status_code, 200)
@@ -54,12 +58,14 @@ class TestUserViews(TestCase):
     # Test register view
     # Test if the register page can load
     def test_register_get(self):
+        '''Testing regester get'''
         response = self.client.get(self.register_url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'register.html')
 
     # Test that a user can be created on the register page and redirects to the welcome page
     def test_register_valid_post(self):
+        '''Testing the regester of a user with a valid POST'''
         response = self.client.post(self.register_url,
             {"username": "newTest", "password1": "globertest48!", "password2": "globertest48!"})
         self.assertRedirects(response, self.index_url)
@@ -68,23 +74,27 @@ class TestUserViews(TestCase):
     # Test for requests made on the profile settings page
     # Test if profile_settings page renders
     def test_profile_settings_get(self):
+        '''Testing the get of Profile settings'''
         self.client.login(username=self.username, password=self.password)
         response = self.client.get(self.profile_settings_url)
         self.assertEqual(response.status_code, 200)
 
     # Test that a user can logout from the profile_settings page and redirects to the welcome page
     def test_profile_settings_logout_post(self):
+        '''Testing the post for logging out'''
         self.client.login(username=self.username, password=self.password)
         response = self.client.post(self.profile_settings_url, {"logout": True})
         self.assertRedirects(response, self.index_url)
 
 class EditProfileViewTest(TestCase):
+    '''Edditing profile view class'''
     def setUp(self):
         # create a test user
         self.user = User.objects.create_user(username="test",
             password="thisisatest123", email="testing@gmail.com")
 
-    def testEditProfileView(self):
+    def test_edit_profile_view(self):
+        '''GET /edit_profile returns the edit form.'''
         # log in
         self.client.login(username="test", password="thisisatest123")
 
@@ -97,14 +107,15 @@ class EditProfileViewTest(TestCase):
         # assert that correct template was used
         self.assertTemplateUsed(response, 'edit_profile.html')
 
-class FilterTasksViewTest(TestCase):
+class FilterTasksViewTest(TestCase): # pylint: disable=R0902
+    '''Filter tasks view class '''
     def setUp(self):
-        # User to use for testing
+        ''' User to use for testing '''
         self.username = "test1"
         self.password = "Gl989bert48!"
         self.user = User.objects.create_user(username=self.username, password=self.password)
 
-        # User to use for testing
+         # User to use for testing
         self.other_username = "test2"
         self.password = "Gl989bert48!"
         self.other_user = User.objects.create_user(username=self.other_username,
@@ -161,11 +172,8 @@ class FilterTasksViewTest(TestCase):
         )
         self.archived_task.categories.add(self.category_personal)
 
-    '''
-    Test if tasks show up with no data submitted
-    By default, should be all of them, shared and owned
-    '''
     def test_get_filtered_tasks_no_filter(self):
+        """Default view shows all owned and shared tasks when no filter is applied."""
         factory = RequestFactory()
         request = factory.get('/')
         request.user = self.user
@@ -186,10 +194,11 @@ class FilterTasksViewTest(TestCase):
         self.assertTrue(self.task_3 in my_tasks)
         self.assertTrue(self.archived_task in filtered_archived_tasks)
 
-    '''
-    Test that filter works
-    '''
+
     def test_get_filtered_tasks_filter(self):
+        '''
+            Test that filter works
+        '''
         factory = RequestFactory()
         request = factory.get('/',{
             'make-filter': 'true',
@@ -203,7 +212,7 @@ class FilterTasksViewTest(TestCase):
         # Test that the form is valid
         self.assertEqual(form.is_valid(), True)
 
-        # Test that there is only one task in my_tasks and 
+        # Test that there is only one task in my_tasks and
         # shared_tasks and none in archived tasks
         self.assertEqual(my_tasks.count(), 1)
         self.assertEqual(shared_tasks.count(), 1)
@@ -216,10 +225,11 @@ class FilterTasksViewTest(TestCase):
         self.assertFalse(self.task_3 in my_tasks)
         self.assertFalse(self.archived_task in filtered_archived_tasks)
 
-    '''
-    Test that archived tasks can be filtered
-    '''
+
     def test_get_filtered_tasks_filter_archived(self):
+        '''
+        Test that archived tasks can be filtered
+        '''
         factory = RequestFactory()
         request = factory.get('/',{
             'make-filter': 'true',
@@ -233,7 +243,7 @@ class FilterTasksViewTest(TestCase):
         # Test that the form is valid
         self.assertEqual(form.is_valid(), True)
 
-        # Test that there is one task in my_tasks and 
+        # Test that there is one task in my_tasks and
         # none in shared_tasks, and one in archived tasks
         self.assertEqual(my_tasks.count(), 1)
         self.assertEqual(shared_tasks.count(), 0)
@@ -244,6 +254,7 @@ class FilterTasksViewTest(TestCase):
 
 
 class PushNotificationViewsTests(TestCase):
+    ''' Tests for the service_worker and save_subscription endpoints. '''
     def setUp(self):
         self.client = Client()
         self.user = User.objects.create_user(username="testuser", password="testpass")
@@ -257,6 +268,7 @@ class PushNotificationViewsTests(TestCase):
         }
 
     def test_service_worker_view(self):
+        ''' Testing the service worker view '''
         response = self.client.get('/service-worker.js')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['Content-Type'], 'application/javascript')
@@ -264,6 +276,7 @@ class PushNotificationViewsTests(TestCase):
 
 
     def test_save_subscription_unauthenticated(self):
+        ''' Saving the subscription unathorised '''
         response = self.client.post(
             "/save-subscription/",
             data=json.dumps(self.subscription_data),
@@ -273,6 +286,7 @@ class PushNotificationViewsTests(TestCase):
         self.assertIn("User not authenticated", response.json()["error"])
 
     def test_save_subscription_invalid_json(self):
+        ''' invalid json with saving subscription '''
         self.client.login(username="testuser", password="testpass")
         response = self.client.post(
             "/save-subscription/",
@@ -320,7 +334,7 @@ class PushNotificationViewsTests(TestCase):
 
 #        result = get_ai_task_suggestion(request)
 
-        # ensure that get_ai_task_suggestion parses the response from OpenAI correctly 
+        # ensure that get_ai_task_suggestion parses the response from OpenAI correctly
 #        self.assertIsInstance(result, dict)
 #        self.assertEqual(result['name'], 'Some suggested Task')
 #        self.assertEqual(result['categories'], ['Work'])
@@ -352,10 +366,10 @@ class PushNotificationViewsTests(TestCase):
 
 #        self.assertIsNone(result)
 
-
 class GetTodayQuoteTest(TestCase):
     '''Test and mock the zenquotes api responses in show_quote function'''
     def setUp(self):
+        '''Set up for it'''
         self.zenquote_url = 'https://zenquotes.io/api/today/'
         cache.delete('zenquote_today')
 

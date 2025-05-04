@@ -43,6 +43,14 @@ def get_ai_task_suggestion(request):
 
     if 'generate-task' not in request.GET:
         return None
+        task_data = []
+        for task in tasks:
+            task_data.append({
+                'name': task.name,
+                'description': task.description,
+                'due_date': task.due_date,
+                'categories': [category.name for category in task.categories.all()]
+            })
 
     tasks = Task.objects.filter(creator=request.user)
     if not tasks.exists():
@@ -563,6 +571,10 @@ def calender_view(request):
         is_completed=False,
         is_archived=False,
     ).distinct().order_by('due_date')
+
+    selected_day = request.GET.get('day')
+    if selected_day and selected_day.isdigit():
+        sidebar_tasks = sidebar_tasks.filter(due_date__day=int(selected_day))
 
     # D) Apply category filter if submitted
     if 'make-filter' in request.GET and form.is_valid():
