@@ -1,7 +1,7 @@
 """This modul contains a base command to send email notifications 
 to registered users"""
 # disabling django specific errors such as class has no "object" member
-# pylint: disable=E1101, W0613, W0611, W0718
+# pylint: disable=E1101, W0613, W0611, W0718, R0801
 from datetime import timedelta
 
 from django.core.management.base import BaseCommand
