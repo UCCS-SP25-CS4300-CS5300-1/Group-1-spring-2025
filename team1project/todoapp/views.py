@@ -457,6 +457,7 @@ def exit_task(request, task_id):
 def archive_task(request, task_id):
     """Function to archive a task."""
     task = get_object_or_404(Task, id=task_id)
+    task.ignore_archive = False
     task.is_archived = True
     task.save()
     return redirect('task_view')
@@ -466,6 +467,7 @@ def restore_task(request, task_id):
     """Function to restore a page from a task archive."""
     task = get_object_or_404(Task, id=task_id)
     if task.creator == request.user or request.user in task.assigned_users.all():
+        task.ignore_archive = True
         task.is_archived = False
         task.save()
     return redirect('task_archive')
