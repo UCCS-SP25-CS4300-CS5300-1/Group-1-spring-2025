@@ -58,6 +58,14 @@
     color: #000;
   }
 
+  .calendar th.month, .calendar.th[colspan="7"]{
+    grid-column: 1 / -1;
+    aspect-ratio: auto !important;
+    height: auto !important;
+    padding: 12px;
+    font-size: 1.5em;
+  }
+
   /* Archived tasks */
   .calendar .task.archived {
     background-color: teal !important;
