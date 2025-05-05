@@ -6,7 +6,7 @@ self.addEventListener('push', function(event) {
         try {
             data = event.data.json();
         } catch (e) {
-            console.error("Error parsing push data:", e);
+            console.error("Error parsing push data from stf1:", e);
             try {
                 data = {
                     head: "Notification",
