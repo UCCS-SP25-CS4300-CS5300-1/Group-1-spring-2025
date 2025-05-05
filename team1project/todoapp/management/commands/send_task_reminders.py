@@ -1,60 +1,54 @@
-"""This modul contains a base command to send email notifications 
-to registered users"""
-# disabling django specific errors such as class has no "object" member
-# pylint: disable=E1101, W0613, W0611, W0718, R0801
+"""Module to send email notifications using django commands functionality"""
+# pylint: disable=E1101, W0613
 from datetime import timedelta
+import smtplib
+from socket import error as SocketError
 
-from django.core.management.base import BaseCommand
+from django.core.mail import send_mail, BadHeaderError
 from django.utils import timezone
-from django.core.mail import send_mail
-
+from django.core.management.base import BaseCommand
 from todoapp.models import Task
 
-
 class Command(BaseCommand):
-    """This class contains a method to find users that have tasks due
-    and send notifications."""
-    help = 'Send email reminders based on notification time'
+    """Class that handles sending email notifications that are due
+    within 24 hours"""
+    help = 'Send email reminders for tasks due in a given timeframe'
 
     def handle(self, *args, **kwargs):
-        """This function collects tasks and their due time settings and 
-        sends email notifications."""
         now = timezone.now()
+        time_window = timedelta(hours=24)
+        end_time = now + time_window
 
-        # Get tasks that need notification (email, enabled, not completed)
         tasks = Task.objects.filter(
             notifications_enabled=True,
             is_completed=False,
-            notification_type='email'
+            notification_type='email',
+            due_date__gte=now,
+            due_date__lte=end_time
         )
 
         sent_count = 0
 
         for task in tasks:
-            notification_time_minutes = task.notification_time  # 10, 60, 1440
-            notify_at = task.due_date - timedelta(minutes=notification_time_minutes)
+            users = set(task.assigned_users.all()) | {task.creator}
 
-            # We allow a small window (e.g., 1 minute) to match current time
-            if notify_at <= now <= (notify_at + timedelta(minutes=1)):
-                users = set(task.assigned_users.all()) | {task.creator}
-
-                for user in users:
-                    if user.email:
-                        try:
-                            due_str = timezone.localtime(task.due_date).strftime('%Y-%m-%d %H:%M')
-                            send_mail(
-                                subject=f"Reminder: Task '{task.name}' is due soon!",
-                                message = (
-                                    f"Hi {user.username},\n\n"
-                                    f"Your task \"{task.name}\" is due on {due_str}.\n\n"
-                                    "Don't forget to complete it."
-                                ),
-                                from_email='team1todo@gmail.com',
-                                recipient_list=[user.email],
-                                fail_silently=False
-                            )
-                            sent_count += 1
-                        except Exception as e:
-                            self.stderr.write(f"Failed to send email to {user.email}: {e}")
+            for user in users:
+                if user.email:
+                    try:
+                        due_str = timezone.localtime(task.due_date).strftime('%Y-%m-%d %H:%M')
+                        send_mail(
+                            subject=f"Reminder: Task '{task.name}' is due soon!",
+                            message = (
+                                f"Hi {user.username},\n\n"
+                                f"Your task \"{task.name}\" is due on {due_str}.\n\n"
+                                "Don't forget to complete it."
+                            ),
+                            from_email='team1todo@gmail.com',
+                            recipient_list=[user.email],
+                            fail_silently=False
+                        )
+                        sent_count += 1
+                    except (BadHeaderError, smtplib.SMTPException, SocketError) as e:
+                        self.stderr.write(f"Failed to send email to {user.email}: {e}")
 
         self.stdout.write(self.style.SUCCESS(f'{sent_count} task reminder(s) sent.'))
