@@ -1,14 +1,14 @@
 """This is a module that contains web requests and returns responses"""
+
 # disabling django specific stuff and ambiguous suggestions
-# pylint: disable=E1101,W0611,R1710,W0613,W0718,R0914,R1705
+# pylint: disable=W0613,R0914,R1710
 import os
 from datetime import datetime
 import json
-import traceback
+import logging
 
 from django.contrib.auth import get_user_model
-from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
+from django.contrib.auth import login, logout, update_session_auth_hash
 from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
@@ -16,15 +16,12 @@ from django.http import HttpResponse
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET
-from django.views.decorators.cache import cache_page
 from django.conf import settings
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.utils import timezone
 from django.core.cache import cache
 
-import openai
 import holidays
 import requests
 from openai import OpenAI
@@ -35,6 +32,7 @@ from .utils import TaskCalendar
 from .forms import CustomAuthenticationForm
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 # Retrieves user data and sends to OpenAI API to facilitate task suggestions
 def get_ai_task_suggestion(request):
@@ -356,8 +354,8 @@ def share_task(request, task_id):
                 task_collab_obj.save()
                 messages.success(request, 'Task collaboration request sent')
                 return redirect('task_view')
-            else:
-                return HttpResponse('Request was already sent')
+
+            return HttpResponse('Request was already sent')
 
     else:
         task = get_object_or_404(Task, id=task_id)
@@ -488,7 +486,7 @@ def task_archive(request):
 
 @csrf_exempt
 def save_subscription(request):
-    """Function to save a push subscription for a register user to the DB.
+    """Function to save a push subscription for a registered user to the DB.
 
     Returns:
         JsonResponse with a status."""
@@ -501,9 +499,13 @@ def save_subscription(request):
             return JsonResponse({'success': True})
         except json.JSONDecodeError:
             return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
-        except Exception as e:
-            print("Error in save_subscription:", e)
-            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+        except ValueError as e:
+            logger.error("ValueError in save_subscription: %s", e)
+            return JsonResponse({'success': False, 'error': str(e)}, status=400)
+        except KeyError as e:
+            logger.error("KeyError in save_subscription: %s", e)
+            return JsonResponse({'success': False, 'error': f"Missing field: {str(e)}"}, status=400)
+
     return JsonResponse({'success': False, 'error': 'Invalid method'}, status=405)
 
 
