@@ -177,8 +177,6 @@
                 })
                 .then(function (registration) {
                     console.log("Service Worker is ready");
-                    const rawVapidKey = '{{ vapid_key|safe }}';
-                    console.log("Using VAPID Key:", rawVapidKey);
                     const convertedKey = urlBase64ToUint8Array('{{ vapid_key|safe }}');
                     return registration.pushManager.subscribe({
                         userVisibleOnly: true,
