@@ -1,20 +1,46 @@
-
-// Register event listener for the 'push' event.
 self.addEventListener('push', function(event) {
-  // Retrieve the textual payload from event.data (a PushMessageData object).
-  // Other formats are supported (ArrayBuffer, Blob, JSON), check out the documentation
-  // on https://developer.mozilla.org/en-US/docs/Web/API/PushMessageData.
-  var payload = event.data ? event.data.text() : {"head": "No Content", "Body": "No Content"},
-    data = JSON.parse(payload),
-    head = data.head,
-    body = data.body;
+    console.log("Push event received");
 
-  // Keep the service worker alive until the notification is created.
-  event.waitUntil(
-    // Show a notification with title 'ServiceWorker Cookbook' and use the payload
-    // as the body.
-    self.registration.showNotification(head, {
-      body: body
-    })
-  );
+    let data = {};
+    if (event.data) {
+        try {
+            data = event.data.json();
+        } catch (e) {
+            console.error("Error parsing push data:", e);
+            try {
+                data = {
+                    head: "Notification",
+                    body: event.data.text()
+                };
+            } catch (textError) {
+                console.error("Error reading push text data:", textError);
+                data = {
+                    head: "Notification",
+                    body: "You have a task due!"
+                };
+            }
+        }
+    }
+
+    const title = data.head || "To-Do Reminder";
+    const options = {
+        body: data.body || "You have a task due!",
+        data: {
+            url: data.url || "/"
+        }
+    };
+
+    event.waitUntil(
+        self.registration.showNotification(title, options)
+    );
+});
+
+self.addEventListener('notificationclick', function(event) {
+    console.log("Notification clicked");
+    event.notification.close();
+
+    event.waitUntil(
+        clients.openWindow(event.notification.data.url)
+    );
+});
 });
