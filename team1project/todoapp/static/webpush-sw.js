@@ -8,11 +8,10 @@ self.addEventListener('push', function(event) {
         try {
             data = event.data.json();
         } catch (e) {
-            console.error("Error parsing push data from sf2:", e);
             // fallback to text
             data = {
-                head: "Notification",
-                body: event.data.text()
+                "head": "Reminder!",
+                "body": "Your task is due soon.",
             };
         }
     }
