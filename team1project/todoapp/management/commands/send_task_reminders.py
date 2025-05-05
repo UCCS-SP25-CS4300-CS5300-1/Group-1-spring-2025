@@ -33,7 +33,6 @@ class Command(BaseCommand):
         for task in tasks:
             notification_time_minutes = task.notification_time  # 10, 60, 1440
             notify_at = task.due_date - timedelta(minutes=notification_time_minutes)
-            due_str = timezone.localtime(task.due_date).strftime('%Y-%m-%d %H:%M')
 
             # We allow a small window (e.g., 1 minute) to match current time
             if notify_at <= now <= (notify_at + timedelta(minutes=1)):
@@ -42,6 +41,7 @@ class Command(BaseCommand):
                 for user in users:
                     if user.email:
                         try:
+                            due_str = timezone.localtime(task.due_date).strftime('%Y-%m-%d %H:%M')
                             send_mail(
                                 subject=f"Reminder: Task '{task.name}' is due soon!",
                                 message = (
