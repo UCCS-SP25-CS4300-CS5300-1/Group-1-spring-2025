@@ -170,7 +170,7 @@
     <script>
         if ('serviceWorker' in navigator && 'PushManager' in window) {
             console.log("Registering service worker...");
-            navigator.serviceWorker.register('webpush-sw.js')
+            navigator.serviceWorker.register('/service-worker.js')
                 .then(function (registration) {
                     console.log('Service Worker registered');
                     return navigator.serviceWorker.ready;
