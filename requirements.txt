@@ -1,7 +1,7 @@
 asgiref==3.7.2
 Django>=4.2.20
 pytz==2024.1
-setuptools>=70.0.0
+setuptools>=78.1.1
 six==1.16.0
 sqlparse>=0.5.0
 supervisor==4.2.5
@@ -15,3 +15,4 @@ python-dotenv>=1.1.0
 openai>=1.75.0
 holidays==0.70
 requests>=2.32.3
+urllib3>=2.2.2 # not directly required, pinned by Snyk to avoid a vulnerability
