@@ -172,11 +172,9 @@
             console.log("Registering service worker...");
             navigator.serviceWorker.register('/service-worker.js')
                 .then(function (registration) {
-                    console.log('Service Worker registered');
                     return navigator.serviceWorker.ready;
                 })
                 .then(function (registration) {
-                    console.log("Service Worker is ready");
                     const convertedKey = urlBase64ToUint8Array('{{ vapid_key|safe }}');
                     return registration.pushManager.subscribe({
                         userVisibleOnly: true,
@@ -191,15 +189,19 @@
                             "Content-Type": "application/json"
                         },
                         credentials: 'include'
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error("Server returned error: " + response.status);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log("Subscription saved:", data);
+                    })
+                    .catch(function (error) {
+                        console.error("Service Worker registration failed:", error);
                     });
-                })
-                .then(response => response.json())  // get actual response content
-                .then(data => {
-                    console.log("Subscription saved:", data);
-                })
-                .catch(function (error) {
-                    console.error("Service Worker registration failed:", error);
-                });
         }
 
         function urlBase64ToUint8Array(base64String) {
