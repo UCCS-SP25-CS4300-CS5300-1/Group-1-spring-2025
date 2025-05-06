@@ -539,7 +539,6 @@ def about(request):
 
 @login_required(login_url='index')
 @require_GET
-@csrf_exempt
 def calender_view(request):
     """Function to show tasks on the calendar on the calendar page."""
     # A) Category‑filter form
