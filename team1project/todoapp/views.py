@@ -1,7 +1,7 @@
 """This is a module that contains web requests and returns responses"""
 
 # disabling django specific stuff and ambiguous suggestions
-# pylint: disable=W0613,R0914,R1710
+# pylint: disable=W0613,R0914,R1710,R0911
 import os
 from datetime import datetime
 import json
@@ -502,14 +502,22 @@ def save_subscription(request):
         subscription_data = json.loads(request.body.decode('utf-8'))
         save_info(request.user, subscription_data)
         return JsonResponse({'success': True})
+
     except json.JSONDecodeError:
         return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+
     except ValueError as e:
         logger.error("ValueError in save_subscription: %s", e)
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
     except KeyError as e:
         logger.error("KeyError in save_subscription: %s", e)
         return JsonResponse({'success': False, 'error': f"Missing field: {str(e)}"}, status=400)
+
+    except Exception as e:
+        logger.error("Unexpected error in save_subscription: %s", e)
+        return JsonResponse({'success': False, 'error': 'Internal server error'}, status=500)
+
 
 
 def save_info(user, subscription_data):
