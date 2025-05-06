@@ -16,3 +16,5 @@ openai>=1.75.0
 holidays==0.70
 requests>=2.32.3
 urllib3>=2.2.2 # not directly required, pinned by Snyk to avoid a vulnerability
+aiohttp>=3.10.11 # not directly required, pinned by Snyk to avoid a vulnerability
+zipp>=3.19.1 # not directly required, pinned by Snyk to avoid a vulnerability
