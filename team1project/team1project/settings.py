@@ -158,6 +158,7 @@ VAPID_PUBLIC_KEY = os.getenv("VAPID_PUBLIC_KEY")
 EMAIL_HOST_USER = 'team1todo@gmail.com'
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = 'team1todo@gmail.com'
+TRUSTED_ORIGINS = ['https://todolistapp.tech']
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

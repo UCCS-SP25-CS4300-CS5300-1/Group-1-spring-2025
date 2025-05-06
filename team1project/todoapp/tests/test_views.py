@@ -8,7 +8,7 @@ import requests
 
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
-from django.test import Client, RequestFactory, TestCase
+from django.test import Client, RequestFactory, TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
@@ -252,7 +252,7 @@ class FilterTasksViewTest(TestCase): # pylint: disable=R0902
         # Check that the archived task was filtered
         self.assertTrue(self.archived_task in filtered_archived_tasks)
 
-
+@override_settings(TRUSTED_ORIGINS=["https://testserver"])
 class PushNotificationViewsTests(TestCase):
     ''' Tests for the service_worker and save_subscription endpoints. '''
     def setUp(self):
@@ -285,16 +285,19 @@ class PushNotificationViewsTests(TestCase):
         self.assertEqual(response.status_code, 403)
         self.assertIn("User not authenticated", response.json()["error"])
 
+
     def test_save_subscription_invalid_json(self):
-        ''' invalid json with saving subscription '''
+        '''invalid json with saving subscription'''
         self.client.login(username="testuser", password="testpass")
         response = self.client.post(
             "/save-subscription/",
             data="not valid json",
-            content_type="application/json"
+            content_type="application/json",
+            **{"HTTP_ORIGIN": "https://testserver"}
         )
         self.assertEqual(response.status_code, 400)
         self.assertIn("Invalid JSON", response.json()["error"])
+
 
 class GetAITaskSuggestionTest(TestCase):
     ''' Tests for the get_ai_task_suggestion view'''
