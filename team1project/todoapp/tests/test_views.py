@@ -7,13 +7,12 @@ from unittest.mock import patch, Mock, MagicMock
 import requests
 
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.test import Client, RequestFactory, TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from todoapp.models import Category, Task
+from todoapp.models import Category, Task, User
 from todoapp.views import get_filtered_tasks, show_quote, get_ai_task_suggestion
 
 User = get_user_model()
@@ -305,6 +304,8 @@ class GetAITaskSuggestionTest(TestCase):
 
     @patch('todoapp.views.OpenAI')
     def test_returns_suggestion_when_generate_task_in_get(self, mock_openai):
+        '''ensures that the OpenAI API returns an acceptable response when the user 
+        has one task created and the generate-task parameter is in the URL'''
         # create a mock task
         cat = Category.objects.create(name='Personal')
         t = Task.objects.create(
@@ -378,6 +379,8 @@ class GetAITaskSuggestionTest(TestCase):
             get_ai_task_suggestion(req)
 
     def test_returns_none_without_generate_task_param(self):
+        '''ensures that nothing is returned if the generate-task 
+        parameter is not included in the url'''
         req = self.factory.get('/fake-url')
         req.user = self.user
         self.assertIsNone(get_ai_task_suggestion(req))
