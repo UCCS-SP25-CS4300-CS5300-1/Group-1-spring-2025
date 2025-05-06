@@ -193,8 +193,9 @@
                         credentials: 'include'
                     });
                 })
-                .then(response => {
-                    console.log("Subscription saved", response);
+                .then(response => response.json())  // get actual response content
+                .then(data => {
+                    console.log("Subscription saved:", data);
                 })
                 .catch(function (error) {
                     console.error("Service Worker registration failed:", error);
