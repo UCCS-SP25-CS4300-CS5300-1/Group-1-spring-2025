@@ -84,7 +84,8 @@ class TaskRequestsViews(TestCase):
         self.users = {
             "sender": User.objects.create_user(username="sender123", password=self.password),
             "receiver": User.objects.create_user(username="receiver12345", password=self.password),
-            "shared": User.objects.create_user(username="shared_receiver48!", password=self.password)
+            "shared": User.objects.create_user(username="shared_receiver48!",
+                password=self.password)
         }
 
         self.task = Task.objects.create(
@@ -120,9 +121,9 @@ class TaskRequestsViews(TestCase):
             to_user=self.users["receiver"]).exists())
         self.assertRedirects(response, self.urls["task_view"])
 
-    def test_sharing_tasks_post_view_invalid(self): # pylint: disable=W0612
+    def test_sharing_tasks_post_view_invalid(self):
         """Test if a user cannot enter an invalid post"""
-        collab_request = TaskCollabRequest.objects.create(
+        collab_request = TaskCollabRequest.objects.create( # pylint: disable=W0612
             task=self.task,
             from_user=self.users["sender"],
             to_user=self.users["receiver"]
@@ -179,7 +180,8 @@ class TaskRequestsFormTests(TestCase):
         self.users = {
             "sender": User.objects.create_user(username="sender123", password="Gl989bert48!"),
             "receiver": User.objects.create_user(username="receiver12345", password="Gl989bert48!"),
-            "shared_receiver": User.objects.create_user(username="shared_receiver48!", password="Gl989bert48!")
+            "shared_receiver": User.objects.create_user(username="shared_receiver48!",
+                password="Gl989bert48!")
         }
 
         self.tasks = {
@@ -216,7 +218,8 @@ class TaskRequestsFormTests(TestCase):
             "from_user": self.users["sender"].id,
             "to_user": self.users["receiver"].id
         }
-        collab_form = TaskCollabForm(user=self.users["sender"], task=self.tasks["base"], data=task_collab_data)
+        collab_form = TaskCollabForm(user=self.users["sender"], task=self.tasks["base"],
+            data=task_collab_data)
 
         # Check that the form is valid
         self.assertTrue(collab_form.is_valid())
@@ -297,17 +300,18 @@ class TaskRequestsFormTests(TestCase):
             "from_user": self.users["sender"].id,
             "to_user": self.users["shared_receiver"].id
         }
-        collab_form = TaskCollabForm(user=self.users["sender"], task=self.tasks["shared"], data=task_collab_data)
+        collab_form = TaskCollabForm(user=self.users["sender"],
+            task=self.tasks["shared"], data=task_collab_data)
 
         self.assertFalse(collab_form.is_valid())  # Ensure form validation fails
         self.assertIn("to_user", collab_form.errors)  # Check that 'to_user' has an error
         self.assertEqual(collab_form.errors["to_user"][0],
             "Select a valid choice. That choice is not one of the available choices.")
 
-    def test_send_task_exists_already_invalid(self): # pylint: disable=W0612
+    def test_send_task_exists_already_invalid(self):
         """Test if a user can send a task to a user that already has an outstanding request"""
         # Create an existing request
-        outstanding_request = TaskCollabRequest.objects.create(
+        outstanding_request = TaskCollabRequest.objects.create( # pylint: disable=W0612
             task=self.tasks["base"],
             from_user=self.users["sender"],
             to_user=self.users["receiver"]
@@ -318,7 +322,8 @@ class TaskRequestsFormTests(TestCase):
             "from_user": self.users["sender"].id,
             "to_user": self.users["receiver"].id
         }
-        collab_form = TaskCollabForm(user=self.users["sender"], task=self.tasks["base"], data=task_collab_data)
+        collab_form = TaskCollabForm(user=self.users["sender"], task=self.tasks["base"],
+            data=task_collab_data)
 
         self.assertFalse(collab_form.is_valid())  # Ensure form validation fails
         self.assertIn("to_user", collab_form.errors)  # Check that 'to_user' has an error
