@@ -1,3 +1,5 @@
+console.log("Service Worker loaded!");
+
 self.addEventListener('push', function(event) {
     console.log("Push event received");
 
@@ -6,19 +8,11 @@ self.addEventListener('push', function(event) {
         try {
             data = event.data.json();
         } catch (e) {
-            console.error("Error parsing push data:", e);
-            try {
-                data = {
-                    head: "Notification",
-                    body: event.data.text()
-                };
-            } catch (textError) {
-                console.error("Error reading push text data:", textError);
-                data = {
-                    head: "Notification",
-                    body: "You have a task due!"
-                };
-            }
+            // fallback to text
+            data = {
+                "head": "Reminder!",
+                "body": "Your task is due soon.",
+            };
         }
     }
 

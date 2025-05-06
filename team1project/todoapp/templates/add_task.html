@@ -112,7 +112,7 @@
                 {{ edit_mode|default:False|yesno:"Update Task,Create Task" }}
             </button>
 
-            <a href="{% url 'task_view' %}" name="Cancel" class="btn btn-light border border-dark" >Cancel</a>
+            <a href="{% url 'task_view' %}" name="Cancel" class="custom-dark-button" >Cancel</a>
         </form>
     </div>
 </div>
@@ -156,4 +156,29 @@
         toggleNotificationOptions();
     });
 </script>
+
+<!-- for dismissable alerts -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // Find all dismissible alerts with a unique ID
+      const alerts = document.querySelectorAll('[data-dismissible-id]');
+  
+      alerts.forEach(alert => {
+        const alertId = alert.getAttribute('data-dismissible-id');
+        const dismissed = localStorage.getItem(`dismissedAlert-${alertId}`);
+  
+        // Hide it if previously dismissed
+        if (dismissed === 'true') {
+          alert.remove(); // or alert.classList.add('d-none');
+          return;
+        }
+  
+        // Store dismissal on Bootstrap's alert close
+        alert.addEventListener('closed.bs.alert', function () {
+          localStorage.setItem(`dismissedAlert-${alertId}`, 'true');
+        });
+      });
+    });
+  </script>
+  
 {% endblock %}
