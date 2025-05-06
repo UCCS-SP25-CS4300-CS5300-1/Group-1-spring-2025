@@ -182,43 +182,45 @@
                     });
                 })
                 .then(function (subscription) {
-                    fetch(`/save-subscription/`, {
+                    return fetch(`/save-subscription/`, {
                         method: "POST",
                         body: JSON.stringify(subscription),
                         headers: {
                             "Content-Type": "application/json"
                         },
                         credentials: 'include'
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error("Server returned error: " + response.status);
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        console.log("Subscription saved:", data);
-                    })
-                    .catch(function (error) {
-                        console.error("Service Worker registration failed:", error);
                     });
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Server returned error: " + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("Subscription saved:", data);
+                })
+                .catch(function (error) {
+                    console.error("Service Worker registration failed:", error);
+                });
         }
-
+    
         function urlBase64ToUint8Array(base64String) {
             const padding = '='.repeat((4 - base64String.length % 4) % 4);
             const base64 = (base64String + padding)
-                .replace(/\-/g, '+')
+                .replace(/-/g, '+')
                 .replace(/_/g, '/');
-
+    
             const rawData = window.atob(base64);
             const outputArray = new Uint8Array(rawData.length);
-
+    
             for (let i = 0; i < rawData.length; ++i) {
                 outputArray[i] = rawData.charCodeAt(i);
             }
             return outputArray;
         }
     </script>
+
     
     <!-- script to load theme -->
     <script>
