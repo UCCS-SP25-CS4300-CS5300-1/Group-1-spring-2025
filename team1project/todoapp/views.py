@@ -1,7 +1,7 @@
 """This is a module that contains web requests and returns responses"""
 
 # disabling django specific stuff and ambiguous suggestions
-# pylint: disable=W0613,R0914,R1710,R0911
+# pylint: disable=W0613,R0914,R1710,R0911,W0718
 import os
 from datetime import datetime
 import json
@@ -33,7 +33,8 @@ from .forms import CustomAuthenticationForm
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
-TRUSTED_ORIGINS = ['https://todolistapp.tech']
+TRUSTED_ORIGINS = settings.TRUSTED_ORIGINS
+
 
 # Retrieves user data and sends to OpenAI API to facilitate task suggestions
 def get_ai_task_suggestion(request):
@@ -495,7 +496,7 @@ def save_subscription(request):
         return JsonResponse({'success': False, 'error': 'User not authenticated'}, status=403)
 
     origin = request.META.get('HTTP_ORIGIN', '')
-    if origin not in TRUSTED_ORIGINS:
+    if origin not in settings.TRUSTED_ORIGINS:
         return JsonResponse({'success': False, 'error': 'Invalid origin'}, status=403)
 
     try:
