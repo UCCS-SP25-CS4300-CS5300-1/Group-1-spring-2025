@@ -2,18 +2,19 @@
 
 import json
 from datetime import timedelta
-from unittest.mock import patch, Mock
+from unittest.mock import patch, Mock, MagicMock
 
 import requests
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.test import Client, RequestFactory, TestCase
 from django.urls import reverse
 from django.utils import timezone
 
 from todoapp.models import Category, Task
-from todoapp.views import get_filtered_tasks, show_quote
+from todoapp.views import get_filtered_tasks, show_quote, get_ai_task_suggestion
 
 User = get_user_model()
 
@@ -296,75 +297,98 @@ class PushNotificationViewsTests(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn("Invalid JSON", response.json()["error"])
 
-# Temporarily comment out to update ChatGPT version
-#class GetAITaskSuggestionTest(TestCase):
-#    # set up test user
-#    def setUp(self):
-#       self.factory = RequestFactory()
-#        self.user = User.objects.create_user(username='testuser', password='test123')
-#
-#    # use a patch so we're not actually calling the OpenAI API
-#    @patch('todoapp.views.openai.OpenAI')
-#    def test_returns_suggestion_when_generate_task_in_get(self, mock_openai):
-#        # create a test task for the user
-#        category = Category.objects.create(name='Personal')
-#        task = Task.objects.create(
-#            name='Some task',
-#            description='Do some task',
-#            due_date='2025-04-25',
-#            creator=self.user
-#        )
-#        task.categories.add(category)
+class GetAITaskSuggestionTest(TestCase):
+    ''' Tests for the get_ai_task_suggestion view'''
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.user = User.objects.create_user(username='testuser', password='test123')
 
-#        request = self.factory.get('/fake-url?generate-task')
-#        request.user = self.user
+    @patch('todoapp.views.OpenAI')
+    def test_returns_suggestion_when_generate_task_in_get(self, mock_openai):
+        # create a mock task
+        cat = Category.objects.create(name='Personal')
+        t = Task.objects.create(
+            name='some task',
+            description='do something',
+            due_date='2025-04-25',
+            creator=self.user
+        )
+        t.categories.add(cat)
 
-        # mock a response from the OpenAI API
-#        mock_response = MagicMock()
-#        mock_response.choices[0].text.strip.return_value = json.dumps({
-#            'name': 'Some suggested Task',
-#            'description': 'Do something else!',
-#            'due_date': '2025-04-30',
-#            'categories': ['Work']
-#        })
+        req = self.factory.get('/fake-url?generate-task')
+        req.user = self.user
 
-#        mock_client = MagicMock()
-#        mock_client.completions.create.return_value = mock_response
-#        mock_openai.return_value = mock_client
+        # create a mock suggested task
+        json_payload = {
+            'name': 'suggested Task',
+            'description': 'do something else',
+            'due_date': '2025-04-30',
+            'categories': ['Work']
+        }
+        choice = MagicMock()
+        # choice.message is an object with attribute content
+        choice.message = MagicMock()
+        choice.message.content = json.dumps(json_payload)
 
-#        result = get_ai_task_suggestion(request)
+        mock_resp = MagicMock()
+        mock_resp.choices = [choice]
 
-        # ensure that get_ai_task_suggestion parses the response from OpenAI correctly
-#        self.assertIsInstance(result, dict)
-#        self.assertEqual(result['name'], 'Some suggested Task')
-#        self.assertEqual(result['categories'], ['Work'])
-#        mock_openai.assert_called_once()
+        client = MagicMock()
+        client.chat.completions.create.return_value = mock_resp
+        mock_openai.return_value = client
 
-    # test response when the OpenAI API returns a response that is not in JSON format
-#    @patch('todoapp.views.openai.OpenAI')
-#    def test_returns_none_on_bad_json(self, mock_openai):
-#        request = self.factory.get('/fake-url?generate-task')
-#        request.user = self.user
+        result = get_ai_task_suggestion(req)
 
-#        mock_response = MagicMock()
-#        mock_response.choices[0].text.strip.return_value = "This response is not in JSON format..."
+        # assertions
+        self.assertIsInstance(result, dict)
+        self.assertEqual(result['name'], json_payload['name'])
+        self.assertEqual(result['categories'], json_payload['categories'])
+        mock_openai.assert_called_once()
 
-#        mock_client = MagicMock()
-#        mock_client.completions.create.return_value = mock_response
-#        mock_openai.return_value = mock_client
+    @patch('todoapp.views.OpenAI')
+    def test_raises_json_decode_error_on_bad_json(self, mock_openai):
+        """If the assistant returns invalid JSON, json.loads() should propagate."""
+        req = self.factory.get('/fake-url?generate-task')
+        req.user = self.user
+        # give the user at least one existing task
+        category = Category.objects.create(name='Personal')
+        Task.objects.create(
+        name='some task',
+            description='this is just a placeholder task',
+            due_date='2025-04-25',
+            creator=self.user
+        ).categories.add(category)
 
-#        result = get_ai_task_suggestion(request)
+        req = self.factory.get('/fake-url?generate-task')
+        req.user = self.user
 
-#        self.assertIsNone(result)
+        bad_choice = MagicMock()
+        bad_choice.message = MagicMock()
+        bad_choice.message.content = "not a JSON string"
 
-    # ensure that if 'generate-task' is not in the URL, do not make a call to the API
-#    def test_returns_none_without_generate_task_param(self):
-#        request = self.factory.get('/fake-url')
-#        request.user = self.user
+        mock_resp = MagicMock()
+        mock_resp.choices = [bad_choice]
 
-#        result = get_ai_task_suggestion(request)
+        client = MagicMock()
+        client.chat.completions.create.return_value = mock_resp
+        mock_openai.return_value = client
 
-#        self.assertIsNone(result)
+        # json.loads will run and raise JSONDecodeError
+        with self.assertRaises(json.JSONDecodeError):
+            get_ai_task_suggestion(req)
+
+    def test_returns_none_without_generate_task_param(self):
+        req = self.factory.get('/fake-url')
+        req.user = self.user
+        self.assertIsNone(get_ai_task_suggestion(req))
+
+    def test_returns_none_when_no_tasks_exist(self):
+        """If the user has no existing tasks, view returns None."""
+        req = self.factory.get('/fake-url?generate-task')
+        req.user = self.user
+        # ensure no tasks for this user
+        Task.objects.filter(creator=self.user).delete()
+        self.assertIsNone(get_ai_task_suggestion(req))
 
 class GetTodayQuoteTest(TestCase):
     '''Test and mock the zenquotes api responses in show_quote function'''
