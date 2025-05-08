@@ -15,7 +15,8 @@ Authors: James Hayes, Marina Alsip, Tarek Ahmed Fouad, Sam Allen, Noah Kabel
 # Setup Instructions 
 
 ## Running Locally 
-
+- Run migrations
+- Run manage.py
 ## Running the Server
 # To-Do List 
 
@@ -32,7 +33,9 @@ Authors: James Hayes, Marina Alsip, Tarek Ahmed Fouad, Sam Allen, Noah Kabel
 - [AI Usage](#ai-usage)
 
 # Setup Instructions 
-
+- Download from github
+- Run "python manage.py migrate" in Group-1-spring-2025/team1project/
+- Run "python manage.py runserver"
 ## Running Locally 
 
 ## Running the Server
